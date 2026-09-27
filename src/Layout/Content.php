@@ -254,20 +254,11 @@ class Content implements Htmlable, Renderable, Responsable
      */
     protected function renderFallback(): string
     {
-        $html = '<div class="admin-content">';
-
-        if ($this->title !== '') {
-            $html .= "<h1 class=\"text-2xl font-bold\">{$this->title}</h1>";
-        }
-
-        if ($this->description !== '') {
-            $html .= "<p class=\"text-sm text-gray-500\">{$this->description}</p>";
-        }
-
-        $html .= '<div class="admin-content-body">'.$this->renderRows().'</div>';
-        $html .= '</div>';
-
-        return $html;
+        return view('blatui-admin::layouts.fallback', [
+            'title' => $this->title,
+            'description' => $this->description,
+            'rows' => $this->rows,
+        ])->render();
     }
 
     /**
