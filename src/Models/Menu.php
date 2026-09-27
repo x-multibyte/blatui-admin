@@ -8,6 +8,7 @@ use BlatUI\Admin\Contracts\Tree;
 use BlatUI\Admin\Traits\ModelTree;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -18,8 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string|null $uri
  * @property string|null $extension
  * @property int $show
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class Menu extends Model implements Tree
 {
@@ -66,9 +67,8 @@ class Menu extends Model implements Tree
      */
     public function roles(): BelongsToMany
     {
-        $roleModel = config('blatui-admin.database.roles_model', Role::class);
-        $pivotTable = config('blatui-admin.database.role_menu_table', 'admin_role_menu');
+        $pivotTable = (string) config('blatui-admin.database.role_menu_table', 'admin_role_menu');
 
-        return $this->belongsToMany($roleModel, $pivotTable, 'menu_id', 'role_id')->withTimestamps();
+        return $this->belongsToMany(Role::class, $pivotTable, 'menu_id', 'role_id')->withTimestamps();
     }
 }

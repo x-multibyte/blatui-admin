@@ -36,6 +36,7 @@ class InstallCommand extends Command
 
         // 2. Run seeders if not already seeded
         $userModel = config('blatui-admin.database.users_model');
+
         if ($userModel && class_exists($userModel) && $userModel::count() === 0) {
             $this->call('db:seed', ['--class' => AdminTablesSeeder::class]);
         }
@@ -47,6 +48,7 @@ class InstallCommand extends Command
         // 4. Create upload storage directory
         $disk = config('blatui-admin.upload.disk', 'public');
         $uploadDir = storage_path('app/public/admin/images');
+
         if (! File::isDirectory($uploadDir)) {
             File::makeDirectory($uploadDir, 0755, true, true);
         }

@@ -18,10 +18,6 @@ class DashboardController extends AdminController
      */
     public function index(): Response
     {
-        if (view()->exists('blatui-admin::dashboard')) {
-            return response()->view('blatui-admin::dashboard');
-        }
-
-        return response('<html><head><title>Dashboard</title></head><body><h1>Welcome to BlatUI Admin</h1></body></html>');
+        return response()->view('blatui-admin::dashboard');
     }
 }

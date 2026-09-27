@@ -13,7 +13,7 @@ it('returns the same instance from the container', function () {
 });
 
 it('merges the package config', function () {
-    expect(config('blatui-admin.placeholder'))->toBe('default');
+    expect(config('blatui-admin.name'))->toBe('BlatUI Admin');
 });
 
 it('loads the package translations', function () {

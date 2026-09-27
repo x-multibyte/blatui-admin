@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace BlatUI\Admin;
 
 use BlatUI\Admin\Console\Commands\AdminCommand;
+use BlatUI\Admin\Console\Commands\InstallCommand;
+use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 
 class AdminServiceProvider extends ServiceProvider
@@ -26,7 +28,7 @@ class AdminServiceProvider extends ServiceProvider
      */
     protected function loadAdminAuthConfig(): void
     {
-        config(\Illuminate\Support\Arr::dot(config('blatui-admin.auth', []), 'auth.'));
+        config(Arr::dot(config('blatui-admin.auth', []), 'auth.'));
     }
 
     /**
@@ -76,7 +78,7 @@ class AdminServiceProvider extends ServiceProvider
 
         $this->commands([
             AdminCommand::class,
-            \BlatUI\Admin\Console\Commands\InstallCommand::class,
+            InstallCommand::class,
         ]);
     }
 }

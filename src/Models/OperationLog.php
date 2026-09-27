@@ -6,6 +6,7 @@ namespace BlatUI\Admin\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -14,8 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $method
  * @property string $ip
  * @property string|null $input
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class OperationLog extends Model
 {
@@ -47,8 +48,6 @@ class OperationLog extends Model
      */
     public function user(): BelongsTo
     {
-        $userModel = config('blatui-admin.database.users_model', Administrator::class);
-
-        return $this->belongsTo($userModel, 'user_id');
+        return $this->belongsTo(Administrator::class, 'user_id');
     }
 }

@@ -30,11 +30,7 @@ class AuthController extends Controller
             return redirect()->intended($this->redirectPath());
         }
 
-        if (view()->exists('blatui-admin::auth.login')) {
-            return response()->view('blatui-admin::auth.login');
-        }
-
-        return response('<html><body><form method="POST"><input name="username"/><input name="password" type="password"/><button type="submit">Login</button></form></body></html>');
+        return response()->view('blatui-admin::auth.login');
     }
 
     /**

@@ -7,7 +7,7 @@ namespace BlatUI\Admin\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -17,8 +17,8 @@ use Illuminate\Support\Str;
  * @property string|null $http_path
  * @property int $order
  * @property int $parent_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class Permission extends Model
 {
@@ -51,10 +51,9 @@ class Permission extends Model
      */
     public function roles(): BelongsToMany
     {
-        $roleModel = config('blatui-admin.database.roles_model', Role::class);
-        $pivotTable = config('blatui-admin.database.role_permissions_table', 'admin_role_permissions');
+        $pivotTable = (string) config('blatui-admin.database.role_permissions_table', 'admin_role_permissions');
 
-        return $this->belongsToMany($roleModel, $pivotTable, 'permission_id', 'role_id')->withTimestamps();
+        return $this->belongsToMany(Role::class, $pivotTable, 'permission_id', 'role_id')->withTimestamps();
     }
 
     /**
@@ -80,6 +79,7 @@ class Permission extends Model
             }
 
             $path = trim($path, '/');
+
             if ($request->is($path)) {
                 return true;
             }
