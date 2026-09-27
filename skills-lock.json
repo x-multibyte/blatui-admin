@@ -1,11 +1,29 @@
 {
   "version": 1,
   "skills": {
+    "agent-browser-cli-control": {
+      "source": "aradotso/devtools-skills",
+      "sourceType": "github",
+      "skillPath": "skills/agent-browser-cli-control/SKILL.md",
+      "computedHash": "0a296f6973768a76fddd1c10ab9f3e136976fe4358616116a4b9d3f852d39057"
+    },
+    "blatui-laravel-blade-components": {
+      "source": "aradotso/devtools-skills",
+      "sourceType": "github",
+      "skillPath": "skills/blatui-laravel-blade-components/SKILL.md",
+      "computedHash": "1691c531cde184bb1b6a2de8c1723e63fb0007ecc9d1f0162a69b47712fe7dc3"
+    },
     "brainstorming": {
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/brainstorming/SKILL.md",
       "computedHash": "b95dc657c5dd79caf7340ee6dead6faf2ce2d1cc613352a027fa8993966b41b7"
+    },
+    "deploying-to-cloud": {
+      "source": "laravel/boost",
+      "sourceType": "github",
+      "skillPath": ".ai/deployments/skill/deploying-to-cloud/SKILL.md",
+      "computedHash": "fe035e4ee9e501dcd6a9074ac3806565acffba3beff0d7a86e26756695c76566"
     },
     "diagnosing-superpowers": {
       "source": "obra/superpowers",
@@ -25,11 +43,47 @@
       "skillPath": "skills/executing-plans/SKILL.md",
       "computedHash": "5d587b5a8ed12c3d6808bce1561d9a72eab37a9b44d51d9dff99232decaae78e"
     },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "b146008599c31057cef1c145774cea5d5afb30e8f43fa802e47a4b461419aaaf"
+    },
     "finishing-a-development-branch": {
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/finishing-a-development-branch/SKILL.md",
       "computedHash": "4f571e7befb8b0946d9d7770232c818812412e9ab1dfb811f847edfba1fc6275"
+    },
+    "laravel-best-practices": {
+      "source": "laravel/boost",
+      "sourceType": "github",
+      "skillPath": ".ai/laravel/skill/laravel-best-practices/SKILL.md",
+      "computedHash": "4067be18f40824b3b4393569c924cfd7aedb40562900b10d9e475b88942d896c"
+    },
+    "laravel-devtoolbox-cli": {
+      "source": "aradotso/devtools-skills",
+      "sourceType": "github",
+      "skillPath": "skills/laravel-devtoolbox-cli/SKILL.md",
+      "computedHash": "fb57f5c73232fed3ec642722792856030c50d52c14e582c1b57a2850a62e15e9"
+    },
+    "livewire-development": {
+      "source": "laravel/boost",
+      "sourceType": "github",
+      "skillPath": "tests/Fixtures/vendor-skills/livewire-development/SKILL.md",
+      "computedHash": "8f107c3d9edaa8e99563f7de7440272ff64586558514724a6ac1e15c8b93c91e"
+    },
+    "pennant-development": {
+      "source": "laravel/boost",
+      "sourceType": "github",
+      "skillPath": ".ai/pennant/skill/pennant-development/SKILL.md",
+      "computedHash": "3375e8ead5d9de9c2bcb6fd8edd077b93dedab8c72b5545658d35f55e3a26d4a"
+    },
+    "pest-testing": {
+      "source": "spatie/freek.dev",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/pest-testing/SKILL.md",
+      "computedHash": "16b9ee01b7eb3f527cd0c1cb3ec4ea22099211f6529534ba7b8b646cfec38d5b"
     },
     "receiving-code-review": {
       "source": "obra/superpowers",
@@ -43,6 +97,18 @@
       "skillPath": "skills/requesting-code-review/SKILL.md",
       "computedHash": "2abaeac1de432c76abda0ca7ba618901d2e94f8817b3650f9c523acea2d224f5"
     },
+    "show-me": {
+      "source": "humanlayer/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/show-me/skills/show-me/SKILL.md",
+      "computedHash": "43766f53afe7eb9feba0bb7716590c35cbb8d39d4a91eddef50e9566a6f6ae19"
+    },
+    "spatie-laravel-php": {
+      "source": "spatie/guidelines-skills",
+      "sourceType": "github",
+      "skillPath": "resources/boost/skills/spatie-laravel-php/SKILL.md",
+      "computedHash": "970afa735d56e29328d9421d91a9b02d2e424c79be15d9b7fa1c26da46ac5075"
+    },
     "subagent-driven-development": {
       "source": "obra/superpowers",
       "sourceType": "github",
@@ -55,11 +121,23 @@
       "skillPath": "skills/systematic-debugging/SKILL.md",
       "computedHash": "3589907ee34dc8b1b7223a33fac98ab841a9e42f9960ab4433a832f0c6f00be0"
     },
+    "tailwindcss-development": {
+      "source": "laravel/boost",
+      "sourceType": "github",
+      "skillPath": ".ai/tailwindcss/3/skill/tailwindcss-development/SKILL.md",
+      "computedHash": "f1d29fcdfb77f72e8f25b157793c2d879e0d6a87199ea976dde60e05e3146799"
+    },
     "test-driven-development": {
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/test-driven-development/SKILL.md",
       "computedHash": "3cfe4ebb6fa7288f668d87880d279c8e48f7a92b63415e296857060f5ce22e05"
+    },
+    "test-skill": {
+      "source": "laravel/boost",
+      "sourceType": "github",
+      "skillPath": "tests/Fixtures/skills/test-skill/SKILL.md",
+      "computedHash": "edd18842575ddc2a30e57a15fbf782714f68057df925e07ceb5eee66e930ba96"
     },
     "using-git-worktrees": {
       "source": "obra/superpowers",
