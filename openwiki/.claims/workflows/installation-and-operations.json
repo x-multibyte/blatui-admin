@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:7357f20a71059402f1e4a46ce64203a44db03ecf396eb60560bf53c9bfa5eb4e",
+  "claims": [
+    {
+      "id": "claim_e59c6fc810ed480b84494724d321cfb5",
+      "statement": "admin:install command runs database migrations, conditionally seeds default administrative records, publishes package configuration and routes, and ensures upload storage directories exist.",
+      "evidence": [
+        {
+          "resource": "repo://src/Console/Commands/InstallCommand.php#L30-L56",
+          "version": "repo-lines-v1:sha256:fc83350545c3f7bf3f231c088b80427e852c1c6ce0c62110406a47729cb130ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyNDNjNmI4M2MyMjU1YzM0NmM4YTM0ZTc4MTUxMmRmZWJhNTU0ZTEyYmNlMDMzZmQyNjRjY2JiNDdiYjc1MjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0ZTc5NDFkNjA1Njc0NzE3MTdjODExOTdlZTM0NjhkM2NlOTgwNTUzMDRiYTBmODJmNjE5MTI5MjgzMzZkZmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiZGM5YzFiNWQ3OGM3MDk4NjU2ZTdjMTJmM2E3YzYwZWZhNWQ0NzE0ZTAwN2QwZDU4YjAyZjZhYmY3NDY0OWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhY2I4YjA2ZDJkZjcxNTkwYzgyYzJmYzRhMzlkYTE1YjZiZjA4OTVkNGE0MmJmNDQ2MjJhOTFhOGQxOWZmODgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6d17a90565464442bc68ec1c5364f04a",
+      "statement": "Installation creates an initial administrator account with username admin and password admin assigned to the super administrator role.",
+      "evidence": [
+        {
+          "resource": "repo://database/seeders/AdminTablesSeeder.php#L23-L44",
+          "version": "repo-lines-v1:sha256:10fa4b976f26ee53f5837cd21fdfc1f19d194b41780a0a9224ca685bf86b6280:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5N2U3OWExNTU5MGU1YjlkMzFhODE5MTg3MzJkNGU3MDIwY2RlMjZiMjMwN2NhZWI1OTQ3ZTVlYzc1YjJkYzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhYzE4OWMzYjYyMjA4NzM3NzkzMjk4NjM0YmVhYjUwZTc3Mzc4ZmRkY2E4ZWMxZDU1ZjQwOWUwMjIzZDAwYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhNmU2ZWJjMWRjODYyNjYxODEwOGI0YmQ0MzAzY2ViZGM2MWIzODlmOGNkZWYzM2RhZTI4YzdhMGRhYjdjNzcifQ"
+        },
+        {
+          "resource": "repo://src/Console/Commands/InstallCommand.php#L56-L61",
+          "version": "repo-lines-v1:sha256:7e7266ef56f4d0b7c740a4f063adeec1860b30d523967be663fe209cae60d043:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzRlNzk0MWQ2MDU2NzQ3MTcxN2M4MTE5N2VlMzQ2OGQzY2U5ODA1NTMwNGJhMGY4MmY2MTkxMjkyODMzNmRmYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzUwYjU3YzYwY2MzZWI2OWJkMjY3NTQzNjE1NWNhMzg3ZjJjNGRiYzU4MWM0NWYzMTFiZTBmNmQ0ZmFlNjBhNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2U4YWNkNjUzOTBmMGZkODI0Zjg2MDkxOTUyNTNlMmIzM2E1MzU3ODM4ZjI2YzEzYTY2M2Y0ODQyNDM2ODQ2YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzc5NGQwMmE4MTIxOTQ0ZDE3NmQyNjVlOWJiOWNjNTlmNmFiODkwYmNhZGY4YWVmZGViZGJiYjRmMmVhODQ0NCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_9c8f0b9b0e0848a39fa328a107abcdf1",
+      "statement": "Publishing the blatui-admin-routes tag creates routes/admin.php for declaring application-specific administrative routes wrapped with package middleware.",
+      "evidence": [
+        {
+          "resource": "repo://src/AdminServiceProvider.php#L71-L73",
+          "version": "repo-lines-v1:sha256:e44d1836e3d72daeaedde60b3dd4df2cb62ae0b9e28e203c73024da3ec22e00e:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzc1ZTM4MDZiNmJkYTBhMmNkOWE5MTU4OTdjNDg0ZDM3NWZhYjQ3MjgyODNiZjc3MzEwOTI2ZjFlNjM3MmExMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTcyZjg2ZTZmMjMyZGE3MTlmOGNkYjcwNmVhNWQxMDVkNzZjN2RmMzk1YjljY2Y0NmY5ZTM2ZWVlMGI1YWU0ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTIyMzAwODYyODgzMjQ2MjlkZTZlM2VlN2I5NjU4ZGNkNTdmNzYzYmI3YWVkMmE2ZDNjMmU4NWVjZDA5MWNmMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGYwYjg2NTFlZDExOTUzMTBjMjdjMDRmZTA0Yzk4ZjI5Y2Q4ZjllMTliOTdjM2U2M2E5NmMzMTllYmU0YzFlYiJ9"
+        },
+        {
+          "resource": "repo://src/Console/Commands/InstallCommand.php#L45-L46",
+          "version": "repo-lines-v1:sha256:a0f381546201b4fd0b6ff2aee8d64989e65bc73636f0532736a309f1cd83a401:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmY4NGUzNzgzOThiZjY5ZTBkNjJhNTEzZTQwNjM1Y2RjYjIxMWNlYzU2ODJmMjRiZDdiMzBhY2M3ZDM1ZDM4NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDZkMDk5MDI1ZDU3OGQxZjFkYTY3OGI2NjY2ODU0N2Y2NzliMDYwNjdhYmVjZGM4NzFiOGMxNmMyY2Y1YjQ0ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTFhZTE3NWQ4Mzg2YmFmNTk2MjNmNjcyODM2NDE4YjZjOGQ5ZTAyZmEyYjdhMWE5OTExNzRlOTlmOWZhMTFjNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmE5ZmQwMzhiMWI2Y2E2ODg1OWM2NjA4MmViNmEwNDNiZjVhYjg0YzcwMzhlNWM4M2M4YTc3ZjUyNWZmYmUzYiJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-27T09:35:07.392Z"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "pages": {
+    "/openwiki/architecture/auth-and-rbac.md": {
+      "pageVersion": "sha256:caafcabe988d2119f7bdaac5592978495e9e40d29b81ffa84a4978559e4acc98",
+      "completedBy": "antigravity",
+      "completedRunId": "e3224dd9-1501-49f3-9acd-a8274c3ae4d4",
+      "gitHead": "e248609a187cc617bfa280aa478507850492e0af",
+      "sourceFingerprint": "sha256:9367506a5fe360208ca38438c76f331c475189d8e95de3ce518cabdf85a67e7c"
+    },
+    "/openwiki/architecture/grid-engine.md": {
+      "pageVersion": "sha256:1ae6f94983687ad91cb9565d02b1fc832b3b0f4bad0810773f13378b310363b2",
+      "completedBy": "antigravity",
+      "completedRunId": "e3224dd9-1501-49f3-9acd-a8274c3ae4d4",
+      "gitHead": "e248609a187cc617bfa280aa478507850492e0af",
+      "sourceFingerprint": "sha256:9367506a5fe360208ca38438c76f331c475189d8e95de3ce518cabdf85a67e7c"
+    },
+    "/openwiki/architecture/layout-and-views.md": {
+      "pageVersion": "sha256:900367d255c09f63b05dab9aa41461fefb1bbcec65f0abec0d58c0ba4bf4588b",
+      "completedBy": "antigravity",
+      "completedRunId": "e3224dd9-1501-49f3-9acd-a8274c3ae4d4",
+      "gitHead": "e248609a187cc617bfa280aa478507850492e0af",
+      "sourceFingerprint": "sha256:9367506a5fe360208ca38438c76f331c475189d8e95de3ce518cabdf85a67e7c"
+    },
+    "/openwiki/architecture/overview.md": {
+      "pageVersion": "sha256:337e45b0224b403b4f2a38374561cda0f168840f071cc36b0ad95d0bfeac4cb7",
+      "completedBy": "antigravity",
+      "completedRunId": "e3224dd9-1501-49f3-9acd-a8274c3ae4d4",
+      "gitHead": "e248609a187cc617bfa280aa478507850492e0af",
+      "sourceFingerprint": "sha256:9367506a5fe360208ca38438c76f331c475189d8e95de3ce518cabdf85a67e7c"
+    },
+    "/openwiki/quickstart.md": {
+      "pageVersion": "sha256:275d74e7095b2321ef636bb557b90c1aa0d905920e02c67819103bb6901beb9f",
+      "completedBy": "antigravity",
+      "completedRunId": "e3224dd9-1501-49f3-9acd-a8274c3ae4d4",
+      "gitHead": "e248609a187cc617bfa280aa478507850492e0af",
+      "sourceFingerprint": "sha256:9367506a5fe360208ca38438c76f331c475189d8e95de3ce518cabdf85a67e7c"
+    },
+    "/openwiki/testing/testing-and-quality-assurance.md": {
+      "pageVersion": "sha256:db2333aeaaf98db7eb73f4b59d697555c62faf1314b5b0f6cb69690437806379",
+      "completedBy": "antigravity",
+      "completedRunId": "e3224dd9-1501-49f3-9acd-a8274c3ae4d4",
+      "gitHead": "e248609a187cc617bfa280aa478507850492e0af",
+      "sourceFingerprint": "sha256:9367506a5fe360208ca38438c76f331c475189d8e95de3ce518cabdf85a67e7c"
+    },
+    "/openwiki/workflows/installation-and-operations.md": {
+      "pageVersion": "sha256:7357f20a71059402f1e4a46ce64203a44db03ecf396eb60560bf53c9bfa5eb4e",
+      "completedBy": "antigravity",
+      "completedRunId": "e3224dd9-1501-49f3-9acd-a8274c3ae4d4",
+      "gitHead": "e248609a187cc617bfa280aa478507850492e0af",
+      "sourceFingerprint": "sha256:9367506a5fe360208ca38438c76f331c475189d8e95de3ce518cabdf85a67e7c"
+    }
+  }
+}

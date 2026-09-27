@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:900367d255c09f63b05dab9aa41461fefb1bbcec65f0abec0d58c0ba4bf4588b",
+  "claims": [
+    {
+      "id": "claim_e9aa1fecfed9497eb85eca294979d9c1",
+      "statement": "Content implements Htmlable, Renderable, and Responsable to provide a fluent layout builder for assembling page titles, descriptions, breadcrumbs, and row structures.",
+      "evidence": [
+        {
+          "resource": "repo://src/Layout/Content.php#L16-L18",
+          "version": "repo-lines-v1:sha256:c4c2c2a69fa661a255aac1e3af11807405e08e05a268b7382db75443ed7ebc71:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjJkYmFhZjRjYzRiNzZlMGI3MjY0M2U2MGM4NGY2MmM2YTg4NzI0Njg1YWU5MTVlNWJjMDExYmY1M2Q2ZWExMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzBiZWMwMzQ1NWNjY2RhZmVkN2VlNDJmM2ZjYThiYzkxMzA1NmE2ZWE4OTU5NTM2MjY1ZjA1YzU2ZjA5ZDQ4NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2E2M2FiNTEzMmNjZjU3MjJlMGYyM2RiZTU3ODZjMjk4NzMwZGNkYTE3YzQ4NDAzODljZTVlZGY3ZjExYWJlOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmY2Y2EyMzhmOGY4YzQzZjJkNTNmMDkxYWZmOTlhYTgwM2EwYTM4NmI4OTVhMWY3ODA0MzhmMzVlZDRjODAwMSJ9"
+        },
+        {
+          "resource": "repo://src/Layout/Content.php#L188-L193",
+          "version": "repo-lines-v1:sha256:75f9989494eec60ace7bc50e7e11d63dd78950c52f7d87786426d6288c96e160:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTlhYmM3YTBkMTIxY2M3NDc0NjczZTE2YjEwZTM5YTNmNTVmMDZkZGIzMmI1YWE4ZmEyYTg4MzhiMDVlZGZkZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWUyYjllMjFmZGM4NmZjMmMyZWU0NDcyMTg1ZDY3NjQ2N2JkZDFjYmYyZTI0YjRkYzY0NGFiMWFiYjMzMjU0NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWI3ZGZiNGIyMmNiNjJhNTZmYjRhZDU2OTU1MjFkMmY5OWMyMzk0YWNhY2RiNDViYTMzOWMwOGExNTZkODIwYiJ9"
+        },
+        {
+          "resource": "repo://src/Layout/Content.php#L69-L81",
+          "version": "repo-lines-v1:sha256:1b14b026ca9af17cb22331b7299df37ce6ad03da024ea594b3afbdc7392ea825:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4OTdkYmMyNjUwNDdhMGNiNTFiM2ZlZjU5MjcyMjEyMDJlYzRlNjhmZmE0YzNlZTVlNjlkM2E3ZDU0ZWNhMzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2MDAzOWUxMTU0MmRmOTc1N2M3MjBhM2E1Nzc4ODM2NDI2NDU0MGRjMjZiYjI5ZmMzNGYwYzdkZTJkMGE1NjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI4ODFhY2Q1MWI1NzQyZDMwM2E5ZmMyOGRlZGMzMWNmN2RiM2RkZDdhNzU2MzYzMDNiMTZlNzY2YTU1MzMzZTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlMmI5ZTIxZmRjODZmYzJjMmVlNDQ3MjE4NWQ2NzY0NjdiZGQxY2JmMmUyNGI0ZGM2NDRhYjFhYmIzMzI1NDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f16e74da373e4b2fbd14d28329bd1290",
+      "statement": "Row and Column classes organize page layout elements onto a responsive 12-column CSS grid, normalizing widths from fractions, integers, or responsive breakpoint arrays.",
+      "evidence": [
+        {
+          "resource": "repo://src/Layout/Column.php#L33-L47",
+          "version": "repo-lines-v1:sha256:6fb19f204171dc39a20c3ee728e23af0d1d5056c49e347b11a48d27ef2010ad6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiYmYwOTQxYjE0YTdmMDFlMzI2NzY2MmRhYjZiYjcxZjhkMjcxZDczODQ4MzI0Y2JiNjJhYWZkODI0MTZmYzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiMjBmMWZjNDMxY2VlYjQ3ZTUyN2MxODE5MTc1ODc5NTc3Y2U3YzQzYmE5MWJlZjM4Mjk1NWI3NWMzMjc5NmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIxMjczZDhmZjAwMjc0YTExZGQ5NDJmODAxZWRiNDAxZDhlNTk1ODVhYmRkM2I3ZWY0ODQyNDA1MTVkZDIxMjkifQ"
+        },
+        {
+          "resource": "repo://src/Layout/Column.php#L52-L59",
+          "version": "repo-lines-v1:sha256:4dd7332f602e143bc333778bbe1de7bdaf59f6ebf7ddb3b4965b587da235e761:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWJlY2IxODA0Yjg2MjI5YzM3OGQ0NTljZDcyOTc3ZjE3NTU3YmFlOWRiMjY1NzJiNTk5MmYzMjgwOTJlODIzZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmE1OGEwMTI1ZWUwYzZhZDhmZDkyYTg1MDc3MzE4NDU5NGE3NmI0MDNiYjQ3NTBiNjdiNDg4MTIwZmE0ZThmOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2FiMzczNDBlOWU2YTRiZjU4NTRkY2Y1NmQwN2JiNjk1MDk0NDRhODc0NmJjZTc5Njc2NDY3NzhlYTRlNzc3YiJ9"
+        },
+        {
+          "resource": "repo://src/Layout/Row.php#L10-L23",
+          "version": "repo-lines-v1:sha256:97c019bb32e2c88acbbe3a9b321f6db68c00a9c4ea6c8e62a68ee991e40ff89e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5ZjVkNThjN2I2NTZhOTUzYzJkMzUzMzE1OGNhNWM3NzVmMWM1NjNmMzZmZWM1Zjc4YzhlNmFkOTgwYjY1MDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNiODFkM2ZlZmU3Zjg3ZjI1NjFiODVkN2UyYjJjNmUyM2VlMTEwNzBhMDMyZmE0MzZiYzRjZWUzZTA3Njk5OTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4ZDAwMmRkNjAzNDQ0MGE4MWJlYjcwMDc4NGRmNWQzNzRiNzk0YmJlODVjZjZkOGU0NzBmMjYyMjc2NGI5NDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f1ce0e6ffbf84180907d0741d851ed63",
+      "statement": "The application shell in layouts/app.blade.php integrates Tailwind CSS v4 and Alpine.js with dark mode persistence and responsive mobile drawer state.",
+      "evidence": [
+        {
+          "resource": "repo://resources/views/layouts/app.blade.php#L26-L30",
+          "version": "repo-lines-v1:sha256:064d67a6609b4185343b24113c919754866782a438874aa298cce0c8bcc59030:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTMwNGIxNjBmMjE3YjAzYjQ0YjAxMjJlMTJhZTE0YjI5MzZhNWIzZTEzMGZiMDliNDg0NjY4YjlkZDJkMTEwNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTE4YjUwOGU5NDRlNTk4NTY4YWRiOWI2YmQ1OTA0ZTY3M2RjNTAwMGUxZDAwMzFjMThkM2I2ODU2YTBjNjI5NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWViNTc5NTcxYjYzNjFkMWNmMTc0ODY4NTQ4YTNkNzE5ZDliZjRlZDRlZDhhZTM0YjEyNTA5MmExM2FmM2VhNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTVkNDJhZmYxMDViMzgxNTA4MDk3ZjM4MDBkZDhjNDk2MTI2ZjRkM2M3ZWM2YTljYmNiODllMGVmNDVhOGIxMiJ9"
+        },
+        {
+          "resource": "repo://resources/views/layouts/app.blade.php#L8-L18",
+          "version": "repo-lines-v1:sha256:fa3ecb895bc536ce70824982af9ec0bd77c3218db5a5cd1bb76363b1a00e1b57:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkMGI2ZjVlMzA5ZGY4ZmNlODgxNWY5MDhkZDY4MjFiMDQ5NmNmNDNjZDlmYjRmZjdlYTljMGNlNzQ3NzA4MjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwMzk0Y2Y4YTQ2OTgwZDYxOTlkMGEzYTcxNjkyZWNiNjY4OTE1MWY0NmE3MDg1ZDMxZmFhYjkwYjlkMWY1ZDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkMTY3YzFkNzE5ODRjNDdhMTAwMzNlYmY3ZjMzMWE1OTY3MDgyMTMzODY3NjlhMGE3ZTY2NWRjNDVlYWRiMGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyZDg3NTgxODk4MDUwYmJhZTJmYTFlODg4MWQzMDM5N2MzMTM3N2Y5ZjVjZTQzOWE3YjM1NjBjZjdjZDhiNDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_adeb3c12486e4f5bbc31c8f60cf8796a",
+      "statement": "Menu layout component queries visible menu records, filters unauthorized items against the authenticated admin user, and marks active nodes based on the current request path.",
+      "evidence": [
+        {
+          "resource": "repo://src/Layout/Menu.php#L16-L37",
+          "version": "repo-lines-v1:sha256:c52334451a113d11dbc5e6d3b29c2305638c76e184fca1dfd9a69d9800b709b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjMWYyYmNiZTE2ZGM2ODE5ZWY1MWRiY2MxZDMzZjQ4ZjQ0MDQzZWM2MmRmNThhZWNlZjQ1Y2JlNDljMmI3ZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5NzA1Y2JhNDQ4Y2Q2ZTk2YjRmN2JmMjQ4NjNjZWE5NGIxZWIxNjM1OWU1MWMwOWUyNTczMmZkYjBmZmZkMjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIwMGZjM2MyMmQ1OGJlZGFlOTFlYzYyOWEyZTU1YmFiYjkwMjg4M2QyOTMwZTZkZjk4N2U4ZWExMDllZGQwMWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkYzc5N2IwYWNlYjA1ODhjZmE4MjU0ODk3NDFmMWNjMjkyMTc1YWExODZjZjcwY2I4NTYxNWIyNjY4YjAxMGMifQ"
+        },
+        {
+          "resource": "repo://src/Layout/Menu.php#L51-L60",
+          "version": "repo-lines-v1:sha256:6c89ec983e620e313691704635efee43f2dc8d60587aeadf6dad3483012742d0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiNThhMzExZGEyZmViOTZjNjMzOTkxZTEwZTQwZTk1OTEyMjEzNTUxYzQ0OTlhOGQzNmNkODM3NTFlZWYxYmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY4OTRiODI3MWY5Yjc4MzkyNzk0MTkwY2JhMjAzZmM3N2I3NThhNTg2MWViZGFlNmY0OTFlZTEwNjliNWU5YjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzOTQ5MWEzZGVlZGY1ODQyZjcxNjFlMzhmMWY3ZDQyYjk3MmUyYzliNjgyMTdkODFiYTVkNGYzMjcyZWMwNTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2ZDMyOGE4N2UyZWY5YmZlZjBiNmE3MGFkNjYyYjA1M2RlNWM5YzZmMTE3OWMwZTEyNmM2MTUwMjllNzY3ZTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e0b849fbede748edb9db7685da99a314",
+      "statement": "Navbar layout manager enables custom widget registration on the left and right header sections using helper rendering.",
+      "evidence": [
+        {
+          "resource": "repo://src/Layout/Navbar.php#L11-L22",
+          "version": "repo-lines-v1:sha256:762c44395423c9c0dd694275b1d7d5672d27c0d4e3317fbb5628dcdc730f9d2f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkZWU4NjM5MmRlMDJkYzNjMDY0MDA3M2E5MjU1ZWRhYjJkMGYxYTdkNWVjMjdjNDExYmExNDA2Y2VlN2JlY2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNiODFkM2ZlZmU3Zjg3ZjI1NjFiODVkN2UyYjJjNmUyM2VlMTEwNzBhMDMyZmE0MzZiYzRjZWUzZTA3Njk5OTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY5ZTA0M2M2MTZjYzc3ZDM4MTk3NWU5Zjg1OGIzNTQ4MWZlZDliMTliOTllYWE0Y2ExYjg3NWQyNDQ5NWY0ZDkifQ"
+        },
+        {
+          "resource": "repo://src/Layout/Navbar.php#L24-L42",
+          "version": "repo-lines-v1:sha256:250f586cb82f53b332465b83a3fa829b46f4834d6a97b55e0337639e3236b6a3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmNDZmOTUwOTZmNDJjYmE5NGE4ZTJkN2NkNTEzYjNjMGRlMGUwNGUzZWRiMGFmZTE2YzRkODljODNmNjE4MTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5YjBhN2U2N2QxMWUxNmNkMmRhYjk1NjYwYjE5YWE0YzJjYWJmODBhNDQ2MzRmMWU4MTE5YmY1MjgyMDQxMDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFkYmJmMzUzMmYzYjBlOWRjYjliNDc0NDg0ZDQ3MDE4NGI4ZjViZDM5NWI1MjdkMjE2MjE2ODBlMGE1ZDM4ODcifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-27T09:35:07.392Z"
+  }
+}
