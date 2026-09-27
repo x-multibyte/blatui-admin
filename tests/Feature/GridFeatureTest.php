@@ -14,6 +14,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 beforeEach(function () {
@@ -112,7 +113,7 @@ test('grid supports custom actions callback and global actions disabling', funct
     });
 
     $row = $grid->rows()->first();
-    $actionsHtml = $row->renderActions();
+    $actionsHtml = View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render();
 
     expect($actionsHtml)->toContain('Edit')
         ->and($actionsHtml)->toContain('Quick Edit')

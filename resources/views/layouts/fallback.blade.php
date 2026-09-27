@@ -9,7 +9,7 @@
 
     <div class="admin-content-body">
         @foreach ($rows as $row)
-            {!! $row->render() !!}
+            @include('blatui-admin::layouts.partials.row', ['row' => $row])
         @endforeach
     </div>
 </div>

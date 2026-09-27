@@ -11,7 +11,7 @@ use BlatUI\Admin\Grid\Row;
 use BlatUI\Admin\Grid\RowAction;
 use BlatUI\Admin\Models\Administrator;
 use Database\Seeders\AdminTablesSeeder;
-use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\HtmlString;
 
 test('grid row renders cells and actions', function () {
@@ -22,7 +22,7 @@ test('grid row renders cells and actions', function () {
     $row = new Row($admin, 0);
 
     expect($row->getKey())->toBe(1);
-    expect($row->renderActions())->toContain('Edit', 'Delete');
+    expect(View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render())->toContain('Edit', 'Delete');
 });
 
 test('grid row resolves primary key from model, array and object', function () {
@@ -74,14 +74,14 @@ test('grid row renders column cell correctly', function () {
 test('grid row renders checkbox with key and alpine attributes', function () {
     $row = new Row(['id' => 42, 'name' => 'Row 42'], 3);
 
-    $checkbox = $row->renderCheckbox();
+    $checkbox = View::make('blatui-admin::grid.partials.checkbox', ['row' => $row, 'name' => '_row_id'])->render();
     expect($checkbox)->toContain('name="_row_id[]"')
         ->and($checkbox)->toContain('value="42"')
         ->and($checkbox)->toContain('data-id="42"')
         ->and($checkbox)->toContain('x-model="selectedRows"')
         ->and($checkbox)->toContain('type="checkbox"');
 
-    $customCheckbox = $row->renderCheckbox('custom_batch_ids');
+    $customCheckbox = View::make('blatui-admin::grid.partials.checkbox', ['row' => $row, 'name' => 'custom_batch_ids'])->render();
     expect($customCheckbox)->toContain('name="custom_batch_ids[]"');
 });
 
@@ -89,7 +89,7 @@ test('grid row manages action disabling individually and globally', function () 
     $row = new Row(['id' => 10], 0, 'admin/posts');
 
     // Default actions: Show, Edit, Delete (QuickEdit disabled by default)
-    $actionsHtml = $row->renderActions();
+    $actionsHtml = View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render();
     expect($actionsHtml)->toContain('Show')
         ->and($actionsHtml)->toContain('Edit')
         ->and($actionsHtml)->toContain('Delete')
@@ -97,25 +97,25 @@ test('grid row manages action disabling individually and globally', function () 
 
     // Disable Show
     $row->disableShow();
-    expect($row->renderActions())->not->toContain('Show')
-        ->and($row->renderActions())->toContain('Edit')
-        ->and($row->renderActions())->toContain('Delete');
+    expect(View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render())->not->toContain('Show')
+        ->and(View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render())->toContain('Edit')
+        ->and(View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render())->toContain('Delete');
 
     // Disable Edit
     $row->disableEdit();
-    expect($row->renderActions())->not->toContain('Edit');
+    expect(View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render())->not->toContain('Edit');
 
     // Disable Delete
     $row->disableDelete();
-    expect($row->renderActions())->not->toContain('Delete');
+    expect(View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render())->not->toContain('Delete');
 
     // Enable QuickEdit
     $row->quickEdit(true);
-    expect($row->renderActions())->toContain('Quick Edit');
+    expect(View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render())->toContain('Quick Edit');
 
     // Disable all actions globally
     $row->disableActions();
-    expect($row->renderActions())->toBe('');
+    expect(View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render())->toBe('');
     expect($row->isActionsDisabled())->toBeTrue();
 });
 
@@ -128,7 +128,7 @@ test('grid row actions closure can configure actions using fluent syntax', funct
         $actions->quickEdit();
     });
 
-    $html = $row->renderActions();
+    $html = View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render();
     expect($html)->toContain('Edit')
         ->and($html)->toContain('Quick Edit')
         ->and($html)->not->toContain('Delete')
@@ -154,7 +154,7 @@ test('grid row supports prepending, appending and custom row actions', function 
     $row->append('<span class="appended">End</span>');
     $row->addAction($customAction);
 
-    $html = $row->renderActions();
+    $html = View::make('blatui-admin::grid.partials.actions', ['row' => $row])->render();
     expect($html)->toContain('<span class="prepended">Start</span>')
         ->and($html)->toContain('<span class="appended">End</span>')
         ->and($html)->toContain('Custom #7');
@@ -259,12 +259,4 @@ test('row provides arrayable, property accessor and model helpers', function () 
 
     $row->setData(['id' => 89]);
     expect($row->getKey())->toBe(89);
-});
-
-test('grid row implements Htmlable, Renderable, and Stringable contracts', function () {
-    $row = new Row(['id' => 1, 'username' => 'administrator'], 0);
-
-    expect($row)->toBeInstanceOf(Htmlable::class)
-        ->and($row->toHtml())->toBe($row->render())
-        ->and((string) $row)->toBe($row->toHtml());
 });

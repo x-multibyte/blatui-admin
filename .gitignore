@@ -13,3 +13,6 @@ composer.lock
 .codegraph
 .superpowers
 .agent
+
+# Hermes/agent scratch task briefs
+*_TASK.md

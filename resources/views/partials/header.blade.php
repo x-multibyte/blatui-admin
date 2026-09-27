@@ -34,7 +34,7 @@ $navbarLeft = \BlatUI\Admin\Admin::navbar()->render('left');
         <!-- Custom Navbar Left -->
         @if ($navbarLeft)
             <div class="flex items-center gap-2">
-                {!! $navbarLeft !!}
+                {{ $navbarLeft }}
             </div>
         @endif
 
@@ -65,7 +65,7 @@ $navbarLeft = \BlatUI\Admin\Admin::navbar()->render('left');
         <!-- Custom Navbar Right -->
         @if ($navbarRight)
             <div class="flex items-center gap-2">
-                {!! $navbarRight !!}
+                {{ $navbarRight }}
             </div>
         @endif
 
