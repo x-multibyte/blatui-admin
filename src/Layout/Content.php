@@ -224,7 +224,7 @@ class Content implements Htmlable, Renderable, Responsable
     {
         $html = '';
         foreach ($this->rows as $row) {
-            $html .= $row->render();
+            $html .= view('blatui-admin::layouts.partials.row', ['row' => $row])->render();
         }
 
         return $html;
