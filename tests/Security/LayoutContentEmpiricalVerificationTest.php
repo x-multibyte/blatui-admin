@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use BlatUI\Admin\Layout\Column;
 use BlatUI\Admin\Layout\Content;
 use BlatUI\Admin\Layout\Row;
 use Illuminate\Contracts\Support\Htmlable;
@@ -73,26 +72,21 @@ test('2.1. Content::render() provides HtmlString for content key in view data', 
         ->not->toContain('&amp;lt;div');
 });
 
-test('2.2. Content::render() with nested rows and columns preserves full grid HTML markup', function () {
+test('2.2. Content::render() with nested rows and columns escapes malicious row classes', function () {
     $content = Content::make()
         ->row(function (Row $row) {
-            $row->column(6, '<div class="card-left">Left Column Content</div>');
-            $row->column(6, '<div class="card-right">Right Column Content</div>');
-        })
-        ->row('<div class="full-width-card">Footer Row</div>');
+            $row->class('grid"><script>alert(1)</script>');
+            $row->column(6, 'Left Column Content');
+        });
 
     $html = $content->render();
 
-    // Responsive Tailwind grid classes from Row and Column must be intact
-    expect($html)->toContain('grid grid-cols-12')
-        ->toContain('col-span-12 md:col-span-6')
-        ->toContain('<div class="card-left">Left Column Content</div>')
-        ->toContain('<div class="card-right">Right Column Content</div>')
-        ->toContain('<div class="full-width-card">Footer Row</div>');
+    // Must NOT contain the raw script tag
+    expect($html)->not->toContain('<script>alert(1)</script>')
+        ->not->toContain('<script>');
 
-    // Must NOT be entity-encoded
-    expect($html)->not->toContain('&lt;div class=&quot;card-left&quot;&gt;')
-        ->not->toContain('&lt;div class=&quot;full-width-card&quot;&gt;');
+    // Must contain the entity-encoded script tag
+    expect($html)->toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
 });
 
 test('2.3. passing raw unvetted malicious string as content to app layout is safely escaped', function (string $xss) {

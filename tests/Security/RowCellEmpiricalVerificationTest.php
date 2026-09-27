@@ -416,7 +416,7 @@ test('5.1. Column and Row contract compliance', function () {
         ->and((string) $row)->toBe($row->render());
 });
 
-test('5.2. View::gatherData() side-effect on Renderable Row objects when passed as top-level view variable', function () {
+test('5.2. View::gatherData() side-effect stringifies Renderable Grid\Row to actions bar HTML when passed as top-level view variable', function () {
     $row = new Row(['id' => 1, 'username' => 'admin']);
     $col = new Column('username');
 
