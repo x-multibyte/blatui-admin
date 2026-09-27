@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace BlatUI\Admin\Layout;
 
-use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Contracts\Support\Renderable;
-
-class Row implements Htmlable, Renderable
+class Row
 {
     /**
      * Columns contained in this row.
@@ -68,27 +65,21 @@ class Row implements Htmlable, Renderable
     }
 
     /**
-     * Render the row HTML.
+     * Get the columns in this row.
      */
-    public function render(): string
+    /**
+     * @return array<int, Column>
+     */
+    public function getColumns(): array
     {
-        $escapedClass = htmlspecialchars($this->class, ENT_QUOTES, 'UTF-8');
-        $html = "<div class=\"{$escapedClass}\">";
-
-        foreach ($this->columns as $column) {
-            $html .= $column->render();
-        }
-
-        $html .= '</div>';
-
-        return $html;
+        return $this->columns;
     }
 
     /**
-     * Convert to HTML string.
+     * Get the CSS classes for this row.
      */
-    public function toHtml(): string
+    public function getClass(): string
     {
-        return $this->render();
+        return $this->class;
     }
 }
