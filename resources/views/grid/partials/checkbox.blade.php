@@ -1,0 +1,1 @@
+<input type="checkbox" class="grid-row-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 cursor-pointer" name="{{ $name ?? '_row_id' }}[]" value="{{ $row->getKey() ?? $row->getNumber() }}" data-id="{{ $row->getKey() ?? $row->getNumber() }}" x-model="selectedRows" />

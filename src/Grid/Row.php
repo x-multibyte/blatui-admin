@@ -11,16 +11,13 @@ use BlatUI\Admin\Grid\Actions\QuickEdit;
 use BlatUI\Admin\Grid\Actions\Show;
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
-use Stringable;
 
 /**
  * @implements Arrayable<string, mixed>
  */
-class Row implements Arrayable, Htmlable, Renderable, Stringable
+class Row implements Arrayable
 {
     /**
      * The row's underlying data.
@@ -411,15 +408,31 @@ class Row implements Arrayable, Htmlable, Renderable, Stringable
         return $this->defaultActions;
     }
 
-    /**
-     * Render the combined row actions HTML.
-     */
-    public function renderActions(): string
+    public function isShowDisabled(): bool
     {
-        if ($this->actionsDisabled) {
-            return '';
-        }
+        return $this->showDisabled;
+    }
 
+    public function isEditDisabled(): bool
+    {
+        return $this->editDisabled;
+    }
+
+    public function isDeleteDisabled(): bool
+    {
+        return $this->deleteDisabled;
+    }
+
+    public function isQuickEditDisabled(): bool
+    {
+        return $this->quickEditDisabled;
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    public function getActions(): array
+    {
         if (! $this->defaultActionsAdded) {
             $this->addDefaultActions();
         }
@@ -427,98 +440,30 @@ class Row implements Arrayable, Htmlable, Renderable, Stringable
         $items = [];
 
         foreach ($this->prepends as $action) {
-            $rendered = $this->renderAction($action);
-
-            if ($rendered !== '') {
-                $items[] = $rendered;
-            }
+            $items[] = $action;
         }
 
         if (! $this->showDisabled && isset($this->defaultActions['show'])) {
-            $rendered = $this->renderAction($this->defaultActions['show']);
-
-            if ($rendered !== '') {
-                $items[] = $rendered;
-            }
+            $items[] = $this->defaultActions['show'];
         }
 
         if (! $this->editDisabled && isset($this->defaultActions['edit'])) {
-            $rendered = $this->renderAction($this->defaultActions['edit']);
-
-            if ($rendered !== '') {
-                $items[] = $rendered;
-            }
+            $items[] = $this->defaultActions['edit'];
         }
 
         if (! $this->quickEditDisabled && isset($this->defaultActions['quickEdit'])) {
-            $rendered = $this->renderAction($this->defaultActions['quickEdit']);
-
-            if ($rendered !== '') {
-                $items[] = $rendered;
-            }
+            $items[] = $this->defaultActions['quickEdit'];
         }
 
         if (! $this->deleteDisabled && isset($this->defaultActions['delete'])) {
-            $rendered = $this->renderAction($this->defaultActions['delete']);
-
-            if ($rendered !== '') {
-                $items[] = $rendered;
-            }
+            $items[] = $this->defaultActions['delete'];
         }
 
         foreach ($this->appends as $action) {
-            $rendered = $this->renderAction($action);
-
-            if ($rendered !== '') {
-                $items[] = $rendered;
-            }
+            $items[] = $action;
         }
 
-        if (empty($items)) {
-            return '';
-        }
-
-        return '<div class="inline-flex items-center gap-3">'.implode('', $items).'</div>';
-    }
-
-    /**
-     * Helper to render an action element.
-     */
-    protected function renderAction(mixed $action): string
-    {
-        if ($action instanceof RowAction) {
-            return $action->render($this);
-        }
-
-        if ($action instanceof Renderable) {
-            return (string) $action->render();
-        }
-
-        if ($action instanceof Htmlable) {
-            return $action->toHtml();
-        }
-
-        if ($action instanceof Closure) {
-            return (string) $action($this);
-        }
-
-        return (string) $action;
-    }
-
-    /**
-     * Render the row selection checkbox.
-     */
-    public function renderCheckbox(string $name = '_row_id'): string
-    {
-        $key = htmlspecialchars((string) ($this->getKey() ?? $this->number), ENT_QUOTES, 'UTF-8');
-        $escapedName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
-
-        return sprintf(
-            '<input type="checkbox" class="grid-row-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 cursor-pointer" name="%s[]" value="%s" data-id="%s" x-model="selectedRows" />',
-            $escapedName,
-            $key,
-            $key,
-        );
+        return $items;
     }
 
     /**
@@ -529,30 +474,6 @@ class Row implements Arrayable, Htmlable, Renderable, Stringable
         $value = data_get($this->data, $column->getName());
 
         return new HtmlString($column->renderCell($value, $this->data));
-    }
-
-    /**
-     * Render the row HTML representation.
-     */
-    public function render(): string
-    {
-        return (string) $this->renderActions();
-    }
-
-    /**
-     * Get content as a string of HTML.
-     */
-    public function toHtml(): string
-    {
-        return $this->render();
-    }
-
-    /**
-     * Convert row to string representation.
-     */
-    public function __toString(): string
-    {
-        return $this->toHtml();
     }
 
     /**

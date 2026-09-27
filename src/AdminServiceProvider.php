@@ -6,10 +6,7 @@ namespace BlatUI\Admin;
 
 use BlatUI\Admin\Console\Commands\AdminCommand;
 use BlatUI\Admin\Console\Commands\InstallCommand;
-use BlatUI\Admin\View\Composers\GridComposer;
-use BlatUI\Admin\View\Composers\LayoutComposer;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AdminServiceProvider extends ServiceProvider
@@ -47,8 +44,6 @@ class AdminServiceProvider extends ServiceProvider
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
-        $this->registerViewComposers();
-
         if (! $this->app->runningInConsole()) {
             return;
         }
@@ -85,14 +80,5 @@ class AdminServiceProvider extends ServiceProvider
             AdminCommand::class,
             InstallCommand::class,
         ]);
-    }
-
-    /**
-     * Register view composers for data gatekeeping.
-     */
-    protected function registerViewComposers(): void
-    {
-        View::composer('blatui-admin::layouts.*', LayoutComposer::class);
-        View::composer('blatui-admin::grid.*', GridComposer::class);
     }
 }

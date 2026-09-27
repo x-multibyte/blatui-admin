@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace BlatUI\Admin\Layout;
 
-use BlatUI\Admin\Support\Helper;
 use Closure;
-use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Contracts\Support\Renderable;
 
-class Column implements Htmlable, Renderable
+class Column
 {
     /**
      * Column width configuration.
@@ -86,9 +83,20 @@ class Column implements Htmlable, Renderable
     }
 
     /**
-     * Build the Tailwind CSS grid column classes.
+     * Get the column contents.
      */
-    protected function buildClasses(): string
+    /**
+     * @return array<int, mixed>
+     */
+    public function getContents(): array
+    {
+        return $this->contents;
+    }
+
+    /**
+     * Get the CSS classes for this column.
+     */
+    public function getClass(): string
     {
         $classes = ['col-span-12'];
 
@@ -96,34 +104,10 @@ class Column implements Htmlable, Renderable
             if ($span === 12 && $breakpoint === 'md') {
                 continue;
             }
-            $classes[] = "{$breakpoint}:col-span-{$span}";
+            $escapedBreakpoint = htmlspecialchars((string) $breakpoint, ENT_QUOTES, 'UTF-8');
+            $classes[] = "{$escapedBreakpoint}:col-span-{$span}";
         }
 
         return implode(' ', array_unique($classes));
-    }
-
-    /**
-     * Render the column HTML.
-     */
-    public function render(): string
-    {
-        $classString = $this->buildClasses();
-        $html = "<div class=\"{$classString}\">";
-
-        foreach ($this->contents as $content) {
-            $html .= Helper::render($content);
-        }
-
-        $html .= '</div>';
-
-        return $html;
-    }
-
-    /**
-     * Convert to HTML string.
-     */
-    public function toHtml(): string
-    {
-        return $this->render();
     }
 }

@@ -10,6 +10,8 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\HtmlString;
 use Symfony\Component\HttpFoundation\Response;
 
 test('content builder manages title, description, breadcrumbs and rows', function () {
@@ -34,30 +36,30 @@ test('content builder manages title, description, breadcrumbs and rows', functio
 
 test('row and column render responsive tailwind grid html', function () {
     $row = new Row;
-    $row->column(6, '<p>Left</p>');
-    $row->column(6, '<p>Right</p>');
+    $row->column(6, new HtmlString('<p>Left</p>'));
+    $row->column(6, new HtmlString('<p>Right</p>'));
 
-    $html = $row->render();
+    $html = View::make('blatui-admin::layouts.partials.row', ['row' => $row])->render();
 
     expect($html)->toContain('grid grid-cols-12')
         ->and($html)->toContain('col-span-12 md:col-span-6')
-        ->and($html)->toContain('<p>Left</p>')
-        ->and($html)->toContain('<p>Right</p>');
+        ->and($html)->toContain(new HtmlString('<p>Left</p>'))
+        ->and($html)->toContain(new HtmlString('<p>Right</p>'));
 });
 
 test('column supports nested rows and closures', function () {
     $column = new Column(function (Column $col) {
-        $col->append('<span>Direct</span>');
+        $col->append(new HtmlString('<span>Direct</span>'));
         $col->row(function (Row $row) {
-            $row->column(12, '<span>Nested</span>');
+            $row->column(12, new HtmlString('<span>Nested</span>'));
         });
     }, 8);
 
-    $html = $column->render();
+    $html = View::make('blatui-admin::layouts.partials.column', ['column' => $column])->render();
 
     expect($html)->toContain('col-span-12 md:col-span-8')
-        ->and($html)->toContain('<span>Direct</span>')
-        ->and($html)->toContain('<span>Nested</span>');
+        ->and($html)->toContain(new HtmlString('<span>Direct</span>'))
+        ->and($html)->toContain(new HtmlString('<span>Nested</span>'));
 });
 
 test('navbar manages left and right elements', function () {

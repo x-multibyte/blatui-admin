@@ -103,7 +103,7 @@
                         <tr class="border-b border-gray-100 hover:bg-gray-50/80 dark:border-gray-800/80 dark:hover:bg-gray-800/50 transition-colors">
                             @if ($tools && $tools->isBatchActionsEnabled())
                                 <td class="px-4 py-3 text-center whitespace-nowrap w-10">
-                                    {!! $row->renderCheckbox() !!}
+                                    @include('blatui-admin::grid.partials.checkbox', ['row' => $row, 'name' => '_row_id'])
                                 </td>
                             @endif
 
@@ -115,7 +115,7 @@
 
                             @if (! $grid->isActionsDisabled())
                                 <td class="px-4 py-3 text-right text-sm whitespace-nowrap">
-                                    {!! $row->renderActions() !!}
+                                    @include('blatui-admin::grid.partials.actions', ['row' => $row])
                                 </td>
                             @endif
                         </tr>
