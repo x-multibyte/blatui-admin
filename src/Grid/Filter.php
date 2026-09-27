@@ -51,6 +51,11 @@ class Filter implements Htmlable, Renderable, Stringable
     protected ?string $id = null;
 
     /**
+     * Custom view template.
+     */
+    protected string $view = 'blatui-admin::grid.filter';
+
+    /**
      * Create a new Filter instance.
      */
     public function __construct(mixed $model = null)
@@ -351,12 +356,63 @@ class Filter implements Htmlable, Renderable, Stringable
     }
 
     /**
+     * Set or get custom view template.
+     */
+    public function view(?string $view = null): static|string
+    {
+        if ($view === null) {
+            return $this->view;
+        }
+
+        $this->view = $view;
+
+        return $this;
+    }
+
+    /**
+     * Get view template name.
+     */
+    public function getView(): string
+    {
+        return $this->view;
+    }
+
+    /**
      * Render the collapsible filter card HTML.
      */
     public function render(): string
     {
         if (empty($this->fields)) {
             return '';
+        }
+
+        if (function_exists('view') && view()->exists($this->view)) {
+            $filterProxy = new class($this)
+            {
+                public function __construct(protected Filter $filter) {}
+
+                /**
+                 * @param  array<int, mixed>  $args
+                 */
+                public function __call(string $method, array $args): mixed
+                {
+                    return $this->filter->{$method}(...$args);
+                }
+
+                public function __get(string $name): mixed
+                {
+                    return $this->filter->{$name};
+                }
+            };
+
+            return view($this->view, [
+                'filter' => $filterProxy,
+                'fields' => $this->fields,
+                'action' => $this->action(),
+                'resetUrl' => $this->resetUrl(),
+                'id' => $this->getId(),
+                'isExpanded' => $this->isExpanded(),
+            ])->render();
         }
 
         $id = htmlspecialchars($this->getId(), ENT_QUOTES, 'UTF-8');

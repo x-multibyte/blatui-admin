@@ -115,6 +115,16 @@ class Tools implements Htmlable, Renderable, Stringable
     }
 
     /**
+     * Get resource URI prefix.
+     */
+    public function getResource(): ?string
+    {
+        $res = $this->resource();
+
+        return is_string($res) ? $res : null;
+    }
+
+    /**
      * Enable Create button.
      */
     public function enableCreateButton(bool $enable = true): static
