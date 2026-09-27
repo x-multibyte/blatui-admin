@@ -215,8 +215,10 @@ class Column
      */
     public function badge(string|array $variant = 'default', array $map = []): static
     {
-        return $this->display(function (mixed $value, mixed $row = null) use ($variant, $map): string {
-            return (new Displayers\Badge($this, $value, $row))->display($variant, $map);
+        $column = $this;
+
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $variant, $map): string {
+            return (new Displayers\Badge($column, $value, $row))->display($variant, $map);
         });
     }
 
@@ -225,8 +227,10 @@ class Column
      */
     public function link(string|Closure|null $href = null, string $target = '_self'): static
     {
-        return $this->display(function (mixed $value, mixed $row = null) use ($href, $target): string {
-            return (new Displayers\Link($this, $value, $row))->display($href, $target);
+        $column = $this;
+
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $href, $target): string {
+            return (new Displayers\Link($column, $value, $row))->display($href, $target);
         });
     }
 
@@ -235,8 +239,10 @@ class Column
      */
     public function copyable(): static
     {
-        return $this->display(function (mixed $value, mixed $row = null): string {
-            return (new Displayers\Copyable($this, $value, $row))->display();
+        $column = $this;
+
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column): string {
+            return (new Displayers\Copyable($column, $value, $row))->display();
         });
     }
 
@@ -245,8 +251,10 @@ class Column
      */
     public function image(?string $server = null, int $width = 32, int $height = 32): static
     {
-        return $this->display(function (mixed $value, mixed $row = null) use ($server, $width, $height): string {
-            return (new Displayers\Image($this, $value, $row))->display($server, $width, $height);
+        $column = $this;
+
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $server, $width, $height): string {
+            return (new Displayers\Image($column, $value, $row))->display($server, $width, $height);
         });
     }
 
@@ -255,8 +263,10 @@ class Column
      */
     public function datetime(string $format = 'Y-m-d H:i:s'): static
     {
-        return $this->display(function (mixed $value, mixed $row = null) use ($format): string {
-            return (new Displayers\Datetime($this, $value, $row))->display($format);
+        $column = $this;
+
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $format): string {
+            return (new Displayers\Datetime($column, $value, $row))->display($format);
         });
     }
 
@@ -267,8 +277,10 @@ class Column
      */
     public function using(array $map, string $default = ''): static
     {
-        return $this->display(function (mixed $value, mixed $row = null) use ($map, $default): string {
-            return (new Displayers\Using($this, $value, $row))->display($map, $default);
+        $column = $this;
+
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $map, $default): string {
+            return (new Displayers\Using($column, $value, $row))->display($map, $default);
         });
     }
 
@@ -277,8 +289,10 @@ class Column
      */
     public function limit(int $limit = 30, string $end = '...'): static
     {
-        return $this->display(function (mixed $value, mixed $row = null) use ($limit, $end): string {
-            return (new Displayers\Limit($this, $value, $row))->display($limit, $end);
+        $column = $this;
+
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $limit, $end): string {
+            return (new Displayers\Limit($column, $value, $row))->display($limit, $end);
         });
     }
 

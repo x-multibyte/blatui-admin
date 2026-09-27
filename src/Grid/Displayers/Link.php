@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BlatUI\Admin\Grid\Displayers;
 
 use Closure;
+use Stringable;
 
 class Link extends AbstractDisplayer
 {
@@ -13,16 +14,24 @@ class Link extends AbstractDisplayer
      */
     public function display(string|Closure|null $href = null, string $target = '_self'): string
     {
-        if ($this->value === null || $this->value === '') {
+        if ($this->value === null || $this->value === '' || (is_array($this->value) && empty($this->value))) {
             return '';
         }
 
+        if (is_scalar($this->value)) {
+            $strVal = (string) $this->value;
+        } elseif ($this->value instanceof Stringable || (is_object($this->value) && method_exists($this->value, '__toString'))) {
+            $strVal = (string) $this->value;
+        } else {
+            $strVal = json_encode($this->value, JSON_UNESCAPED_UNICODE) ?: '';
+        }
+
         if ($href === null) {
-            $url = (string) $this->value;
+            $url = $strVal;
         } elseif ($href instanceof Closure) {
             $url = (string) $href($this->value, $this->row);
         } else {
-            $url = str_replace('{value}', (string) $this->value, $href);
+            $url = str_replace('{value}', $strVal, $href);
 
             if ($this->row !== null) {
                 $url = (string) preg_replace_callback('/\{([a-zA-Z0-9_.-]+)\}/', function (array $matches): string {
@@ -43,7 +52,7 @@ class Link extends AbstractDisplayer
             htmlspecialchars($target, ENT_QUOTES, 'UTF-8'),
             $rel,
             $classes,
-            htmlspecialchars((string) $this->value, ENT_QUOTES, 'UTF-8'),
+            htmlspecialchars($strVal, ENT_QUOTES, 'UTF-8'),
         );
     }
 }

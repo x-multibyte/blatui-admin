@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace BlatUI\Admin\Grid\Displayers;
 
+use Stringable;
+
 class Using extends AbstractDisplayer
 {
     /**
@@ -13,7 +15,7 @@ class Using extends AbstractDisplayer
      */
     public function display(array $map = [], string $default = ''): string
     {
-        if ($this->value === null || $this->value === '') {
+        if ($this->value === null || $this->value === '' || (is_array($this->value) && empty($this->value))) {
             if (array_key_exists('', $map)) {
                 return (string) $map[''];
             }
@@ -21,20 +23,30 @@ class Using extends AbstractDisplayer
             return $default;
         }
 
-        $key = is_scalar($this->value) ? (string) $this->value : '';
+        if (is_int($this->value) || is_string($this->value)) {
+            if (array_key_exists($this->value, $map)) {
+                return (string) $map[$this->value];
+            }
+        } elseif (is_scalar($this->value)) {
+            $key = (string) $this->value;
 
-        if (array_key_exists($this->value, $map)) {
-            return (string) $map[$this->value];
-        }
-
-        if ($key !== '' && array_key_exists($key, $map)) {
-            return (string) $map[$key];
+            if (array_key_exists($key, $map)) {
+                return (string) $map[$key];
+            }
         }
 
         if ($default !== '') {
             return $default;
         }
 
-        return (string) $this->value;
+        if (is_scalar($this->value)) {
+            return (string) $this->value;
+        }
+
+        if ($this->value instanceof Stringable || (is_object($this->value) && method_exists($this->value, '__toString'))) {
+            return (string) $this->value;
+        }
+
+        return json_encode($this->value, JSON_UNESCAPED_UNICODE) ?: '';
     }
 }

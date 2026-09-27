@@ -313,3 +313,104 @@ test('displayers can be chained together in pipeline', function () {
     expect($html)->toContain('active')
         ->and($html)->toContain('bg-emerald-600');
 });
+
+test('all 7 built-in displayers work with object $row without closure rebinding errors', function () {
+    $row = (object) [
+        'id' => 42,
+        'status' => 1,
+        'url' => 'https://example.com/item/42',
+        'token' => 'token-xyz',
+        'avatar' => 'user-42.png',
+        'created_at' => '2026-09-27 10:00:00',
+        'role' => 'admin',
+        'bio' => 'A long bio description that will be truncated by limit',
+    ];
+
+    // 1. Badge with object row
+    $colBadge = new Column('status');
+    $colBadge->badge('success', [1 => 'Active']);
+    $htmlBadge = $colBadge->renderCell(null, $row);
+    expect($htmlBadge)->toContain('Active')
+        ->and($htmlBadge)->toContain('bg-emerald-600');
+
+    // 2. Link with object row
+    $colLink = new Column('id');
+    $colLink->link('/admin/items/{id}');
+    $htmlLink = $colLink->renderCell(null, $row);
+    expect($htmlLink)->toContain('href="/admin/items/42"')
+        ->and($htmlLink)->toContain('42');
+
+    // 3. Copyable with object row
+    $colCopy = new Column('token');
+    $colCopy->copyable();
+    $htmlCopy = $colCopy->renderCell(null, $row);
+    expect($htmlCopy)->toContain('token-xyz')
+        ->and($htmlCopy)->toContain('x-data=');
+
+    // 4. Image with object row
+    $colImg = new Column('avatar');
+    $colImg->image('https://cdn.example.com', 40, 40);
+    $htmlImg = $colImg->renderCell(null, $row);
+    expect($htmlImg)->toContain('src="https://cdn.example.com/user-42.png"')
+        ->and($htmlImg)->toContain('width="40"');
+
+    // 5. Datetime with object row
+    $colDate = new Column('created_at');
+    $colDate->datetime('Y-m-d');
+    $htmlDate = $colDate->renderCell(null, $row);
+    expect($htmlDate)->toBe('2026-09-27');
+
+    // 6. Using with object row
+    $colUsing = new Column('role');
+    $colUsing->using(['admin' => 'Administrator']);
+    $htmlUsing = $colUsing->renderCell(null, $row);
+    expect($htmlUsing)->toBe('Administrator');
+
+    // 7. Limit with object row
+    $colLimit = new Column('bio');
+    $colLimit->limit(10, '...');
+    $htmlLimit = $colLimit->renderCell(null, $row);
+    expect($htmlLimit)->toBe('A long bio...');
+});
+
+test('displayers safely handle non-scalar and array cell values without warnings or type errors', function () {
+    // Badge with array of tags
+    $colBadgeArray = new Column('tags');
+    $colBadgeArray->badge('info');
+    $badgeOutput = $colBadgeArray->renderCell(['php', 'laravel'], []);
+    expect($badgeOutput)->toContain('php')
+        ->and($badgeOutput)->toContain('laravel')
+        ->and($badgeOutput)->toContain('bg-sky-500');
+
+    // Using with array value
+    $colUsingArray = new Column('metadata');
+    $colUsingArray->using(['foo' => 'bar'], 'Fallback');
+    expect($colUsingArray->renderCell(['foo'], []))->toBe('Fallback');
+
+    // Using with object value
+    $colUsingObj = new Column('obj');
+    $colUsingObj->using(['foo' => 'bar'], 'FallbackObj');
+    expect($colUsingObj->renderCell((object) ['k' => 'v'], []))->toBe('FallbackObj');
+
+    // Copyable with array value
+    $colCopyArray = new Column('config');
+    $colCopyArray->copyable();
+    $copyOutput = $colCopyArray->renderCell(['key' => 'secret'], []);
+    expect($copyOutput)->toContain('secret')
+        ->and($copyOutput)->toContain('x-data=');
+
+    // Limit with array value
+    $colLimitArray = new Column('items');
+    $colLimitArray->limit(10);
+    expect($colLimitArray->renderCell(['a' => 'b'], []))->toBe('{"a":"b"}');
+
+    // Datetime with array value
+    $colDateArray = new Column('invalid_date');
+    $colDateArray->datetime('Y-m-d');
+    expect($colDateArray->renderCell(['2026-09-27'], []))->toBe('');
+
+    // Link with array value
+    $colLinkArray = new Column('links');
+    $colLinkArray->link();
+    expect($colLinkArray->renderCell(['url1'], []))->toContain('url1');
+});
