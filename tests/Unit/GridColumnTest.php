@@ -107,8 +107,8 @@ test('grid column executes custom closures in pipeline with bound row', function
 test('grid column handles complex types in renderCell', function () {
     $column = new Column('meta');
 
-    // Array value
-    expect($column->renderCell(['tag' => 'tech']))->toBe('{"tag":"tech"}');
+    // Array value — renderCell escapes output so JSON double-quotes are entity-encoded
+    expect($column->renderCell(['tag' => 'tech']))->toBe('{&quot;tag&quot;:&quot;tech&quot;}');
 
     // Stringable value
     $stringable = new class implements Stringable
@@ -120,10 +120,10 @@ test('grid column handles complex types in renderCell', function () {
     };
     expect($column->renderCell($stringable))->toBe('stringable-output');
 
-    // Generic object without __toString
+    // Generic object without __toString — JSON is entity-encoded
     $std = new stdClass;
     $std->foo = 'bar';
-    expect($column->renderCell($std))->toBe('{"foo":"bar"}');
+    expect($column->renderCell($std))->toBe('{&quot;foo&quot;:&quot;bar&quot;}');
 });
 
 test('badge displayer supports variants, mappings and empty fallback', function () {
@@ -399,10 +399,10 @@ test('displayers safely handle non-scalar and array cell values without warnings
     expect($copyOutput)->toContain('secret')
         ->and($copyOutput)->toContain('x-data=');
 
-    // Limit with array value
+    // Limit with array value — displayer wraps in HtmlString with htmlspecialchars
     $colLimitArray = new Column('items');
     $colLimitArray->limit(10);
-    expect($colLimitArray->renderCell(['a' => 'b'], []))->toBe('{"a":"b"}');
+    expect($colLimitArray->renderCell(['a' => 'b'], []))->toBe('{&quot;a&quot;:&quot;b&quot;}');
 
     // Datetime with array value
     $colDateArray = new Column('invalid_date');
@@ -413,4 +413,48 @@ test('displayers safely handle non-scalar and array cell values without warnings
     $colLinkArray = new Column('links');
     $colLinkArray->link();
     expect($colLinkArray->renderCell(['url1'], []))->toContain('url1');
+});
+
+test('renderCell escapes XSS in raw column values but displayers still emit safe HTML', function () {
+    // 1. Raw scalar with XSS payload — must be escaped
+    $column = new Column('name');
+    $xss = '<script>alert(\'xss\')</script>';
+    $rendered = $column->renderCell($xss, []);
+    expect($rendered)
+        ->not->toContain('<script>')
+        ->toBe(htmlspecialchars($xss, ENT_QUOTES, 'UTF-8'));
+
+    // 2. XSS in default fallback value — must also be escaped
+    $colDefault = new Column('bio');
+    $colDefault->default('<b>bold</b>');
+    expect($colDefault->renderCell(null, []))
+        ->not->toContain('<b>')
+        ->toBe('&lt;b&gt;bold&lt;/b&gt;');
+
+    // 3. Custom closure returning a plain string — escapes XSS
+    $colCustom = new Column('note');
+    $colCustom->display(fn ($v) => "<em>{$v}</em>");
+    expect($colCustom->renderCell('Hello', []))
+        ->not->toContain('<em>')
+        ->toBe('&lt;em&gt;Hello&lt;/em&gt;');
+
+    // 4. Badge displayer with XSS in value — text is escaped inside badge HTML
+    $colBadge = new Column('label');
+    $colBadge->badge('danger');
+    $badgeHtml = $colBadge->renderCell('<script>alert(1)</script>', []);
+    expect($badgeHtml)
+        ->toContain('bg-red-600')            // badge markup preserved
+        ->not->toContain('<script>')         // XSS neutralised inside badge
+        ->toContain('&lt;script&gt;');       // content escaped
+
+    // 5. Link displayer with XSS in value — href and text are htmlspecialchars-encoded
+    $colLink = new Column('url');
+    $colLink->link();
+    $linkHtml = $colLink->renderCell('javascript:alert(1)', []);
+    expect($linkHtml)
+        ->toContain('<a ')
+        // htmlspecialchars encodes the value into the href attribute safely
+        ->toContain('href="javascript:alert(1)"')
+        // and the link text is also escaped
+        ->toContain(htmlspecialchars('javascript:alert(1)', ENT_QUOTES, 'UTF-8'));
 });
