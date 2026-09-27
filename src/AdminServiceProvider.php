@@ -30,6 +30,8 @@ class AdminServiceProvider extends ServiceProvider
 
         $this->loadTranslationsFrom(__DIR__.'/../lang', 'blatui-admin');
 
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
         if (! $this->app->runningInConsole()) {
             return;
         }
