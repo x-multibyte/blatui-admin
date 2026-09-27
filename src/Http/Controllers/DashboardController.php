@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BlatUI\Admin\Http\Controllers;
 
-use Illuminate\Http\Response;
+use BlatUI\Admin\Layout\Content;
 
 class DashboardController extends AdminController
 {
@@ -14,10 +14,20 @@ class DashboardController extends AdminController
     protected string $title = 'Dashboard';
 
     /**
+     * Page description.
+     */
+    protected string $description = 'Overview';
+
+    /**
      * Show admin dashboard.
      */
-    public function index(): Response
+    public function index(): Content
     {
-        return response()->view('blatui-admin::dashboard');
+        return $this->content()
+            ->breadcrumb(
+                ['text' => 'Admin', 'url' => '/admin'],
+                ['text' => 'Dashboard'],
+            )
+            ->bodyView('blatui-admin::dashboard');
     }
 }
