@@ -29,12 +29,12 @@
 >
     {{-- Filter Card --}}
     @if ($filter && ! $grid->isFilterDisabled())
-        {!! $filter->render() !!}
+        {{ $filter }}
     @endif
 
     {{-- Tools Bar --}}
     @if ($tools)
-        {!! $tools->render() !!}
+        {{ $tools }}
     @endif
 
     {{-- Table Card Wrapper --}}
@@ -109,7 +109,7 @@
 
                             @foreach ($columns as $column)
                                 <td class="px-4 py-3 text-{{ $column->getAlign() }} text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                                    {!! $row->cell($column) !!}
+                                    {{ $row->cell($column) }}
                                 </td>
                             @endforeach
 

@@ -10,6 +10,7 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Traits\Macroable;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -236,7 +237,7 @@ class Content implements Htmlable, Renderable, Responsable
     {
         if (view()->exists($this->view)) {
             $data = array_merge($this->variables, [
-                'content' => $this->renderRows(),
+                'content' => new HtmlString($this->renderRows()),
                 'title' => $this->title,
                 'description' => $this->description,
                 'breadcrumb' => $this->breadcrumb,
