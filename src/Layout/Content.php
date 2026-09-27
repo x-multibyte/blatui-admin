@@ -193,6 +193,20 @@ class Content implements Htmlable, Renderable, Responsable
     }
 
     /**
+     * Render and append a Blade view template to the body.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function bodyView(string $view, array $data = []): static
+    {
+        if (view()->exists($view)) {
+            return $this->body(view($view, $data)->render());
+        }
+
+        return $this;
+    }
+
+    /**
      * Get layout rows.
      *
      * @return array<int, Row>
@@ -222,7 +236,7 @@ class Content implements Htmlable, Renderable, Responsable
     {
         if (view()->exists($this->view)) {
             $data = array_merge($this->variables, [
-                'content' => $this,
+                'content' => $this->renderRows(),
                 'title' => $this->title,
                 'description' => $this->description,
                 'breadcrumb' => $this->breadcrumb,

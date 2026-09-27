@@ -10,6 +10,8 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class Menu implements Htmlable, Renderable
 {
@@ -37,11 +39,22 @@ class Menu implements Htmlable, Renderable
         /** @var class-string<MenuModel> $menuClass */
         $menuClass = config('blatui-admin.database.menu_model', MenuModel::class);
 
-        /** @var Collection<int, MenuModel> $nodes */
-        $nodes = $menuClass::query()
-            ->where('show', 1)
-            ->orderBy('order')
-            ->get();
+        /** @var MenuModel $instance */
+        $instance = new $menuClass;
+
+        try {
+            if (! Schema::hasTable($instance->getTable())) {
+                return [];
+            }
+
+            /** @var Collection<int, MenuModel> $nodes */
+            $nodes = $menuClass::query()
+                ->where('show', 1)
+                ->orderBy('order')
+                ->get();
+        } catch (Throwable) {
+            return [];
+        }
 
         /** @var Administrator|null $user */
         $user = Auth::guard('admin')->user();
