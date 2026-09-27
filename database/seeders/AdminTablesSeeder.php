@@ -25,7 +25,7 @@ class AdminTablesSeeder extends Seeder
             [
                 'password' => Hash::make('admin'),
                 'name' => 'Administrator',
-            ]
+            ],
         );
 
         // 2. Create or update Administrator role
@@ -34,7 +34,7 @@ class AdminTablesSeeder extends Seeder
             ['slug' => 'administrator'],
             [
                 'name' => 'Administrator',
-            ]
+            ],
         );
 
         // Assign role to admin user if not already attached
@@ -96,6 +96,7 @@ class AdminTablesSeeder extends Seeder
 
         foreach ($permissions as $item) {
             $perm = Permission::firstOrCreate(['slug' => $item['slug']], $item);
+
             if (! $role->permissions()->where('slug', $item['slug'])->exists()) {
                 $role->permissions()->attach($perm);
             }
@@ -110,7 +111,7 @@ class AdminTablesSeeder extends Seeder
                 'title' => 'Dashboard',
                 'icon' => 'lucide-layout-dashboard',
                 'show' => 1,
-            ]
+            ],
         );
 
         $adminMenu = Menu::firstOrCreate(
@@ -120,7 +121,7 @@ class AdminTablesSeeder extends Seeder
                 'icon' => 'lucide-settings',
                 'uri' => '',
                 'show' => 1,
-            ]
+            ],
         );
 
         $subMenus = [

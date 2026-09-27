@@ -18,10 +18,9 @@ trait HasPermissions
      */
     public function roles(): BelongsToMany
     {
-        $roleModel = config('blatui-admin.database.roles_model', Role::class);
-        $pivotTable = config('blatui-admin.database.role_users_table', 'admin_role_users');
+        $pivotTable = (string) config('blatui-admin.database.role_users_table', 'admin_role_users');
 
-        return $this->belongsToMany($roleModel, $pivotTable, 'user_id', 'role_id')->withTimestamps();
+        return $this->belongsToMany(Role::class, $pivotTable, 'user_id', 'role_id')->withTimestamps();
     }
 
     /**
@@ -31,10 +30,9 @@ trait HasPermissions
      */
     public function permissions(): BelongsToMany
     {
-        $permissionModel = config('blatui-admin.database.permissions_model', Permission::class);
-        $pivotTable = config('blatui-admin.database.role_permissions_table', 'admin_role_permissions');
+        $pivotTable = (string) config('blatui-admin.database.role_permissions_table', 'admin_role_permissions');
 
-        return $this->belongsToMany($permissionModel, $pivotTable, 'role_id', 'permission_id')->withTimestamps();
+        return $this->belongsToMany(Permission::class, $pivotTable, 'role_id', 'permission_id')->withTimestamps();
     }
 
     /**

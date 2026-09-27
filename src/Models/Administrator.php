@@ -7,6 +7,7 @@ namespace BlatUI\Admin\Models;
 use BlatUI\Admin\Traits\HasPermissions;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -16,8 +17,8 @@ use Illuminate\Support\Facades\Storage;
  * @property string $name
  * @property string|null $avatar
  * @property string|null $remember_token
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class Administrator extends Authenticatable
 {

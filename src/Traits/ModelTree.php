@@ -81,7 +81,6 @@ trait ModelTree
      * Convert model items into a hierarchical tree array.
      *
      * @param  Collection<int, static>|null  $elements
-     * @param  int  $parentId
      * @return array<int, array<string, mixed>>
      */
     public function toTree(?Collection $elements = null, int $parentId = 0): array
@@ -95,6 +94,7 @@ trait ModelTree
                 $children = $this->toTree($elements, (int) $element->getKey());
 
                 $node = $element->toArray();
+
                 if (! empty($children)) {
                     $node['children'] = $children;
                 }

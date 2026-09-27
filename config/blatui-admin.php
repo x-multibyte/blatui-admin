@@ -1,6 +1,11 @@
 <?php
 
 declare(strict_types=1);
+use BlatUI\Admin\Models\Administrator;
+use BlatUI\Admin\Models\Menu;
+use BlatUI\Admin\Models\OperationLog;
+use BlatUI\Admin\Models\Permission;
+use BlatUI\Admin\Models\Role;
 
 return [
     'name' => 'BlatUI Admin',
@@ -13,8 +18,8 @@ return [
     |--------------------------------------------------------------------------
     */
     'route' => [
-        'prefix' => env('ADMIN_ROUTE_PREFIX', 'admin'),
-        'domain' => env('ADMIN_ROUTE_DOMAIN'),
+        'prefix' => 'admin',
+        'domain' => null,
         'middleware' => ['web'],
         'namespace' => 'App\\Admin\\Controllers',
     ],
@@ -35,7 +40,7 @@ return [
         'providers' => [
             'admin' => [
                 'driver' => 'eloquent',
-                'model' => BlatUI\Admin\Models\Administrator::class,
+                'model' => Administrator::class,
             ],
         ],
     ],
@@ -48,15 +53,15 @@ return [
     'database' => [
         'connection' => '',
         'users_table' => 'admin_users',
-        'users_model' => BlatUI\Admin\Models\Administrator::class,
+        'users_model' => Administrator::class,
         'roles_table' => 'admin_roles',
-        'roles_model' => BlatUI\Admin\Models\Role::class,
+        'roles_model' => Role::class,
         'permissions_table' => 'admin_permissions',
-        'permissions_model' => BlatUI\Admin\Models\Permission::class,
+        'permissions_model' => Permission::class,
         'menu_table' => 'admin_menu',
-        'menu_model' => BlatUI\Admin\Models\Menu::class,
+        'menu_model' => Menu::class,
         'operation_log_table' => 'admin_operation_log',
-        'operation_log_model' => BlatUI\Admin\Models\OperationLog::class,
+        'operation_log_model' => OperationLog::class,
         'role_users_table' => 'admin_role_users',
         'role_permissions_table' => 'admin_role_permissions',
         'role_menu_table' => 'admin_role_menu',
