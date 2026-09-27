@@ -12,7 +12,7 @@ use ReflectionFunction;
 use Stringable;
 use Throwable;
 
-class Column
+class Column implements Htmlable, Stringable
 {
     /**
      * Column name or key.
@@ -89,6 +89,22 @@ class Column
         $this->label = $label;
 
         return $this;
+    }
+
+    /**
+     * Get content as a string of HTML.
+     */
+    public function toHtml(): string
+    {
+        return $this->getLabel();
+    }
+
+    /**
+     * Convert column to string representation.
+     */
+    public function __toString(): string
+    {
+        return $this->toHtml();
     }
 
     /**

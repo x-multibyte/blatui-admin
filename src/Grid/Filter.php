@@ -387,9 +387,14 @@ class Filter implements Htmlable, Renderable, Stringable
         }
 
         if (function_exists('view') && view()->exists($this->view)) {
-            $filterProxy = new class($this)
+            $filterProxy = new class($this) implements Htmlable
             {
                 public function __construct(protected Filter $filter) {}
+
+                public function toHtml(): string
+                {
+                    return $this->filter->toHtml();
+                }
 
                 /**
                  * @param  array<int, mixed>  $args

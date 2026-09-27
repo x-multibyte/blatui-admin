@@ -14,11 +14,13 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\HtmlString;
+use Stringable;
 
 /**
  * @implements Arrayable<string, mixed>
  */
-class Row implements Arrayable
+class Row implements Arrayable, Htmlable, Renderable, Stringable
 {
     /**
      * The row's underlying data.
@@ -522,11 +524,35 @@ class Row implements Arrayable
     /**
      * Render a specific Column cell for this row.
      */
-    public function cell(Column $column): string
+    public function cell(Column $column): HtmlString
     {
         $value = data_get($this->data, $column->getName());
 
-        return $column->renderCell($value, $this->data);
+        return new HtmlString($column->renderCell($value, $this->data));
+    }
+
+    /**
+     * Render the row HTML representation.
+     */
+    public function render(): string
+    {
+        return (string) $this->renderActions();
+    }
+
+    /**
+     * Get content as a string of HTML.
+     */
+    public function toHtml(): string
+    {
+        return $this->render();
+    }
+
+    /**
+     * Convert row to string representation.
+     */
+    public function __toString(): string
+    {
+        return $this->toHtml();
     }
 
     /**

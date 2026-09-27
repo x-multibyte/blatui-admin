@@ -12,6 +12,7 @@ use BlatUI\Admin\Grid\Tools\BatchDelete;
 use BlatUI\Admin\Models\Administrator;
 use BlatUI\Admin\Models\Role;
 use Database\Seeders\AdminTablesSeeder;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -428,4 +429,14 @@ test('grid filter integrates seamlessly with Grid Model coordinator', function (
 test('filter renders empty string when no fields are registered', function () {
     $filter = new Filter(new Administrator);
     expect($filter->render())->toBe('');
+});
+
+test('grid filter and tools implement Htmlable contract', function () {
+    $filter = new Filter(new Administrator);
+    $tools = new Tools;
+
+    expect($filter)->toBeInstanceOf(Htmlable::class)
+        ->and($tools)->toBeInstanceOf(Htmlable::class)
+        ->and($filter->toHtml())->toBe($filter->render())
+        ->and($tools->toHtml())->toBe($tools->render());
 });

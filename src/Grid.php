@@ -550,13 +550,18 @@ class Grid implements Htmlable, Renderable, Responsable
             }
         };
 
-        $toolsProxy = new class($this->tools)
+        $toolsProxy = new class($this->tools) implements Htmlable
         {
             public function __construct(protected Tools $tools) {}
 
             public function render(): string
             {
                 return $this->tools->render();
+            }
+
+            public function toHtml(): string
+            {
+                return $this->tools->toHtml();
             }
 
             /**
@@ -573,13 +578,18 @@ class Grid implements Htmlable, Renderable, Responsable
             }
         };
 
-        $filterProxy = new class($this->filter)
+        $filterProxy = new class($this->filter) implements Htmlable
         {
             public function __construct(protected Filter $filter) {}
 
             public function render(): string
             {
                 return $this->filter->render();
+            }
+
+            public function toHtml(): string
+            {
+                return $this->filter->toHtml();
             }
 
             /**
