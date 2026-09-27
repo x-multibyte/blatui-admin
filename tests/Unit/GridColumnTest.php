@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use BlatUI\Admin\Grid\Column;
 use BlatUI\Admin\Grid\Displayers\AbstractDisplayer;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Carbon;
 
 test('grid column supports fluent label, sorting and custom displayers', function () {
@@ -457,4 +458,12 @@ test('renderCell escapes XSS in raw column values but displayers still emit safe
         ->toContain('href="javascript:alert(1)"')
         // and the link text is also escaped
         ->toContain(htmlspecialchars('javascript:alert(1)', ENT_QUOTES, 'UTF-8'));
+});
+
+test('grid column implements Htmlable contract for rendering scope', function () {
+    $column = new Column('title', 'Post Title');
+
+    expect($column)->toBeInstanceOf(Htmlable::class)
+        ->and($column->toHtml())->toBe('Post Title')
+        ->and((string) $column)->toBe('Post Title');
 });

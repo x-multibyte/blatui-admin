@@ -11,6 +11,8 @@ use BlatUI\Admin\Grid\Row;
 use BlatUI\Admin\Grid\RowAction;
 use BlatUI\Admin\Models\Administrator;
 use Database\Seeders\AdminTablesSeeder;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
 
 test('grid row renders cells and actions', function () {
     $this->artisan('migrate')->assertSuccessful();
@@ -60,11 +62,13 @@ test('grid row renders column cell correctly', function () {
     $row = new Row(['id' => 1, 'status' => 'active', 'username' => 'administrator']);
 
     $col1 = new Column('username');
-    expect($row->cell($col1))->toBe('administrator');
+    expect($row->cell($col1))->toBeInstanceOf(HtmlString::class)
+        ->toHtml()->toBe('administrator');
 
     $col2 = new Column('status');
     $col2->badge('success', ['active' => 'Active Status']);
-    expect($row->cell($col2))->toContain('Active Status');
+    expect($row->cell($col2))->toBeInstanceOf(HtmlString::class)
+        ->toHtml()->toContain('Active Status');
 });
 
 test('grid row renders checkbox with key and alpine attributes', function () {
@@ -255,4 +259,12 @@ test('row provides arrayable, property accessor and model helpers', function () 
 
     $row->setData(['id' => 89]);
     expect($row->getKey())->toBe(89);
+});
+
+test('grid row implements Htmlable, Renderable, and Stringable contracts', function () {
+    $row = new Row(['id' => 1, 'username' => 'administrator'], 0);
+
+    expect($row)->toBeInstanceOf(Htmlable::class)
+        ->and($row->toHtml())->toBe($row->render())
+        ->and((string) $row)->toBe($row->toHtml());
 });
