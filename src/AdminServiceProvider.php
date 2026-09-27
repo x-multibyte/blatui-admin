@@ -76,6 +76,7 @@ class AdminServiceProvider extends ServiceProvider
 
         $this->commands([
             AdminCommand::class,
+            \BlatUI\Admin\Console\Commands\InstallCommand::class,
         ]);
     }
 }
