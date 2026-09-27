@@ -72,7 +72,8 @@ class Row implements Htmlable, Renderable
      */
     public function render(): string
     {
-        $html = "<div class=\"{$this->class}\">";
+        $escapedClass = htmlspecialchars($this->class, ENT_QUOTES, 'UTF-8');
+        $html = "<div class=\"{$escapedClass}\">";
 
         foreach ($this->columns as $column) {
             $html .= $column->render();
