@@ -32,7 +32,8 @@
     },
     "autoload": {
         "psr-4": {
-            "BlatUI\\Admin\\": "src/"
+            "BlatUI\\Admin\\": "src/",
+            "Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {
