@@ -96,7 +96,8 @@ class Column implements Htmlable, Renderable
             if ($span === 12 && $breakpoint === 'md') {
                 continue;
             }
-            $classes[] = "{$breakpoint}:col-span-{$span}";
+            $escapedBreakpoint = htmlspecialchars((string) $breakpoint, ENT_QUOTES, 'UTF-8');
+            $classes[] = "{$escapedBreakpoint}:col-span-{$span}";
         }
 
         return implode(' ', array_unique($classes));
