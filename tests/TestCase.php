@@ -15,4 +15,9 @@ abstract class TestCase extends Orchestra
             AdminServiceProvider::class,
         ];
     }
+
+    protected function defineEnvironment($app): void
+    {
+        $app['config']->set('app.key', 'base64:6Cu/KuucjKJqbVPdpKG9UMgFYlDTveAuU5BOmqqExt8=');
+    }
 }

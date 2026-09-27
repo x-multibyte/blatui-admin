@@ -16,7 +16,17 @@ class AdminServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/blatui-admin.php', 'blatui-admin');
 
+        $this->loadAdminAuthConfig();
+
         $this->app->singleton(Admin::class);
+    }
+
+    /**
+     * Merge admin auth config into Laravel's auth config.
+     */
+    protected function loadAdminAuthConfig(): void
+    {
+        config(\Illuminate\Support\Arr::dot(config('blatui-admin.auth', []), 'auth.'));
     }
 
     /**
