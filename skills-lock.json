@@ -67,6 +67,18 @@
       "skillPath": "skills/laravel-devtoolbox-cli/SKILL.md",
       "computedHash": "fb57f5c73232fed3ec642722792856030c50d52c14e582c1b57a2850a62e15e9"
     },
+    "laravel-lint-setup": {
+      "source": "lpeterke/laravel-skills",
+      "sourceType": "github",
+      "skillPath": "skills/laravel-lint-setup/SKILL.md",
+      "computedHash": "ca69f69fdd10ba45d7e5d63f289180fb75bd63070e0000a2706de59f6214122c"
+    },
+    "laravel-task": {
+      "source": "lpeterke/laravel-skills",
+      "sourceType": "github",
+      "skillPath": "skills/laravel-task/SKILL.md",
+      "computedHash": "d832d892a22ca3da15565b4947bf359db65989403595ac327f88bdd8579626d0"
+    },
     "livewire-development": {
       "source": "laravel/boost",
       "sourceType": "github",
