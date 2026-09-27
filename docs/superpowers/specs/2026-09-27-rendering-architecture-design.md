@@ -27,9 +27,10 @@ Dcat Admin 的历史遗留架构在视图渲染中存在严重的安全隐患与
 - **规范**：所有自定义的 UI 块（如 `Grid\Filter`, `Grid\Tools`, `Column\Displayer`）必须实现 `Illuminate\Contracts\Support\Htmlable`（或 `Renderable`）接口。
 - **视图侧落地**：在 Blade 视图中，抛弃 `{!! $component->render() !!}` 的危险写法，统一改为原生的 `{{ $component }}`。由 Laravel 底层引擎在解析时自动识别其 `Htmlable` 契约，实现天然安全的渲染闭环。
 
-### 2.3 基于 IoC 容器的防御性编程 (Defensive Programming via IoC)
-- **定义**：在数据流入 Blade 引擎之前，建立强制的“网关拦截”。
-- **规范**：利用 `AdminServiceProvider` 向服务容器注册 `ViewComposer`（例如 `GridViewComposer`）。作为最终的安全网，Composer 负责在控制器与视图交界的最后关头，对注入到顶级布局的变量（如 `$title`, `$description`）进行强制类型校验与深度净化。
+### 2.3 以 Blade 原生转义作为唯一安全边界 (Blade Escaping as the Sole Security Boundary)
+- **定义**：安全边界由 Blade 编译期的原生转义机制承担，PHP 侧不引入额外的转义层。
+- **规范**：所有动态数据一律通过 Blade 的 `{{ }}` 输出，由 `e()` 完成 HTML 实体编码。PHP 侧仅在**拼接 HTML 属性字符串**的场景下使用 `htmlspecialchars($value, ENT_QUOTES, 'UTF-8')` 进行局部转义，且转义结果必须交由 Blade 原生 `{{ }}` 再次输出，不得以 `{!! !!}` 绕过。
+- **关于 ViewComposer**：本项目**不采用** ViewComposer 作为数据净化层。此类实现的 `sanitize()` 逻辑会将字符串转换为 `HtmlString`，而 Blade 对 `HtmlString` 走 `toHtml()` 且不再转义，导致预转义与原生转义相互抵消，既不提供纵深防御，也无法拦截对象类型变量。该层属于无效复杂度，应予移除。
 
 ## 3. 落地实施边界 (Implementation Scope)
 1. **替换遗留代码**：扫描并重写 `Content.php` 等布局文件中的 `renderFallback()` 及类似硬编码逻辑。
