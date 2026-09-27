@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace BlatUI\Admin\Grid\Displayers;
 
+use Stringable;
+
 class Badge extends AbstractDisplayer
 {
     /**
@@ -35,20 +37,46 @@ class Badge extends AbstractDisplayer
             return '';
         }
 
+        if (is_array($this->value)) {
+            if (empty($this->value)) {
+                return '';
+            }
+
+            $badges = [];
+            foreach ($this->value as $item) {
+                $badges[] = (new self($this->column, $item, $this->row))->display($variant, $map);
+            }
+
+            return implode(' ', array_filter($badges, static fn (string $b): bool => $b !== ''));
+        }
+
         $activeVariant = 'default';
-        $key = is_scalar($this->value) ? (string) $this->value : '';
+        $isScalarKey = is_int($this->value) || is_string($this->value);
+        $key = $isScalarKey ? (string) $this->value : '';
+
+        $text = '';
+
+        if ($isScalarKey && array_key_exists($this->value, $map)) {
+            $text = (string) $map[$this->value];
+        } elseif (is_scalar($this->value)) {
+            $text = (string) $this->value;
+        } elseif ($this->value instanceof Stringable || (is_object($this->value) && method_exists($this->value, '__toString'))) {
+            $text = (string) $this->value;
+        } else {
+            $text = json_encode($this->value, JSON_UNESCAPED_UNICODE) ?: '';
+        }
 
         if (is_array($variant)) {
-            $activeVariant = $variant[$this->value] ?? ($variant[$key] ?? 'default');
-            $text = $map[$this->value] ?? ($map[$key] ?? (string) $this->value);
+            if ($isScalarKey && array_key_exists($this->value, $variant)) {
+                $activeVariant = (string) $variant[$this->value];
+            }
         } else {
             $activeVariant = $variant;
-            $text = $map[$this->value] ?? ($map[$key] ?? (string) $this->value);
 
             // If variant was left default and map value matches a variant name, treat map value as variant
             if ($variant === 'default' && isset(self::$variantClasses[$text]) && ! isset(self::$variantClasses[$key])) {
                 $activeVariant = $text;
-                $text = (string) $this->value;
+                $text = is_scalar($this->value) ? (string) $this->value : '';
             }
         }
 

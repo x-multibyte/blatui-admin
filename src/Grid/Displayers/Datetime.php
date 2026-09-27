@@ -6,6 +6,7 @@ namespace BlatUI\Admin\Grid\Displayers;
 
 use DateTimeInterface;
 use Illuminate\Support\Carbon;
+use Stringable;
 use Throwable;
 
 class Datetime extends AbstractDisplayer
@@ -15,7 +16,7 @@ class Datetime extends AbstractDisplayer
      */
     public function display(string $format = 'Y-m-d H:i:s'): string
     {
-        if ($this->value === null || $this->value === '') {
+        if ($this->value === null || $this->value === '' || (is_array($this->value) && empty($this->value))) {
             return '';
         }
 
@@ -35,6 +36,14 @@ class Datetime extends AbstractDisplayer
             }
         }
 
-        return (string) $this->value;
+        if ($this->value instanceof Stringable || (is_object($this->value) && method_exists($this->value, '__toString'))) {
+            try {
+                return Carbon::parse((string) $this->value)->format($format);
+            } catch (Throwable) {
+                return (string) $this->value;
+            }
+        }
+
+        return '';
     }
 }
