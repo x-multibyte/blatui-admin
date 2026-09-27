@@ -84,7 +84,7 @@
             @endif
 
             @if (isset($content))
-                {!! is_string($content) ? $content : $content->renderRows() !!}
+                {{ $content }}
             @endif
 
             {{ $slot ?? '' }}
