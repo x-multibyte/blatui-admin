@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace BlatUI\Admin\Grid;
 
 use Closure;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use ReflectionFunction;
 use Stringable;
@@ -217,8 +219,8 @@ class Column
     {
         $column = $this;
 
-        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $variant, $map): string {
-            return (new Displayers\Badge($column, $value, $row))->display($variant, $map);
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $variant, $map): HtmlString {
+            return new HtmlString((new Displayers\Badge($column, $value, $row))->display($variant, $map));
         });
     }
 
@@ -229,8 +231,8 @@ class Column
     {
         $column = $this;
 
-        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $href, $target): string {
-            return (new Displayers\Link($column, $value, $row))->display($href, $target);
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $href, $target): HtmlString {
+            return new HtmlString((new Displayers\Link($column, $value, $row))->display($href, $target));
         });
     }
 
@@ -241,8 +243,8 @@ class Column
     {
         $column = $this;
 
-        return $this->display(static function (mixed $value, mixed $row = null) use ($column): string {
-            return (new Displayers\Copyable($column, $value, $row))->display();
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column): HtmlString {
+            return new HtmlString((new Displayers\Copyable($column, $value, $row))->display());
         });
     }
 
@@ -253,8 +255,8 @@ class Column
     {
         $column = $this;
 
-        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $server, $width, $height): string {
-            return (new Displayers\Image($column, $value, $row))->display($server, $width, $height);
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $server, $width, $height): HtmlString {
+            return new HtmlString((new Displayers\Image($column, $value, $row))->display($server, $width, $height));
         });
     }
 
@@ -265,8 +267,10 @@ class Column
     {
         $column = $this;
 
-        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $format): string {
-            return (new Displayers\Datetime($column, $value, $row))->display($format);
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $format): HtmlString {
+            $text = (new Displayers\Datetime($column, $value, $row))->display($format);
+
+            return new HtmlString(htmlspecialchars($text, ENT_QUOTES, 'UTF-8'));
         });
     }
 
@@ -279,8 +283,10 @@ class Column
     {
         $column = $this;
 
-        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $map, $default): string {
-            return (new Displayers\Using($column, $value, $row))->display($map, $default);
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $map, $default): HtmlString {
+            $text = (new Displayers\Using($column, $value, $row))->display($map, $default);
+
+            return new HtmlString(htmlspecialchars($text, ENT_QUOTES, 'UTF-8'));
         });
     }
 
@@ -291,8 +297,10 @@ class Column
     {
         $column = $this;
 
-        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $limit, $end): string {
-            return (new Displayers\Limit($column, $value, $row))->display($limit, $end);
+        return $this->display(static function (mixed $value, mixed $row = null) use ($column, $limit, $end): HtmlString {
+            $text = (new Displayers\Limit($column, $value, $row))->display($limit, $end);
+
+            return new HtmlString(htmlspecialchars($text, ENT_QUOTES, 'UTF-8'));
         });
     }
 
@@ -333,24 +341,29 @@ class Column
             return '';
         }
 
+        // Htmlable/HtmlString instances are pre-escaped by displayers — pass through directly.
+        if ($current instanceof Htmlable) {
+            return $current->toHtml();
+        }
+
         if (is_scalar($current)) {
-            return (string) $current;
+            return htmlspecialchars((string) $current, ENT_QUOTES, 'UTF-8');
         }
 
         if ($current instanceof Stringable) {
-            return (string) $current;
+            return htmlspecialchars((string) $current, ENT_QUOTES, 'UTF-8');
         }
 
         if (is_array($current)) {
-            return json_encode($current, JSON_UNESCAPED_UNICODE) ?: '';
+            return htmlspecialchars(json_encode($current, JSON_UNESCAPED_UNICODE) ?: '', ENT_QUOTES, 'UTF-8');
         }
 
         if (is_object($current)) {
             if (method_exists($current, '__toString')) {
-                return (string) $current;
+                return htmlspecialchars((string) $current, ENT_QUOTES, 'UTF-8');
             }
 
-            return json_encode($current, JSON_UNESCAPED_UNICODE) ?: '';
+            return htmlspecialchars(json_encode($current, JSON_UNESCAPED_UNICODE) ?: '', ENT_QUOTES, 'UTF-8');
         }
 
         return '';
