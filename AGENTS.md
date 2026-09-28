@@ -28,9 +28,15 @@ BlatUI Admin employs a modernized, security-hardened rendering architecture that
   - Unformatted cell values are automatically sanitized using `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')`.
   - Built-in displayers (`badge`, `link`, `copyable`, `image`, etc.) pre-escape dynamic parameters and wrap their generated markup in `HtmlString`.
 
-- **Defensive Gatekeeping via ViewComposers:**
-  - `LayoutComposer` and `GridComposer` (located under `src/View/Composers/`) are registered in `AdminServiceProvider` for `blatui-admin::layouts.*` and `blatui-admin::grid.*`.
-  - ViewComposers inspect variables bound to top-level views, automatically sanitizing untrusted scalar strings to `HtmlString` entities before reaching the Blade engine.
+- **Blade Escaping as the Sole Security Boundary:**
+  - All dynamic data reaches the view through native Blade `{{ }}`, which applies `e()` HTML-entity encoding. No additional sanitization layer runs before the Blade engine.
+  - `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')` is used only when PHP must build an HTML attribute string; the result is still emitted through `{{ }}`, never through `{!! !!}`.
+  - Do not hand-escape a variable that already implements a framework HTML contract — Blade resolves `Htmlable` by calling `toHtml()`.
+
+- **Rejected: ViewComposer Sanitization Layer:**
+  - `LayoutComposer` and `GridComposer` under `src/View/Composers/` were implemented and subsequently removed. Do not reintroduce them.
+  - The layer converted untrusted scalars into `HtmlString`. Because Blade routes `HtmlString` through `toHtml()` and then emits it unescaped, the pre-escaping and the native escaping cancelled each other out: the layer provided no defence in depth, and it could not intercept variables holding objects rather than scalars.
+  - It was ineffective complexity. The single security boundary is Blade's compile-time escaping, as specified in `docs/superpowers/specs/2026-09-27-rendering-architecture-design.md` section 2.3.
 
 
 ## Quick Commands
