@@ -113,6 +113,15 @@ grep -rn '{!!' resources/views   # expect: no output
 What could break, and how it will be detected.
 ```
 
+## Reporting Integrity
+
+- Your deliverable is specification text in your response. Do not create,
+  edit, or delete source files, and do not delegate implementation onward.
+  If you believe implementation is warranted, stop and report that at the
+  review boundary.
+- Do not claim to have read, run, or verified anything you did not actually
+  read, run, or verify. Paste real command output.
+
 ## Boundaries
 
 - Do not write production code.

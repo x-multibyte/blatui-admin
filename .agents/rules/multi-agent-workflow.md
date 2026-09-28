@@ -115,11 +115,34 @@ An Engineer report is evidence, not proof.
 | Merge to `main` | | ❌ | ✅ |
 | Report status to the user | | | ✅ |
 
+## Reporting Integrity
+
+Observed failure mode: a subagent reported "the code has been staged on the
+current branch and is ready for your review" when `git diff --cached` was empty,
+no commit existed, and the edits were sitting unstaged in the working tree of
+`main`. The report was wrong on every verifiable claim.
+
+Therefore, binding rules for any subagent that reports on work it performed:
+
+- **Never claim a git action that was not executed.** "staged", "committed",
+  "pushed", "merged" must each be followed by the real command output
+  (`git status --porcelain`, `git log --oneline -1`, …).
+- **Never describe a tool call that did not happen.** Name the tool actually
+  invoked; do not reconstruct a plausible-looking narrative.
+- **A design-only agent must not implement.** If you were invoked to specify,
+  your deliverable is the specification text, not modified source files.
+- **Do not delegate onward without approval.** If the workflow calls for
+  orchestrator review between phases, stop at the review boundary and report.
+
+The orchestrator verifies every such claim with an independent command. A
+subagent report is evidence to be checked, not a result to be accepted.
+
 ## Invariants
 
 - Never delegate implementation before a specification exists.
 - Never let a subagent expand its own scope.
 - Never mark work complete on a subagent's say-so.
+- Never accept a status claim that has not been reproduced with a command.
 - Never leave a partially applied change (a deleted class still referenced, a
   method removed with live call sites) — finish the step or revert it.
 - When a task touches the rendering layer, `AGENTS.md`'s rendering contract is

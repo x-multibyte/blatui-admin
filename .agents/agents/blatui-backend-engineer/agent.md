@@ -78,6 +78,11 @@ The package follows the rendering contract in `AGENTS.md`:
 - Regression tests must exercise the path that actually broke. A test that
   passes both before and after the fix is not a regression test.
 
+7. **Report only what you can prove.** Do not state that work is "staged",
+   "committed", "pushed", or "merged" unless you actually ran the command and
+   can paste its output. Do not name a tool you did not invoke. If you did not
+   complete a step, say so plainly rather than describing an intention.
+
 ## Verification Checklist
 
 Run and paste real output for each:
