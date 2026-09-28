@@ -10,6 +10,24 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 - Prefer explicit Laravel package code over helper abstractions unless the extension point is real.
 - Keep tests focused on observable package behavior through public APIs, service provider wiring, commands, routes, published resources, and documentation promises.
 
+## Documentation Authority
+
+This file is the authority for how this package is built and what its constraints are. The documents under `docs/superpowers/` and `.agents/teamwork/` record decisions and plans, but they are not binding on their own.
+
+When two sources disagree, resolve it in this order:
+
+1. **`AGENTS.md`** — the constraints every contributor and agent must follow.
+2. **The code** — if this file and the code disagree, the code is what actually ships, and this file is the defect. Fix this file in the same change.
+3. **Specs and plans** — records of a decision and its reasoning. A spec that contradicts this file has been superseded.
+
+Binding rules:
+
+- **An architecture decision change updates this file in the same commit.** Adding, removing, or reversing a layer in `src/` is not complete until this file describes the result. A decision recorded only in a spec leaves the next agent reading a contract that no longer matches the tree.
+- **Record rejections, not just decisions.** When a design is dropped, say so here and give the reason. The reasoning is what prevents the design from being reinvented.
+- **Every spec and plan carries a status header.** `COMPLETE`, `IN PROGRESS`, or `SUPERSEDED`. Superseded documents are retained, not deleted, for the same reason rejections are recorded.
+- **Do not schedule work from a superseded plan.** Check its status header first. A plan written before a reversal will instruct you to rebuild the design that was just removed.
+- **Never let a status claim stand unverified.** "Staged", "committed", "pushed", "merged" — each is a claim to be reproduced with a command, not asserted.
+
 ## Rendering Architecture & Security
 
 BlatUI Admin employs a modernized, security-hardened rendering architecture that completely eliminates legacy Dcat-style PHP string concatenation and raw unescaped Blade output (`{!! !!}`):
