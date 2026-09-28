@@ -1,5 +1,13 @@
 # Rendering Architecture Refactor Implementation Plan
 
+> **Status: IN PROGRESS (updated 2026-09-28).** This is the live work plan. Most of it has shipped: `grep -rn '{!!' resources/views` returns zero matches, the PHP classes are pure DTOs, and the ViewComposer layer described below was built and then removed (see the spec's section 2.3).
+>
+> Still open:
+> 1. Migrate the filter fields (`Field`, `Between`, `In`) from PHP heredocs to dedicated Blade templates, using an anonymous proxy during rendering to prevent recursive view evaluation.
+> 2. CSP middleware, if it is still wanted — the handover plan dropped it, and it is an open idea rather than an agreed task.
+>
+> The characterisation tests guarding step 1 are in place: `tests/Unit/GridFilterFieldRenderTest.php` (126 tests / 651 assertions, all green). The `AdminServiceProvider` step below refers to ViewComposer registration and is **void** — do not implement it.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Refactor the BlatUI Admin rendering engine to eliminate implicit XSS vulnerabilities by decoupling PHP from HTML concatenation, enforcing native Laravel `Htmlable` contracts, and utilizing Service Providers for top-level view interception.

@@ -1,5 +1,16 @@
 # BlatUI Admin - Security Hardening Handover Plan
 
+> **Status: SUPERSEDED (2026-09-28).** Retained as a historical record of the interrupted session. Do not execute this plan.
+>
+> What superseded it:
+> - Task 1 (`HtmlString` contract) and Task 2 (layout/Content escaping) were completed and then superseded in direction — the shipped architecture makes the PHP classes pure DTOs with no `render()` methods at all.
+> - Task 3 (create `BlatUI\Admin\Http\ViewComposers\GridViewComposer`) is **void and must not be implemented**. The ViewComposer sanitization layer was built and then removed; see commit `2585c5d` and spec section 2.3. Blade's `HtmlString` handling made the layer self-cancelling.
+> - Task 4 (CSP middleware) was never implemented. It remains an open idea, not a pending task.
+> - Task 5 (security test suite) was implemented differently: `tests/Unit/GridFilterFieldRenderTest.php` pins the filter markup via DOM fingerprints instead of injecting `<script>` payloads.
+>
+> The current authority for the rendering architecture is `docs/superpowers/specs/2026-09-27-rendering-architecture-design.md` and the rendering contract in `AGENTS.md`.
+> The current pending work is tracked in `docs/superpowers/plans/2026-09-27-rendering-architecture-refactor.md`.
+
 > **For the next Agent/Developer:** The user's previous session ended due to token limits. You are picking up immediately after the completion of **Phase 3 (Grid Engine)**. The grid engine is merged to `main`. 
 > **Your current goal:** Systematically fix the XSS and rendering security debt inherited from the Dcat-admin architecture.
 

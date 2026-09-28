@@ -1,10 +1,22 @@
 # Project: BlatUI Admin Rendering Architecture Refactoring
 
+> **Status: SUPERSEDED (2026-09-28).** This is the planning artifact of the `agy /teamwork-preview` run. It is retained as a record of that run, not as a work queue. Do not schedule work from the milestone table below.
+>
+> Where the actual project stands:
+> - Milestone 1 (native Grid contracts) — **DONE**, and later reversed in direction: the PHP classes are now pure DTOs with no `Htmlable`/`Renderable` interfaces and no `render()` methods.
+> - Milestone 2 (Blade view modernisation) — **DONE**. `grep -rn '{!!' resources/views` returns zero matches.
+> - Milestone 3 (ViewComposer gatekeepers, features 12-15) — **VOID**. The Composer layer was implemented and then deliberately removed; `src/View/Composers/` does not exist. See spec section 2.3 and commit `2585c5d`.
+> - Milestone 4 (AGENTS.md) — **DONE**.
+> - Milestone 5 (verification) — **PARTIAL**: `composer test` is green (PHPStan 0 errors, Pint clean, 126 Pest tests / 651 assertions, 100% coverage). CSP middleware was never built.
+> - Remaining open work: the filter-field migration to Blade templates, tracked in `docs/superpowers/plans/2026-09-27-rendering-architecture-refactor.md`.
+>
+> Current authority: `docs/superpowers/specs/2026-09-27-rendering-architecture-design.md` plus the rendering contract in `AGENTS.md`.
+
 ## Architecture
 - **ViewModel Separation**: PHP classes (`Content`, `Grid`, `Filter`, `Tools`, `Row`, `Column`) serve as ViewModels/DTOs. No raw HTML string concatenation in PHP.
 - **Native Contracts**: All UI components implement `\Illuminate\Contracts\Support\Htmlable`.
 - **Blade Escaping**: Replace raw `{!! !!}` with native Blade escaping `{{ }}` across table, filter, and app views.
-- **Defensive Composers**: `GridComposer` and `LayoutComposer` under `BlatUI\Admin\View\Composers` sanitize scalar view data without double-escaping.
+- **Defensive Composers**: *(VOID — removed 2026-09-28. `GridComposer` and `LayoutComposer` are no longer part of the architecture. Blade's `HtmlString` handling made the layer self-cancelling.)*
 - **Documentation**: Modernize `AGENTS.md` with rendering architecture and security guidelines.
 
 ## Feature Inventory
