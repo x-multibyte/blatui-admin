@@ -1,12 +1,8 @@
 # Rendering Architecture Refactor Implementation Plan
 
-> **Status: IN PROGRESS (updated 2026-09-28).** This is the live work plan. Most of it has shipped: `grep -rn '{!!' resources/views` returns zero matches, the PHP classes are pure DTOs, and the ViewComposer layer described below was built and then removed (see the spec's section 2.3).
+> **Status: COMPLETE (verified 2026-10-04).** The planned deliverables are present in the repository: `grep -rn '{!!' resources/views` returns zero matches, `grep -rn '<<<' src/Grid/Filter/` returns zero matches, all filter fields (`Field`, `Between`, `In`) render via dedicated Blade templates (`resources/views/grid/filter/`) with anti-recursion proxy protection, and all 131 tests pass with 100% type coverage.
 >
-> Still open:
-> 1. Migrate the filter fields (`Field`, `Between`, `In`) from PHP heredocs to dedicated Blade templates, using an anonymous proxy during rendering to prevent recursive view evaluation.
-> 2. CSP middleware, if it is still wanted — the handover plan dropped it, and it is an open idea rather than an agreed task.
->
-> The characterisation tests guarding step 1 are in place: `tests/Unit/GridFilterFieldRenderTest.php` (126 tests / 651 assertions, all green). The `AdminServiceProvider` step below refers to ViewComposer registration and is **void** — do not implement it.
+> The legacy ViewComposer layer described below was built and then removed (see the spec's section 2.3). CSP middleware was dropped in the handover plan and is not active. No further work is pending here.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
