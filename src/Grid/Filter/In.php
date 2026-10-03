@@ -10,11 +10,43 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 class In extends Field
 {
     /**
+     * View template name.
+     */
+    protected string $view = 'blatui-admin::grid.filter.select';
+
+    /**
+     * Fallback view template name when options are empty.
+     */
+    protected string $fallbackView = 'blatui-admin::grid.filter.text';
+
+    /**
      * Selectable options.
      *
      * @var array<string|int, string>
      */
     protected array $options = [];
+
+    /**
+     * Set or get custom fallback view template.
+     */
+    public function fallbackView(?string $view = null): static|string
+    {
+        if ($view === null) {
+            return $this->fallbackView;
+        }
+
+        $this->fallbackView = $view;
+
+        return $this;
+    }
+
+    /**
+     * Get fallback view template name.
+     */
+    public function getFallbackView(): string
+    {
+        return $this->fallbackView;
+    }
 
     /**
      * Set selectable options.
@@ -92,41 +124,35 @@ class In extends Field
     }
 
     /**
+     * Get default variables for the Blade view.
+     *
+     * @return array<string, mixed>
+     */
+    protected function defaultVariables(): array
+    {
+        return [
+            'field' => $this->newProxy(),
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'label' => $this->getLabel(),
+            'options' => $this->options,
+            'selectedValues' => array_map('strval', $this->getValues()),
+        ];
+    }
+
+    /**
      * Render the in filter field.
      */
     public function render(): string
     {
-        if (empty($this->options)) {
-            return parent::render();
+        $view = empty($this->options) ? $this->getFallbackView() : $this->view;
+
+        if (function_exists('view') && view()->exists($view)) {
+            $vars = empty($this->options) ? parent::defaultVariables() : $this->defaultVariables();
+
+            return view($view, $vars)->render();
         }
 
-        $id = htmlspecialchars($this->getId(), ENT_QUOTES, 'UTF-8');
-        $name = htmlspecialchars($this->getName(), ENT_QUOTES, 'UTF-8');
-        $label = htmlspecialchars($this->getLabel(), ENT_QUOTES, 'UTF-8');
-        $selectedValues = array_map('strval', $this->getValues());
-
-        $optionsHtml = '<option value="">All</option>';
-        foreach ($this->options as $key => $optLabel) {
-            $keyStr = (string) $key;
-            $selected = in_array($keyStr, $selectedValues, true) ? ' selected' : '';
-            $optionsHtml .= '<option value="'.htmlspecialchars($keyStr, ENT_QUOTES, 'UTF-8').'"'.$selected.'>'.htmlspecialchars((string) $optLabel, ENT_QUOTES, 'UTF-8').'</option>';
-        }
-
-        return <<<HTML
-<div class="flex flex-col gap-1.5">
-    <label for="{$id}" class="text-xs font-medium text-gray-700 dark:text-gray-300">
-        {$label}
-    </label>
-    <div class="relative">
-        <select
-            id="{$id}"
-            name="{$name}"
-            class="flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-        >
-            {$optionsHtml}
-        </select>
-    </div>
-</div>
-HTML;
+        return '';
     }
 }

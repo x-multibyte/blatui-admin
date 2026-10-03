@@ -10,6 +10,7 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Stringable;
 
 abstract class Field implements Htmlable, Renderable, Stringable
@@ -60,6 +61,11 @@ abstract class Field implements Htmlable, Renderable, Stringable
      * Unique HTML element ID.
      */
     protected ?string $id = null;
+
+    /**
+     * View template name.
+     */
+    protected string $view = 'blatui-admin::grid.filter.text';
 
     /**
      * Create a new filter field instance.
@@ -299,34 +305,86 @@ abstract class Field implements Htmlable, Renderable, Stringable
     }
 
     /**
+     * Set or get custom view template.
+     */
+    public function view(?string $view = null): static|string
+    {
+        if ($view === null) {
+            return $this->view;
+        }
+
+        $this->view = $view;
+
+        return $this;
+    }
+
+    /**
+     * Get view template name.
+     */
+    public function getView(): string
+    {
+        return $this->view;
+    }
+
+    /**
+     * Create a safe proxy wrapper to prevent recursive view evaluation.
+     */
+    protected function newProxy(): object
+    {
+        return new class($this)
+        {
+            public function __construct(protected Field $field) {}
+
+            /**
+             * @param  array<int, mixed>  $args
+             */
+            public function __call(string $method, array $args): mixed
+            {
+                return $this->field->{$method}(...$args);
+            }
+
+            public function __get(string $name): mixed
+            {
+                $getter = 'get'.ucfirst($name);
+
+                if (method_exists($this->field, $getter)) {
+                    return $this->field->{$getter}();
+                }
+
+                throw new InvalidArgumentException("Undefined property or getter for '{$name}' on Field proxy.");
+            }
+        };
+    }
+
+    /**
+     * Get default variables for the Blade view.
+     *
+     * @return array<string, mixed>
+     */
+    protected function defaultVariables(): array
+    {
+        $rawVal = $this->getValue();
+
+        return [
+            'field' => $this->newProxy(),
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'label' => $this->getLabel(),
+            'value' => is_scalar($rawVal) ? (string) $rawVal : '',
+            'placeholder' => $this->getPlaceholder() ?? $this->getLabel(),
+        ];
+    }
+
+    /**
      * Render the field input HTML.
      */
     public function render(): string
     {
-        $id = htmlspecialchars($this->getId(), ENT_QUOTES, 'UTF-8');
-        $name = htmlspecialchars($this->getName(), ENT_QUOTES, 'UTF-8');
-        $label = htmlspecialchars($this->getLabel(), ENT_QUOTES, 'UTF-8');
-        $rawVal = $this->getValue();
-        $value = is_scalar($rawVal) ? htmlspecialchars((string) $rawVal, ENT_QUOTES, 'UTF-8') : '';
-        $placeholder = htmlspecialchars($this->getPlaceholder() ?? $this->getLabel(), ENT_QUOTES, 'UTF-8');
+        if (function_exists('view') && view()->exists($this->view)) {
+            return view($this->view, $this->defaultVariables())->render();
+        }
 
-        return <<<HTML
-<div class="flex flex-col gap-1.5">
-    <label for="{$id}" class="text-xs font-medium text-gray-700 dark:text-gray-300">
-        {$label}
-    </label>
-    <div class="relative">
-        <input
-            id="{$id}"
-            type="text"
-            name="{$name}"
-            value="{$value}"
-            placeholder="{$placeholder}"
-            class="flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
-        />
-    </div>
-</div>
-HTML;
+        return '';
     }
 
     /**
