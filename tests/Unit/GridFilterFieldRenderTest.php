@@ -6,6 +6,9 @@ use BlatUI\Admin\Grid\Filter\Between;
 use BlatUI\Admin\Grid\Filter\Equal;
 use BlatUI\Admin\Grid\Filter\In;
 use BlatUI\Admin\Grid\Filter\Like;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Support\Facades\Blade;
 
 /**
  * Characterisation tests for Grid filter field rendering.
@@ -227,4 +230,59 @@ test('in field renders a comma separated selection', function () {
         ->toContain('<option value="1" selected>Admin</option>')
         ->toContain('<option value="3" selected>Viewer</option>')
         ->toContain('<option value="2">Editor</option>');
+});
+
+test('filter fields use configured default blade views', function () {
+    $equal = new Equal('title', 'Title');
+    $between = new Between('created_at', 'Created At');
+    $in = new In('status', 'Status');
+
+    expect($equal->getView())->toBe('blatui-admin::grid.filter.text')
+        ->and($between->getView())->toBe('blatui-admin::grid.filter.between')
+        ->and($in->getView())->toBe('blatui-admin::grid.filter.select')
+        ->and($in->getFallbackView())->toBe('blatui-admin::grid.filter.text');
+});
+
+test('filter fields allow customizing the blade view and fallback view', function () {
+    $field = new Equal('title', 'Title');
+    $field->view('custom.filter.text');
+    expect($field->getView())->toBe('custom.filter.text');
+
+    $in = new In('status', 'Status');
+    $in->view('custom.filter.select')->fallbackView('custom.filter.fallback');
+    expect($in->getView())->toBe('custom.filter.select')
+        ->and($in->getFallbackView())->toBe('custom.filter.fallback');
+});
+
+test('field proxy inside blade prevents recursive evaluation loop', function () {
+    $field = new Equal('title', 'Title');
+
+    // A blade snippet attempting to cast $field directly to string
+    expect(fn () => Blade::render('{{ $field }}', [
+        'field' => (new ReflectionMethod($field, 'newProxy'))->invoke($field),
+    ]))->toThrow(Exception::class);
+});
+
+test('field implements Htmlable, Renderable, and Stringable returning identical output', function () {
+    $field = new Equal('title', 'Title');
+
+    expect($field)->toBeInstanceOf(Htmlable::class)
+        ->and($field)->toBeInstanceOf(Renderable::class)
+        ->and($field)->toBeInstanceOf(Stringable::class)
+        ->and($field->toHtml())->toBe($field->render())
+        ->and((string) $field)->toBe($field->render());
+});
+
+test('filter fields source code contains zero heredocs', function () {
+    $files = [
+        __DIR__.'/../../src/Grid/Filter/Field.php',
+        __DIR__.'/../../src/Grid/Filter/Between.php',
+        __DIR__.'/../../src/Grid/Filter/In.php',
+    ];
+
+    foreach ($files as $file) {
+        $content = file_get_contents($file);
+        expect($content)->not->toContain('<<<HTML')
+            ->not->toContain('<<<');
+    }
 });
