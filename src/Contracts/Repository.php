@@ -37,6 +37,13 @@ interface Repository
     public function edit(mixed $key): mixed;
 
     /**
+     * Store a new record with given values.
+     *
+     * @param  array<string, mixed>  $values
+     */
+    public function store(array $values): mixed;
+
+    /**
      * Update a record with given values.
      *
      * @param  array<string, mixed>  $values
