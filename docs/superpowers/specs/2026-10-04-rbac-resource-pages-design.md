@@ -1,4 +1,4 @@
-> **Status: DRAFT — awaiting user review**
+> **Status: APPROVED (2026-10-04)**
 > **Authority:** This document defines the implementation specification for RBAC Resource Pages in `x-multibyte/blatui-admin`, strictly adhering to `AGENTS.md`.
 
 # RBAC 资源管理页面 — Implementation Specification
@@ -143,20 +143,22 @@ New directory `src/Http/Controllers/Resources/`.
 
 | | |
 |---|---|
-| Grid columns | `id` (hidden), `name` (avatar displayer), `username`, `roles` (badge, comma-joined), `created_at` (datetime) |
+| Grid columns | `name`, `username`, `roles` (badge, comma-joined), `created_at` (datetime) |
 | Grid filters | `username` like, `name` like, `created_at` between |
 | Row actions | Edit, Delete |
 | Form fields | `username` required, `name` required, `password` nullable, `roles` Multiselect → `role_users` pivot |
 
 `username` validates `unique:admin_users,username,{id}` where `{id}` is the editing key or a placeholder on create. The `unique` rule must read the table name from `config('blatui-admin.database.users_table')`, not a hard-coded string.
 
-Password handling in the `saving` hook: hash with `Hash::make`; when the submitted value is empty on update, remove the key from the payload so the stored hash is untouched.
+Password handling requires one new `Form` method. `setInput()` calls `data_set()`, which *sets* a key rather than removing it, and `prepareDataForSave()` gates on `array_key_exists` — so a blank password on update would write an empty string over the stored hash. Add `public function forgetInput(string $key): static` beside `setInput()`.
+
+The `saving` hook then hashes with `Hash::make`, and calls `forgetInput('password')` when the submitted value is empty so the stored hash is untouched.
 
 #### RolesController
 
 | | |
 |---|---|
-| Grid columns | `id` (hidden), `name`, `slug`, permissions count, `created_at` |
+| Grid columns | `name`, `slug`, permissions count, `created_at` |
 | Form fields | `name` required, `slug` required + `alpha_dash` + `unique:admin_roles,slug,{id}`, `permissions` Multiselect → `role_permissions`, `menus` Multiselect → `role_menu` |
 
 Option labels for the permission and menu trees are built by flattening `parent_id, order`-ordered rows into indented strings (`'— Child'`). Parent/child structure is expressed through label indentation, not a nested field type; rejected: a nested tree field is a new field class with its own validation and value contract for no gain on a 50-column form.
@@ -179,8 +181,9 @@ Option labels for the permission and menu trees are built by flattening `parent_
 
 Menus also write the `role_menu` pivot; `admin_role_menu` already exists in the migration.
 
-### 3.8 Guard rails on deletion
+**Rejected: a hidden `id` grid column.** `Grid\Column` has no `hidden()` method, and row keys already come from the model, so an `id` column would only render dead weight. Adding column visibility to the engine is out of scope for this work.
 
+### 3.8 Guard rails on deletion
 Deletion of the currently authenticated administrator, and of the built-in `administrator` role, is refused with a `403` and a toast message. Deleting either locks the installation out of its own management screens. Rejected: leaving this to application code — the package ships the seeder that creates both records, so it owns protecting them.
 
 ## 4. Data Flow
