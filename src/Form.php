@@ -230,6 +230,36 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
     }
 
     /**
+     * Get all registered relation fields.
+     *
+     * @return array<int, Field\Relation>
+     */
+    protected function relationFields(): array
+    {
+        return array_values(array_filter(
+            $this->fields,
+            static fn (Field $field): bool => $field instanceof Field\Relation,
+        ));
+    }
+
+    /**
+     * Sync every relation field's submitted input onto the pivot table.
+     *
+     * A pivot sync failure is intentionally left uncaught so the whole
+     * request fails rather than silently persisting a partial record.
+     */
+    protected function syncRelations(mixed $record): void
+    {
+        if (! $record instanceof Model) {
+            return;
+        }
+
+        foreach ($this->relationFields() as $field) {
+            $record->{$field->getRelation()}()->sync($this->inputs[$field->getColumn()] ?? []);
+        }
+    }
+
+    /**
      * Register a saving lifecycle hook.
      */
     public function saving(Closure $callback): static
@@ -467,6 +497,8 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
         $data = $this->prepareDataForSave();
         $record = $this->repository->store($data);
 
+        $this->syncRelations($record);
+
         $this->callHooks('created', $this, $record);
         $this->callHooks('saved', $this, $record);
 
@@ -531,6 +563,10 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
         $data = $this->prepareDataForSave();
         $success = $this->repository->update($id, $data);
 
+        if ($success) {
+            $this->syncRelations($this->repository->edit($id));
+        }
+
         $this->callHooks('updated', $this);
         $this->callHooks('saved', $this);
 
@@ -571,7 +607,7 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
         $data = [];
 
         foreach ($this->fields as $field) {
-            if ($field instanceof Field\Display) {
+            if ($field instanceof Field\Display || $field instanceof Field\Relation) {
                 $ignoredColumns[] = $field->getColumn();
 
                 continue;
