@@ -1327,21 +1327,25 @@ git commit -m "docs: record resource pages architecture and translations"
 
 Per `.agents/rules/multi-agent-workflow.md`, merging to `main` is a separate explicit step that re-runs the full gate.
 
-- [ ] **Step 1: Confirm the working tree is clean**
+- [ ] **Step 1: Confirm the working tree is clean** — NOT SATISFIED, left unchecked deliberately
 
 Run: `git status --porcelain`
 Expected: no output.
+Actual (2026-10-04): six local entries, all of them scratch artifacts of manual runs and agent tooling, none of them package content — modified `.agents/settings.json`, untracked `.agents/.cache/`, `.agents/skills/run-blatui-admin/`, `dashboard.png`, `login.png`, `update.py`. No feature file is uncommitted; the branch fast-forwarded to `main` cleanly. These were neither committed nor deleted, since removing or absorbing someone's local files is not this plan's call. The owner should either ignore or remove them.
 
-- [ ] **Step 2: Run the full gate one final time**
+- [x] **Step 2: Run the full gate one final time**
 
 Run: `composer test`
 Expected: PHPStan 0 errors, Pint clean, type coverage 100%, all Pest suites green.
+Actual (2026-10-04, re-run on `main` after the fast-forward): PHPStan passed with 0 errors, Pint passed, type coverage 100.0%, Pest 212 passed with 1067 assertions in 10.9s.
 
-- [ ] **Step 3: Confirm the commit history**
+- [x] **Step 3: Confirm the commit history**
 
 Run: `git log --oneline main..HEAD`
 Expected: nine commits, one per task, on `feature/rbac-resource-pages`.
+Actual (2026-10-04): the branch carried 13 commits ahead of `main`, not nine — the plan's estimate was low because Tasks 3, 4 and the batch-delete guard each needed a follow-up fix commit. All 13 plus the status-header commit were fast-forwarded into `main`, which is now at `833d41f`.
 
-- [ ] **Step 4: Report to the user**
+- [x] **Step 4: Report to the user**
 
 State the branch name, the commit count, and paste the actual `composer test` output. Do not claim the branch is ready to merge without the real output in hand. Merging is the user's call.
+Actual (2026-10-04): reported in session — branch `feature/rbac-resource-pages` merged into `main` by fast-forward with the user's explicit instruction, 14 commits, full gate green as pasted in Step 2.
