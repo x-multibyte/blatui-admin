@@ -49,9 +49,31 @@ test('multiselect marks pre-selected options as checked', function () {
     $field->options(['1' => 'Users', '2' => 'Roles']);
     $field->value(['2']);
 
+    // Scoped to the checkbox element, deliberately. A whole-document
+    // `toContain('checked')` cannot fail: the x-data block contains
+    // `!el.checked` and `el.checked = shouldCheck` on every render, so deleting
+    // the @checked() attribute from the template leaves the assertion green
+    // while every checkbox renders unchecked. Only a match anchored on the
+    // input's own name/value attributes is satisfied by pre-selection.
     expect($field->render())
-        ->toContain('value="2"')
-        ->toContain('checked');
+        ->toMatch('/<input\s+type="checkbox"\s+name="permission_ids\[\]"\s+value="2"\s+checked/');
+});
+
+test('multiselect leaves options outside the value unchecked', function () {
+    $field = new Multiselect('permission_ids', 'Permissions');
+    $field->relation('permissions');
+    $field->options(['1' => 'Users', '2' => 'Roles']);
+    $field->value(['1']);
+
+    $html = $field->render();
+
+    // The negative direction: a `value="2"` that is also `checked` means
+    // over-selection, which would silently write an unassigned permission into
+    // the pivot. The value may only ever be followed by the class attribute,
+    // never by `checked`.
+    expect($html)
+        ->toMatch('/<input\s+type="checkbox"\s+name="permission_ids\[\]"\s+value="1"\s+checked/')
+        ->not->toMatch('/name="permission_ids\[\]"\s+value="2"\s+checked/');
 });
 
 test('multiselect escapes option labels', function () {
@@ -91,11 +113,36 @@ test('every option stays in the DOM and stays submittable when search is off', f
     $plain->options(['1' => 'Users', '2' => 'Roles']);
     $plain->searchable(false);
 
+    $searchableHtml = $searchable->render();
+    $plainHtml = $plain->render();
+
+    /**
+     * Pull out the one checkbox input per option, keyed by its value, so the
+     * two renders can be compared to each other rather than each merely
+     * satisfying its own substring assertions.
+     *
+     * @return array<string, string>
+     */
+    $checkboxInputs = function (string $html): array {
+        preg_match_all('/<input\s+type="checkbox".*?\/>/s', $html, $matches);
+
+        $byValue = [];
+        foreach ($matches[0] as $input) {
+            preg_match('/value="([^"]*)"/', $input, $value);
+            $byValue[$value[1]] = $input;
+        }
+
+        return $byValue;
+    };
+
     // Filtering is x-show, never conditional rendering: both variants must
     // carry the same checkbox list so the form submits identically with JS off.
-    expect($searchable->render())->toContain('x-show=')
-        ->and($plain->render())->not->toContain('x-show=')
-        ->and($plain->render())->toContain('name="role_ids[]"')
-        ->and($plain->render())->toContain('value="1"')
-        ->and($plain->render())->toContain('value="2"');
+    // The equality assertion is the load-bearing one — it is what would break
+    // if a conditional @if around the @foreach were ever introduced.
+    expect($searchableHtml)->toContain('x-show=')
+        ->and($plainHtml)->not->toContain('x-show=')
+        ->and($checkboxInputs($searchableHtml))->toHaveCount(2)
+        ->and($checkboxInputs($plainHtml))->toHaveCount(2)
+        ->and($checkboxInputs($searchableHtml))->toHaveKeys(['1', '2'])
+        ->and($checkboxInputs($searchableHtml))->toBe($checkboxInputs($plainHtml));
 });

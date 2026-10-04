@@ -25,7 +25,11 @@
         }
     }"
 >
-    <label for="{{ $id }}" class="text-sm font-medium text-gray-700 dark:text-gray-300 sm:pt-2">
+    {{-- No `for`: there is no single labelable control to point at — the field is a
+         group of checkboxes, and with zero options there is not even a first one.
+         The option <label> elements wrap their own checkbox, which is what makes
+         each row clickable. --}}
+    <label class="text-sm font-medium text-gray-700 dark:text-gray-300 sm:pt-2">
         {{ $label }}
         @if ($required)
             <span class="text-red-500">*</span>
