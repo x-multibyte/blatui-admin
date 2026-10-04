@@ -266,7 +266,7 @@ test('multiselect keeps an array value instead of coercing it to a string', func
 
     $variables = $field->defaultVariables();
 
-    expect($variables['value'])->toBe([3, 7])
+    expect($variables['value'])->toBe(['3', '7'])
         ->and($variables['value'])->toBeArray();
 });
 
@@ -289,7 +289,7 @@ test('multiselect marks pre-selected options as checked', function () {
     $field = new Multiselect('permission_ids', 'Permissions');
     $field->relation('permissions');
     $field->options(['1' => 'Users', '2' => 'Roles']);
-    $field->value(['2']);
+    $field->value([2]);
 
     expect($field->render())
         ->toContain('value="2"')
@@ -348,7 +348,7 @@ public function defaultVariables(): array
 }
 ```
 
-Keys are normalised to strings because HTML form values and Eloquent pivot ids are both string-typed; this keeps `in_array($key, $selected, true)` comparisons honest.
+Keys are normalised to strings because the template compares them with a strict `in_array((string) $key, $value, true)`. This is required for correctness, not style: Eloquent relation ids come back as **ints**, so `in_array("3", [3, 7], true)` is `false`, every checkbox renders unchecked, and saving silently wipes the user's assignments. `getValue()` still returns the raw value untouched — only the template-bound array is normalised.
 
 - [ ] **Step 4: Create `resources/views/form/field/multiselect.blade.php`**
 
@@ -511,14 +511,17 @@ Insert after the `auth` block, before `database`:
 
 ```php
 'resources' => [
-    'administrators' => \BlatUI\Admin\Http\Controllers\Resources\AdministratorsController::class,
-    'roles' => \BlatUI\Admin\Http\Controllers\Resources\RolesController::class,
-    'permissions' => \BlatUI\Admin\Http\Controllers\Resources\PermissionsController::class,
-    'menus' => \BlatUI\Admin\Http\Controllers\Resources\MenusController::class,
+    'administrators' => '\\BlatUI\\Admin\\Http\\Controllers\\Resources\\AdministratorsController',
+    'roles'         => '\\BlatUI\\Admin\\Http\\Controllers\\Resources\\RolesController',
+    'permissions'   => '\\BlatUI\\Admin\\Http\\Controllers\\Resources\\PermissionsController',
+    'menus'         => '\\BlatUI\\Admin\\Http\\Controllers\\Resources\\MenusController',
 ],
 ```
 
-Use fully-qualified class names so the config file needs no `use` statements beyond the existing model imports.
+Use plain string class names, not `::class`. `config/` is in the PHPStan analysis path and these classes do
+not exist until Tasks 4–7, so `::class` would hold the gate red across four commits. The values are
+byte-identical to what `::class` would produce — `::class` on a missing class resolves at compile time
+without autoloading — so a test asserting against `::class` still compares real strings.
 
 - [ ] **Step 4: Create `src/Http/Controllers/ResourceController.php`**
 
@@ -539,7 +542,9 @@ Action bodies:
   }
   ```
 
-  `create()` and `edit()` follow the same shape with `->row($this->form($editing))`; `edit()` additionally calls `->edit($id)` on the form so the record loads and the fields prefill. Set `->action($this->resource())->redirect($this->resource())` on the form inside `form()` so every form posts back to its own list.
+  `create()` and `edit()` follow the same shape with `->row($this->form($editing))`; `edit()` additionally calls `->edit($id)` on the form so the record loads and the fields prefill.
+
+**Do not chain `->action($url)->redirect($url)`.** `Form::action(?string): static|string` is a getter/setter pair (`src/Form.php:683`) while `Form::redirect(string): static` is setter-only (`src/Form.php:739`), so the chain yields `Cannot call method redirect() on BlatUI\Admin\Form|string` under PHPStan level 7. Use a private helper that sets both on separate statements.
 - `create()` — `$this->form(false)->action($this->resource())->redirect($this->resource())`, wrapped in `$this->content()->row(...)`.
 - `store()` — `return $this->form(false)->store($request);`
 - `edit(int $id)` — `$this->form(true)->action($this->resource())->redirect($this->resource())->edit($id)`, wrapped in `Content`.
@@ -553,24 +558,32 @@ Action bodies:
 
 - [ ] **Step 5: Register the routes in `routes/blatui-admin.php`**
 
-Inside the existing `Route::group(['middleware' => [Authenticate::class]], ...)`, loop the config array:
+Inside the existing `Route::group(['middleware' => [Authenticate::class]], ...)`, loop the config array.
+
+**The config key is not the URL segment.** Two bundled resources differ, because the Seeder's sidebar links
+`auth/users` and `auth/menu` while the controller families are `Administrators` and `Menus`. Map them
+explicitly; any other key serves its own name so a consumer can add a resource without touching this file.
 
 ```php
-$prefix = trim((string) config('blatui-admin.route.prefix', 'admin'), '/');
+$segments = [
+    'administrators' => 'users',
+    'menus' => 'menu',
+];
 
 foreach ((array) config('blatui-admin.resources', []) as $key => $controller) {
-    $fallback = "\\BlatUI\\Admin\\Http\\Controllers\\Resources\\".ucfirst($key).'Controller';
-    $class = class_exists($controller) ? $controller : $fallback;
+    $fallback = '\\BlatUI\\Admin\\Http\\Controllers\\Resources\\'.ucfirst((string) $key).'Controller';
+    $class = is_string($controller) && class_exists($controller) ? $controller : $fallback;
+    $segment = $segments[$key] ?? (string) $key;
 
-    Route::group(['prefix' => 'auth/'.$key], function () use ($class, $key): void {
-        Route::get('/', [$class, 'index'])->name("admin.{$key}.index");
-        Route::get('create', [$class, 'create'])->name("admin.{$key}.create");
-        Route::post('/', [$class, 'store'])->name("admin.{$key}.store");
+    Route::group(['prefix' => 'auth/'.$segment], function () use ($class, $segment): void {
+        Route::get('/', [$class, 'index'])->name("admin.{$segment}.index");
+        Route::get('create', [$class, 'create'])->name("admin.{$segment}.create");
+        Route::post('/', [$class, 'store'])->name("admin.{$segment}.store");
         // Static segment MUST precede {id} or {id} swallows it.
-        Route::delete('batch-delete', [$class, 'batchDestroy'])->name("admin.{$key}.batch-destroy");
-        Route::get('{id}/edit', [$class, 'edit'])->whereNumber('id')->name("admin.{$key}.edit");
-        Route::put('{id}', [$class, 'update'])->whereNumber('id')->name("admin.{$key}.update");
-        Route::delete('{id}', [$class, 'destroy'])->whereNumber('id')->name("admin.{$key}.destroy");
+        Route::delete('batch-delete', [$class, 'batchDestroy'])->name("admin.{$segment}.batch-destroy");
+        Route::get('{id}/edit', [$class, 'edit'])->whereNumber('id')->name("admin.{$segment}.edit");
+        Route::put('{id}', [$class, 'update'])->whereNumber('id')->name("admin.{$segment}.update");
+        Route::delete('{id}', [$class, 'destroy'])->whereNumber('id')->name("admin.{$segment}.destroy");
     });
 }
 ```

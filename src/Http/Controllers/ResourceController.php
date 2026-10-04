@@ -71,7 +71,7 @@ abstract class ResourceController extends AdminController
      * Build the resource form. Subclasses set their own fields and prefill
      * them when editing; the base only pins the action and redirect URLs.
      */
-    protected function form(bool $editing): Form
+    protected function form(bool $editing, ?int $id = null): Form
     {
         throw new LogicException('Subclass must implement form().');
     }
@@ -111,7 +111,7 @@ abstract class ResourceController extends AdminController
     {
         return $this->content()
             ->breadcrumb(['text' => $this->title()])
-            ->row($this->formFor(true)->edit($id));
+            ->row($this->formFor(true, $id)->edit($id));
     }
 
     /**
@@ -119,7 +119,7 @@ abstract class ResourceController extends AdminController
      */
     public function update(Request $request, int $id): JsonResponse|RedirectResponse
     {
-        return $this->formFor(true)->update($id, $request);
+        return $this->formFor(true, $id)->update($id, $request);
     }
 
     /**
@@ -228,9 +228,9 @@ abstract class ResourceController extends AdminController
      * Build the resource form with its action and redirect pinned to the
      * resource URL, so every form posts back to its own listing.
      */
-    private function formFor(bool $editing): Form
+    private function formFor(bool $editing, ?int $id = null): Form
     {
-        $form = $this->form($editing);
+        $form = $this->form($editing, $id);
 
         $form->action($this->resource());
         $form->redirect($this->resource());

@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use BlatUI\Admin\Http\Controllers\Resources\AdministratorsController;
 use BlatUI\Admin\Models\Administrator;
 use BlatUI\Admin\Models\Role;
 use Database\Seeders\AdminTablesSeeder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 beforeEach(function () {
@@ -30,14 +33,18 @@ test('the administrators create page renders', function () {
 
 test('the administrators edit page renders and preselects assigned roles', function () {
     $editor = Role::query()->firstOrCreate(['slug' => 'editor'], ['name' => 'Editor']);
+    $viewer = Role::query()->firstOrCreate(['slug' => 'viewer'], ['name' => 'Viewer']);
     $jane = Administrator::query()->create([
         'username' => 'jane', 'name' => 'Jane', 'password' => Hash::make('secret123'),
     ]);
     $jane->roles()->sync([$editor->id]);
 
-    $this->get("/admin/auth/users/{$jane->id}/edit")
-        ->assertOk()
-        ->assertSee('Jane');
+    $response = $this->get("/admin/auth/users/{$jane->id}/edit");
+    $response->assertOk()->assertSee('Jane');
+
+    expect($response->getContent())
+        ->toMatch('/<input\s+type="checkbox"\s+name="roles\[\]"\s+value="'.$editor->id.'"\s+checked/')
+        ->not->toMatch('/name="roles\[\]"\s+value="'.$viewer->id.'"\s+checked/');
 });
 
 test('a user can be created and assigned roles', function () {
@@ -148,4 +155,78 @@ test('batch destroy refuses when selection includes self', function () {
 
     expect(Administrator::query()->whereKey($other->id)->exists())->toBeTrue()
         ->and(Administrator::query()->whereKey($admin->id)->exists())->toBeTrue();
+});
+
+test('administrators grid eager loads roles preventing N+1 queries', function () {
+    $editor = Role::query()->firstOrCreate(['slug' => 'editor'], ['name' => 'Editor']);
+    for ($i = 1; $i <= 5; $i++) {
+        $user = Administrator::query()->create([
+            'username' => "user{$i}", 'name' => "User {$i}", 'password' => Hash::make('secret123'),
+        ]);
+        $user->roles()->sync([$editor->id]);
+    }
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    $this->get('/admin/auth/users')->assertOk();
+
+    $queries = DB::getQueryLog();
+    $roleQueries = array_filter($queries, fn (array $q) => str_contains($q['query'], 'admin_roles'));
+    expect(count($roleQueries))->toBeLessThanOrEqual(2);
+});
+
+test('administrators grid can be filtered by username and name', function () {
+    Administrator::query()->create(['username' => 'alice', 'name' => 'Alice Wonder', 'password' => Hash::make('x')]);
+    Administrator::query()->create(['username' => 'bob', 'name' => 'Bob Builder', 'password' => Hash::make('x')]);
+
+    $this->get('/admin/auth/users?username=alice')
+        ->assertOk()
+        ->assertSee('Alice Wonder')
+        ->assertDontSee('Bob Builder');
+
+    $this->get('/admin/auth/users?name=Builder')
+        ->assertOk()
+        ->assertSee('Bob Builder')
+        ->assertDontSee('Alice Wonder');
+});
+
+test('controller update and edit work directly without active route parameter', function () {
+    $editor = Role::query()->firstOrCreate(['slug' => 'editor'], ['name' => 'Editor']);
+    $jane = Administrator::query()->create([
+        'username' => 'jane', 'name' => 'Jane', 'password' => Hash::make('secret123'),
+    ]);
+    $jane->roles()->sync([$editor->id]);
+
+    $controller = app(AdministratorsController::class);
+
+    $editContent = $controller->edit($jane->id);
+    expect($editContent->render())
+        ->toMatch('/<input\s+type="checkbox"\s+name="roles\[\]"\s+value="'.$editor->id.'"\s+checked/');
+
+    $request = Request::create("/admin/auth/users/{$jane->id}", 'PUT', [
+        'username' => 'jane',
+        'name' => 'Jane Renamed Directly',
+    ]);
+    $response = $controller->update($request, $jane->id);
+    expect($response->isRedirection())->toBeTrue()
+        ->and(session('errors'))->toBeNull()
+        ->and($jane->fresh()->name)->toBe('Jane Renamed Directly');
+});
+
+test('grid displays name correctly when name is the string zero', function () {
+    Administrator::query()->create([
+        'username' => 'zero_user', 'name' => '0', 'password' => Hash::make('x'),
+    ]);
+
+    $response = $this->get('/admin/auth/users')->assertOk();
+    expect($response->getContent())->toContain('<span>0</span>');
+});
+
+test('validates required fields and minimum password length on create', function () {
+    $this->post('/admin/auth/users', [
+        'username' => '',
+        'name' => '',
+        'password' => '123',
+    ])->assertSessionHasErrors(['username', 'name', 'password']);
 });

@@ -15,9 +15,12 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use RuntimeException;
 use Stringable;
@@ -348,6 +351,25 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
             $this->fill($record);
         }
 
+        if ($record instanceof Model) {
+            foreach ($this->relationFields() as $field) {
+                $relationName = $field->getRelation();
+
+                if ($relationName !== '' && method_exists($record, $relationName)) {
+                    $relation = $record->{$relationName}();
+
+                    if ($relation instanceof BelongsToMany) {
+                        $keyName = $relation->getRelated()->getKeyName();
+                        /** @var Collection<int, mixed> $collection */
+                        $collection = $record->relationLoaded($relationName)
+                            ? $record->getRelation($relationName)
+                            : $relation->get();
+                        $field->value($collection->pluck($keyName)->all());
+                    }
+                }
+            }
+        }
+
         return $this;
     }
 
@@ -428,7 +450,7 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
      */
     public function forgetInput(string $key): static
     {
-        unset($this->inputs[$key]);
+        Arr::forget($this->inputs, $key);
 
         return $this;
     }
