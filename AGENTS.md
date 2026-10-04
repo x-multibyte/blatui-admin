@@ -103,7 +103,20 @@ Four commands are registered in `AdminServiceProvider::registerCommands()`. They
 - Nested tree fields
 - Multiselect description sub-labels
 - Silent pivot-failure tolerance
-- Authorization middleware (explicitly deferred)
+
+## Authorization Architecture & Middleware
+
+`BlatUI\Admin\Http\Middleware\Permission` enforces route-level and path-based RBAC permissions:
+- **Middleware Aliases**: `admin.auth` (`Authenticate::class`) and `admin.permission` (`Permission::class`) registered in `AdminServiceProvider`.
+- **Global Toggle & Whitelist**: `config('blatui-admin.permission.enable')` enables/disables enforcement; `config('blatui-admin.permission.except')` exempts paths (supporting `*` wildcards and `METHOD:path` syntax), automatically normalized against the admin route prefix.
+- **Superuser Bypass**: `isAdministrator()` bypasses all permission checks.
+- **Route Parameters**: Supports explicit route middleware parameters:
+  - `admin.permission:free` — bypass permission check for route.
+  - `admin.permission:allow,{role1},{role2}` — allow only users in specified roles.
+  - `admin.permission:deny,{role1},{role2}` — deny users in specified roles.
+  - `admin.permission:check,{perm1},{perm2}` — allow only users possessing specified permission slugs.
+- **Default RBAC Matching**: Iterates `$user->allPermissions()` and tests `$permission->shouldPassThrough($request)`.
+- **Denial Behavior**: AJAX/JSON requests receive HTTP 403 JSON (`{"status": false, "message": "..."}`); web requests invoke `abort(403, ...)`.
 
 ## Quick Commands
 

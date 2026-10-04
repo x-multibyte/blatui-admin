@@ -47,6 +47,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Permission Settings
+    |--------------------------------------------------------------------------
+    |
+    | Global RBAC permission configuration. When enabled, requests to admin
+    | routes must match an assigned permission rule unless whitelisted.
+    |
+    */
+    'permission' => [
+        'enable' => true,
+        'except' => [
+            '/',
+            'auth/login',
+            'auth/logout',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Resource Controllers
     |--------------------------------------------------------------------------
     |

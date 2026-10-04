@@ -1,5 +1,5 @@
 ---
-name: spec-driven-tdd
+name: sd-tdd
 description: Use when implementing any feature or bugfix, before writing implementation code. Enforces Spec-Driven TDD with hard gates.
 ---
 

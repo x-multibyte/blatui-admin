@@ -9,6 +9,9 @@ use BlatUI\Admin\Console\Commands\InstallCommand;
 use BlatUI\Admin\Console\Commands\ListCommand;
 use BlatUI\Admin\Console\Commands\PublishCommand;
 use BlatUI\Admin\Console\Commands\UninstallCommand;
+use BlatUI\Admin\Http\Middleware\Authenticate;
+use BlatUI\Admin\Http\Middleware\Permission;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 
@@ -39,6 +42,8 @@ class AdminServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->registerRouteMiddleware();
+
         $this->loadRoutesFrom(__DIR__.'/../routes/blatui-admin.php');
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'blatui-admin');
@@ -86,5 +91,17 @@ class AdminServiceProvider extends ServiceProvider
             PublishCommand::class,
             UninstallCommand::class,
         ]);
+    }
+
+    /**
+     * Register route middleware aliases.
+     */
+    protected function registerRouteMiddleware(): void
+    {
+        /** @var Router $router */
+        $router = $this->app->make(Router::class);
+
+        $router->aliasMiddleware('admin.auth', Authenticate::class);
+        $router->aliasMiddleware('admin.permission', Permission::class);
     }
 }
