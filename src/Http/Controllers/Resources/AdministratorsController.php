@@ -141,7 +141,7 @@ class AdministratorsController extends ResourceController
         if ($currentId !== null && $record instanceof Model && (int) $record->getKey() === $currentId) {
             return response()->json([
                 'status' => false,
-                'message' => 'Cannot delete current user.',
+                'message' => (string) __('blatui-admin::admin.cannot_delete_self'),
             ], 403);
         }
 

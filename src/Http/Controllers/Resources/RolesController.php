@@ -88,7 +88,7 @@ class RolesController extends ResourceController
     protected function authorizeDestroy(mixed $record): ?JsonResponse
     {
         if ($record->slug === 'administrator') {
-            abort(403, 'Cannot delete the administrator role.');
+            abort(403, (string) __('blatui-admin::admin.cannot_delete_admin_role'));
         }
 
         return null;

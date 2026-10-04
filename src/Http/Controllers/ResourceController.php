@@ -149,7 +149,7 @@ abstract class ResourceController extends AdminController
 
         return response()->json([
             'status' => true,
-            'message' => 'Deleted successfully',
+            'message' => (string) __('blatui-admin::admin.deleted'),
         ]);
     }
 
@@ -207,7 +207,7 @@ abstract class ResourceController extends AdminController
 
         return response()->json([
             'status' => true,
-            'message' => 'Deleted successfully',
+            'message' => (string) __('blatui-admin::admin.deleted'),
         ]);
     }
 
