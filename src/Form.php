@@ -424,6 +424,16 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
     }
 
     /**
+     * Remove a submission input value.
+     */
+    public function forgetInput(string $key): static
+    {
+        unset($this->inputs[$key]);
+
+        return $this;
+    }
+
+    /**
      * Get validation rules compiled from registered fields.
      *
      * @return array<string, array<int|string, mixed>|string>
