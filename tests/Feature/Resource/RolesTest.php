@@ -84,6 +84,16 @@ test('refuses to delete the administrator role', function () {
     expect(Role::query()->whereKey($role->id)->exists())->toBeTrue();
 });
 
+test('the administrator role delete refusal is localized', function () {
+    $role = Role::query()->where('slug', 'administrator')->firstOrFail();
+
+    app()->setLocale('zh_CN');
+
+    $this->deleteJson("/admin/auth/roles/{$role->id}")
+        ->assertForbidden()
+        ->assertJsonPath('message', '内置管理员角色不能删除。');
+});
+
 test('a role can be deleted', function () {
     $role = Role::query()->create(['name' => 'Editor', 'slug' => 'editor']);
 

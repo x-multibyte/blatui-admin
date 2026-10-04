@@ -20,6 +20,12 @@ it('loads the package translations', function () {
     expect(trans('blatui-admin::messages.placeholder'))->toBe('Admin placeholder translation.');
 });
 
+it('resolves the placeholder translation under zh_CN', function () {
+    app()->setLocale('zh_CN');
+
+    expect(trans('blatui-admin::messages.placeholder'))->toBe('后台占位翻译。');
+});
+
 it('loads the package views', function () {
     expect(view()->exists('blatui-admin::placeholder'))->toBeTrue();
 });

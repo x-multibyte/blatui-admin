@@ -125,7 +125,7 @@ test('batch delete still deletes the records the guard allows', function () {
     $response = $controller->batchDestroy(batchRequest([$first->id, $second->id]));
 
     expect($response->getStatusCode())->toBe(200)
-        ->and($response->getData(true))->toMatchArray(['status' => true, 'message' => 'Deleted successfully'])
+        ->and($response->getData(true))->toMatchArray(['status' => true, 'message' => __('blatui-admin::admin.deleted')])
         ->and($controller->calls)->toBe(['allowed-first', 'allowed-second'])
         ->and(Administrator::query()->whereKey([$first->id, $second->id])->exists())->toBeFalse();
 });

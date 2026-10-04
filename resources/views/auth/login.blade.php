@@ -90,7 +90,7 @@
                             id="remember"
                             class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
                         />
-                        <span class="text-xs text-gray-600 dark:text-gray-400">Remember me</span>
+                        <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('blatui-admin::admin.remember_me') }}</span>
                     </label>
                 </div>
 
