@@ -73,14 +73,29 @@ class Permission extends Model
 
         $paths = array_filter(array_map('trim', explode("\n", str_replace(["\r\n", "\r"], "\n", $this->http_path ?? ''))));
 
+        $prefix = trim((string) config('blatui-admin.route.prefix', 'admin'), '/');
+
         foreach ($paths as $path) {
             if ($path === '*') {
                 return true;
             }
 
+            if (str_contains($path, ':')) {
+                [$pathMethod, $path] = explode(':', $path, 2);
+                $pathMethods = array_filter(array_map('trim', explode(',', strtoupper($pathMethod))));
+
+                if (! empty($pathMethods) && ! in_array($request->method(), $pathMethods, true)) {
+                    continue;
+                }
+            }
+
             $path = trim($path, '/');
 
             if ($request->is($path)) {
+                return true;
+            }
+
+            if ($prefix !== '' && $request->is($prefix.'/'.$path)) {
                 return true;
             }
         }

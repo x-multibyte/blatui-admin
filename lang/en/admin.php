@@ -22,4 +22,5 @@ return [
     'deleted' => 'Deleted successfully',
     'cannot_delete_self' => 'You cannot delete your own account.',
     'cannot_delete_admin_role' => 'The built-in administrator role cannot be deleted.',
+    'deny' => 'Permission denied.',
 ];

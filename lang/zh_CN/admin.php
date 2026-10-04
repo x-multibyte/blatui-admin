@@ -22,4 +22,5 @@ return [
     'deleted' => '删除成功',
     'cannot_delete_self' => '不能删除自己的账号。',
     'cannot_delete_admin_role' => '内置管理员角色不能删除。',
+    'deny' => '无权限访问。',
 ];
