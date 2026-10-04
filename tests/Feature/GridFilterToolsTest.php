@@ -286,7 +286,7 @@ test('grid tools supports batch actions and batch delete', function () {
     $html = $tools->render();
     expect($html)->toContain('Batch Actions')
         ->and($html)->toContain('selectedRows.length > 0')
-        ->and($html)->toContain('/admin/auth/users/batch-delete');
+        ->and($html)->toContain('\\/admin\\/auth\\/users\\/batch-delete');
 
     // Disable batch delete via batch closure
     $tools->batch(function (Tools $batch) {
@@ -336,7 +336,7 @@ test('batch delete action renders Fetch API delete and Sonner toast dispatch', f
 
     $html = $batchDelete->render();
 
-    expect($html)->toContain('/admin/auth/users/batch-delete')
+    expect($html)->toContain('\\/admin\\/auth\\/users\\/batch-delete')
         ->and($html)->toContain('Delete selected rows?')
         ->and($html)->toContain('Batch deleted successfully')
         ->and($html)->toContain('No records selected')
@@ -525,4 +525,38 @@ test('tools toolbar composes buttons in declared order', function () {
     expect($batchPos)->toBeLessThan($filterPos)
         ->and($filterPos)->toBeLessThan($reloadPos)
         ->and($reloadPos)->toBeLessThan($createPos);
+});
+
+test('batch delete escapes a confirmation prompt containing a single quote', function () {
+    $tools = new Tools;
+    $tools->resource('/admin/auth/users');
+
+    $action = new BatchDelete;
+    $action->confirmText("It's a trap'; alert(1); //");
+
+    $tools->batch(function (Tools $batch) use ($action) {
+        $batch->add($action);
+    });
+
+    $html = $tools->renderBatchActions();
+
+    // The apostrophe must reach JS as an escape sequence, not as a literal
+    // quote that would terminate the JS string and start injected code.
+    expect($html)->toContain('It\u0027s a trap')
+        ->and($html)->not->toContain("It's a trap'; alert(1)");
+});
+
+test('batch delete renders empty-selection warning and delete fetch', function () {
+    $tools = new Tools;
+    $tools->resource('/admin/auth/users');
+
+    $html = $tools->renderBatchActions();
+
+    // Js::from() escapes forward slashes (\/) as part of its JSON encoding.
+    // That is valid JavaScript and deliberately left at its safe default, so
+    // the assertion matches the escaped form rather than weakening the encoder.
+    expect($html)->toContain('Please select at least one record')
+        ->and($html)->toContain('\\/admin\\/auth\\/users\\/batch-delete')
+        ->and($html)->toContain("'X-HTTP-Method-Override': 'DELETE'")
+        ->and($html)->toContain('Selected records deleted successfully');
 });
