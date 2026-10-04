@@ -7,19 +7,19 @@ namespace BlatUI\Admin\Console\Commands;
 use BlatUI\Admin\Console\Commands\Concerns\PrintsAdminInfo;
 use Illuminate\Console\Command;
 
-class AdminCommand extends Command
+class ListCommand extends Command
 {
     use PrintsAdminInfo;
 
     /**
      * The command signature.
      */
-    protected $signature = 'admin';
+    protected $signature = 'admin:list';
 
     /**
      * The command description.
      */
-    protected $description = 'BlatUI Admin panel information and utilities.';
+    protected $description = 'List all BlatUI Admin commands.';
 
     /**
      * Execute the console command.

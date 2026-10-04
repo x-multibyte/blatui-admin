@@ -8,6 +8,7 @@ use BlatUI\Admin\Layout\Content;
 use BlatUI\Admin\Layout\Navbar;
 use BlatUI\Admin\Models\Administrator;
 use Closure;
+use Composer\InstalledVersions;
 use Illuminate\Support\Facades\Auth;
 
 class Admin
@@ -39,6 +40,22 @@ class Admin
     public static function id(): ?int
     {
         return static::user()?->id;
+    }
+
+    /**
+     * Get the installed package version.
+     *
+     * Reads the exact version from Composer's runtime registry. Returns 'dev'
+     * when the package is a path-repository or source install without a
+     * tagged release (e.g. during active development before the first tag).
+     */
+    public static function version(): string
+    {
+        if (! InstalledVersions::isInstalled('x-multibyte/blatui-admin')) {
+            return 'dev';
+        }
+
+        return InstalledVersions::getPrettyVersion('x-multibyte/blatui-admin') ?? 'dev';
     }
 
     /**

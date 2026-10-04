@@ -25,3 +25,6 @@ composer.lock
 
 # Local opencode/LSP config
 /opencode.json
+
+# Local per-machine agent settings
+/.agents/settings.local.json

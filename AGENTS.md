@@ -71,6 +71,29 @@ BlatUI Admin employs a modernized, security-hardened rendering architecture that
 
 
 
+## Artisan Commands
+
+Four commands are registered in `AdminServiceProvider::registerCommands()`. They replace the `blatui-admin:placeholder` command that shipped previously; that signature no longer exists.
+
+| Command | Class | Responsibility |
+| :--- | :--- | :--- |
+| `admin` | `src/Console/Commands/AdminCommand.php` | Banner, version, and the discovered command list |
+| `admin:list` | `src/Console/Commands/ListCommand.php` | The same banner output, with no side effects |
+| `admin:publish` | `src/Console/Commands/PublishCommand.php` | Interactive or flag-driven publishing of config, migrations, views, lang, assets |
+| `admin:uninstall` | `src/Console/Commands/UninstallCommand.php` | Roll back migrations and delete every published resource |
+
+- **`PrintsAdminInfo` trait** (`src/Console/Commands/Concerns/PrintsAdminInfo.php`) holds the shared banner. `AdminCommand` and `ListCommand` consume it; this is a real extension point with two consumers, not a helper abstraction.
+- **The command list is discovered at runtime** via `$app->all('admin')` and `ksort()`ed. Never hardcode the list — a command registered by a third party must appear without a change here.
+- **`Admin::version()`** reads `Composer\InstalledVersions` and returns `'dev'` when the package is absent from the registry, so the banner never renders an empty version.
+- **`PublishCommand` delegates to `vendor:publish`**, never to `File::copy()`. The service provider stays the single source of truth for publish paths; a second copy of that mapping is a drift risk.
+- **Console `<fg=...>` tags are Symfony Console's own markup**, not Blade output. The rendering contract below governs `resources/views/`; console coloring is native to the console formatter and is out of its scope.
+
+**Rejected from the spec (do not reinvent):**
+- `--seeders` and `--routes` publish flags. `admin:uninstall` deletes `routes/admin.php`, so offering to publish a file the package removes behind the user's back is an inconsistent contract. Raw `vendor:publish --tag=blatui-admin-routes` remains available.
+- A bespoke `--no-interaction` flag. Laravel Prompts already honours Artisan's standard `--no-interaction`.
+- Deleting `App\Admin\` on uninstall. The package does not own application code.
+- Swallowing the migration rollback failure silently. `UninstallCommand` reports it with `$this->error()` and continues, because the remaining cleanup steps are independent of the rollback.
+
 ## Resource Pages
 
 `ResourceController` supplies the CRUD skeleton. The four bundled controllers live in `src/Http/Controllers/Resources/`. The `config('blatui-admin.resources')` maps a key to a controller class and the route file generates from it. Note that **registry key ≠ URL segment**.

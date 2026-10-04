@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "mcp__codegraph__*"
+      "mcp__codegraph__*",
+      "Bash(composer test)",
+      "Bash(composer test:*)",
+      "Bash(composer analyse)",
+      "Bash(composer lint)",
+      "Bash(composer lint:check)",
+      "Bash(vendor/bin/pest *)",
+      "Bash(vendor/bin/pint *)",
+      "Bash(vendor/bin/phpstan *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(git tag *)",
+      "Bash(gh pr create *)",
+      "Bash(gh release *)",
+      "Bash(composer publish *)",
+      "Read(/.env)",
+      "Read(/.env.*)"
     ]
   },
   "hooks": {
