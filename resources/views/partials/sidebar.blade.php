@@ -24,7 +24,7 @@
     <div class="border-t border-gray-200 p-4 dark:border-gray-800">
         <div class="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
             <span>BlatUI Admin</span>
-            <span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-mono dark:bg-gray-800">v1.0.0</span>
+            <span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-mono dark:bg-gray-800">v0.1.0</span>
         </div>
     </div>
 </aside>

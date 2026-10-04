@@ -1,4 +1,4 @@
-> **Status: APPROVED (2026-10-04)**
+> **Status: COMPLETE (verified 2026-10-04)**
 > **Authority:** This document defines the implementation specification for RBAC Resource Pages in `x-multibyte/blatui-admin`, strictly adhering to `AGENTS.md`.
 
 # RBAC 资源管理页面 — Implementation Specification
