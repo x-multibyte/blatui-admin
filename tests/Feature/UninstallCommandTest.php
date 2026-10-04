@@ -36,6 +36,17 @@ test('it deletes published resources when the uninstall is confirmed', function 
     expect(File::isDirectory(public_path('vendor/blatui-admin')))->toBeFalse();
 });
 
+test('it deletes the published seeder', function () {
+    File::ensureDirectoryExists(database_path('seeders'));
+    File::put(database_path('seeders/AdminTablesSeeder.php'), '<?php ');
+
+    $this->artisan('admin:uninstall', ['--force' => true])
+        ->expectsOutputToContain('Deleted seeder: '.database_path('seeders/AdminTablesSeeder.php'))
+        ->assertSuccessful();
+
+    expect(File::exists(database_path('seeders/AdminTablesSeeder.php')))->toBeFalse();
+});
+
 test('it deletes published migrations after rolling them back', function () {
     File::ensureDirectoryExists(database_path('migrations'));
     File::put(

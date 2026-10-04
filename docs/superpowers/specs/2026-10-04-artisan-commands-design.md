@@ -45,15 +45,15 @@ Reads `Composer\InstalledVersions::getPrettyVersion('x-multibyte/blatui-admin')`
 
 ### 3.3 `PublishCommand`
 
-Signature: `admin:publish {--config} {--migrations} {--views} {--lang} {--assets} {--a|all} {--f|force}`.
+Signature: `admin:publish {--config} {--migrations} {--routes} {--seeders} {--views} {--lang} {--assets} {--a|all} {--f|force}`.
 
 - `--all` maps to the aggregate `blatui-admin` tag.
 - Individual flags map to their matching tags.
-- With no flags, an interactive `multiselect()` prompt offers all five resource tags; an empty selection exits successfully without publishing.
+- With no flags, an interactive `multiselect()` prompt offers all seven resource tags; an empty selection exits successfully without publishing.
 - Unless `--force`, a `confirm()` prompt asks about overwriting existing files.
 - Publishing delegates to `$this->call('vendor:publish', ['--tag' => $tag, '--force' => $force])` — it does not reimplement file copying, so the service provider stays the single source of truth for publish paths.
 
-Deliberately **not** exposed: `blatui-admin-seeders` and `blatui-admin-routes`. Both were left out of the interactive list because the uninstaller deletes `routes/admin.php`, and offering to publish a file the package can remove behind the user's back is an inconsistent contract. Rejected, not deferred — see §6.
+Every tag the service provider registers is reachable through a flag. There is no resource the package can publish only by memorising a tag string.
 
 ### 3.4 `UninstallCommand`
 
@@ -66,6 +66,9 @@ Order of operations:
 3. Delete `config/blatui-admin.php` and `routes/admin.php`.
 4. Delete the `views/vendor/blatui-admin`, `lang/vendor/blatui-admin`, and `public/vendor/blatui-admin` directories.
 5. Delete published `*_create_admin_tables.php` migrations from `database/migrations/`.
+6. Delete the published `database/seeders/AdminTablesSeeder.php`.
+
+Publish and uninstall are symmetric: everything `admin:publish` can write, `admin:uninstall` removes.
 
 Application code under `App\Admin\` is never touched — the package does not own it.
 
@@ -82,8 +85,8 @@ Behavioral tests through the public Artisan surface, per `AGENTS.md`'s "tests fo
 | File | Covers |
 | :--- | :--- |
 | `tests/Feature/ExampleTest.php` | `admin` and `admin:list` are registered and print the banner |
-| `tests/Feature/PublishCommandTest.php` | `--config`, `--all`, interactive prompt, empty selection |
-| `tests/Feature/UninstallCommandTest.php` | Declined confirmation, confirmed deletion of every published artifact, migration rollback + deletion, `--force` bypasses the prompt |
+| `tests/Feature/PublishCommandTest.php` | `--config`, `--routes`, `--seeders`, `--all`, interactive prompt, empty selection |
+| `tests/Feature/UninstallCommandTest.php` | Declined confirmation, confirmed deletion of every published artifact, migration rollback + deletion, seeder deletion, `--force` bypasses the prompt |
 
 Filesystem assertions use `config_path()`, `base_path()`, `resource_path()`, `lang_path()`, `public_path()`, and `database_path()` against the Testbench skeleton, with `File::delete()` cleanup in `beforeEach`/`afterEach`.
 
@@ -96,12 +99,19 @@ Filesystem assertions use `config_path()`, `base_path()`, `resource_path()`, `la
 
 ## 6. Rejected
 
-- **Exposing `--seeders` and `--routes` publish flags.** `routes/admin.php` is deleted by `admin:uninstall`. A publisher that offers a file the uninstaller removes is an inconsistent contract; the raw `vendor:publish --tag=blatui-admin-routes` remains available for anyone who needs it.
 - **A `--no-interaction` flag.** Laravel Prompts already falls back to non-interactive behavior through Artisan's standard `--no-interaction`. A bespoke flag would duplicate it.
 - **Deleting `App\Admin\` application files on uninstall.** The package does not own application code; deleting it would destroy user work.
 - **Rendering the command list by reading a static array.** The list is discovered from `$app->all('admin')`, so a command registered by a third party appears automatically. A hardcoded list would drift.
 
-## 7. Verification
+## 7. Revision — routes and seeders were an omission
+
+The first implementation shipped `--config`, `--migrations`, `--views`, `--lang`, and `--assets` only, and recorded the absence of `--routes` and `--seeders` as a deliberate rejection on the grounds that `admin:uninstall` deletes `routes/admin.php`, so offering to publish it seemed inconsistent.
+
+That reasoning was wrong. The asymmetry ran the wrong way: the service provider registers all seven tags, so `vendor:publish --tag=blatui-admin-routes` always worked — the omission did not protect the user from anything, it only forced them to memorise a tag string while every other resource had a flag. It was a gap in the flag list, not a design decision.
+
+Both flags are now exposed, the interactive list offers all seven tags, and `admin:uninstall` additionally deletes the published `database/seeders/AdminTablesSeeder.php` so publish and uninstall are symmetric.
+
+## 8. Verification
 
 ```
 composer test    # phpstan 0 errors, pint clean, pest green, 100% type coverage

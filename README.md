@@ -88,18 +88,13 @@ php artisan admin:publish
 | :--- | :--- |
 | `--config` | `blatui-admin-config` |
 | `--migrations` | `blatui-admin-migrations` |
+| `--routes` | `blatui-admin-routes` |
+| `--seeders` | `blatui-admin-seeders` |
 | `--views` | `blatui-admin-views` |
 | `--lang` | `blatui-admin-lang` |
 | `--assets` | `blatui-admin-assets` |
 | `--all` | `blatui-admin` (everything above) |
 | `--force` | Overwrite existing files without asking |
-
-Routes and seeders are not offered here; publish them directly if you need them:
-
-```bash
-php artisan vendor:publish --tag="blatui-admin-routes"
-php artisan vendor:publish --tag="blatui-admin-seeders"
-```
 
 ### Uninstalling
 
@@ -107,7 +102,7 @@ php artisan vendor:publish --tag="blatui-admin-seeders"
 php artisan admin:uninstall
 ```
 
-This rolls back the package's migrations and deletes every published resource — the config file, `routes/admin.php`, and the views, lang, and asset directories. It asks for confirmation first; `--force` skips the prompt.
+This rolls back the package's migrations and deletes every published resource — the config file, `routes/admin.php`, the seeder, and the views, lang, and asset directories. It asks for confirmation first; `--force` skips the prompt.
 
 Files under `App\Admin\` are your own application code and are never touched.
 

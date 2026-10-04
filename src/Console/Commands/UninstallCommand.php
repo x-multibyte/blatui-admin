@@ -99,6 +99,14 @@ class UninstallCommand extends Command
             $this->line("Deleted migration: {$migrationFile}");
         }
 
+        // 4. Clean published seeders
+        $seeder = database_path('seeders/AdminTablesSeeder.php');
+
+        if (File::exists($seeder)) {
+            File::delete($seeder);
+            $this->line("Deleted seeder: {$seeder}");
+        }
+
         $this->info('BlatUI Admin uninstalled successfully.');
 
         return self::SUCCESS;

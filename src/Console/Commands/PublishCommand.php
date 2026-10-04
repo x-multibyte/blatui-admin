@@ -19,6 +19,8 @@ class PublishCommand extends Command
     protected $signature = 'admin:publish
                             {--config : Publish config file}
                             {--migrations : Publish migration files}
+                            {--routes : Publish the admin routes file}
+                            {--seeders : Publish the database seeders}
                             {--views : Publish views}
                             {--lang : Publish language files}
                             {--assets : Publish assets}
@@ -30,7 +32,7 @@ class PublishCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Publish BlatUI Admin registered resources (config, lang, views, assets, migrations)';
+    protected $description = 'Publish BlatUI Admin registered resources (config, routes, seeders, migrations, views, lang, assets)';
 
     /**
      * Execute the console command.
@@ -47,6 +49,8 @@ class PublishCommand extends Command
             $optionsMap = [
                 'config' => 'blatui-admin-config',
                 'migrations' => 'blatui-admin-migrations',
+                'routes' => 'blatui-admin-routes',
+                'seeders' => 'blatui-admin-seeders',
                 'views' => 'blatui-admin-views',
                 'lang' => 'blatui-admin-lang',
                 'assets' => 'blatui-admin-assets',
@@ -65,6 +69,8 @@ class PublishCommand extends Command
                     options: [
                         'blatui-admin-config' => 'Config',
                         'blatui-admin-migrations' => 'Migrations',
+                        'blatui-admin-routes' => 'Routes',
+                        'blatui-admin-seeders' => 'Seeders',
                         'blatui-admin-views' => 'Views',
                         'blatui-admin-lang' => 'Lang',
                         'blatui-admin-assets' => 'Assets',
