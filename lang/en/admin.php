@@ -15,4 +15,11 @@ return [
     'permissions' => 'Permissions',
     'menu' => 'Menu',
     'operation_log' => 'Operation Log',
+    'users' => 'Users',
+    'create' => 'Create',
+    'edit' => 'Edit',
+    'delete' => 'Delete',
+    'deleted' => 'Deleted successfully',
+    'cannot_delete_self' => 'You cannot delete your own account.',
+    'cannot_delete_admin_role' => 'The built-in administrator role cannot be deleted.',
 ];
