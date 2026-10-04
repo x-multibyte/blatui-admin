@@ -6,6 +6,9 @@ namespace BlatUI\Admin;
 
 use BlatUI\Admin\Console\Commands\AdminCommand;
 use BlatUI\Admin\Console\Commands\InstallCommand;
+use BlatUI\Admin\Console\Commands\ListCommand;
+use BlatUI\Admin\Console\Commands\PublishCommand;
+use BlatUI\Admin\Console\Commands\UninstallCommand;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 
@@ -79,6 +82,9 @@ class AdminServiceProvider extends ServiceProvider
         $this->commands([
             AdminCommand::class,
             InstallCommand::class,
+            ListCommand::class,
+            PublishCommand::class,
+            UninstallCommand::class,
         ]);
     }
 }

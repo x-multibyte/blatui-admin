@@ -31,7 +31,13 @@ it('loads the package views', function () {
 });
 
 it('registers the artisan command', function () {
-    $this->artisan('blatui-admin:placeholder')
-        ->expectsOutputToContain('Admin placeholder command executed.')
+    $this->artisan('admin')
+        ->expectsOutputToContain('BlatUI Admin')
+        ->assertSuccessful();
+});
+
+it('registers the admin:list command', function () {
+    $this->artisan('admin:list')
+        ->expectsOutputToContain('BlatUI Admin')
         ->assertSuccessful();
 });
