@@ -52,6 +52,18 @@ BlatUI Admin employs a modernized, security-hardened rendering architecture that
   - `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')` is used only when PHP must build an HTML attribute string; the result is still emitted through `{{ }}`, never through `{!! !!}`.
   - Do not hand-escape a variable that already implements a framework HTML contract — Blade resolves `Htmlable` by calling `toHtml()`.
 
+- **JavaScript Context Requires `Js::from`, Not `htmlspecialchars`:**
+  - A value interpolated into a JavaScript string literal inside an Alpine expression must be encoded with `Illuminate\Support\Js::from()`, never with `htmlspecialchars()`. `Js::from()` JSON-encodes and wraps in quotes, so an apostrophe becomes `\u0027` instead of the inert `&#039;` entity.
+  - `htmlspecialchars()` is wrong here because its entities are HTML, not JavaScript. Once the browser parses the attribute as JavaScript, `&#039;` is literal text: the user sees it mangled, and a quote can terminate the string early and start injected code.
+  - Split variables by destination. JS string literals (`fetch` URLs, CSRF tokens, toast messages, `confirm()` prompts) take `Js::from()`. Plain HTML text (button titles, confirmation copy) takes raw values and relies on Blade's `{{ }}`.
+  - `Js::from()` escapes forward slashes as `\/` at its safe default. That is valid JavaScript; assert the escaped form in tests rather than weakening the encoder with `JSON_UNESCAPED_SLASHES`.
+
+- **Grid Tools and Actions Render Through Blade:**
+  - `src/Grid/Tools.php` and `src/Grid/{Tools/BatchDelete,Actions/Delete}.php` contain no heredocs. Each render method returns `trim((string) view('blatui-admin::grid.…'))`.
+  - `trim()` is required: Blade appends a trailing newline that a PHP heredoc does not.
+  - `Tools::render()` wraps each slot in `HtmlString` — the child render methods and `prepend()`/`append()` fragments are already-rendered HTML by contract. Blade's `{{ }}` then calls `toHtml()`, which is why the toolbar view needs no raw output.
+  - `Tools::renderBatchActions()` passes `BatchAction` objects, not their rendered strings. `BatchAction` implements `Htmlable`, so `{{ $action }}` routes to `toHtml()` without double-escaping.
+
 - **Rejected: ViewComposer Sanitization Layer:**
   - `LayoutComposer` and `GridComposer` under `src/View/Composers/` were implemented and subsequently removed. Do not reintroduce them.
   - The layer converted untrusted scalars into `HtmlString`. Because Blade routes `HtmlString` through `toHtml()` and then emits it unescaped, the pre-escaping and the native escaping cancelled each other out: the layer provided no defence in depth, and it could not intercept variables holding objects rather than scalars.
