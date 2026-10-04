@@ -39,9 +39,11 @@ class AdministratorsController extends ResourceController
     {
         return Grid::make(Administrator::class, function (Grid $grid): void {
             $grid->resource($this->resource());
+            $grid->model()->with(['roles']);
 
             $grid->column('name', 'Name')->display(function (mixed $value, mixed $row = null): HtmlString {
-                $name = htmlspecialchars((string) ($value ?: ($row instanceof Administrator ? $row->username : '')), ENT_QUOTES, 'UTF-8');
+                $nameStr = $value !== null && (string) $value !== '' ? (string) $value : ($row instanceof Administrator ? $row->username : '');
+                $name = htmlspecialchars($nameStr, ENT_QUOTES, 'UTF-8');
 
                 if ($row instanceof Administrator) {
                     $avatar = htmlspecialchars($row->getAvatarUrl(), ENT_QUOTES, 'UTF-8');
@@ -78,20 +80,20 @@ class AdministratorsController extends ResourceController
         });
     }
 
-    protected function form(bool $editing): Form
+    protected function form(bool $editing, ?int $id = null): Form
     {
-        return Form::make(Administrator::class, function (Form $form) use ($editing): void {
+        return Form::make(Administrator::class, function (Form $form) use ($editing, $id): void {
             $form->action($this->resource());
             $form->redirect($this->resource());
 
             $routeId = request()->route('id');
-            $id = $form->getKey() ?? (is_numeric($routeId) ? (int) $routeId : null);
+            $recordId = $id ?? $form->getKey() ?? (is_numeric($routeId) ? (int) $routeId : null);
 
             $table = (string) config('blatui-admin.database.users_table', 'admin_users');
             $uniqueRule = 'unique:'.$table.',username';
 
-            if ($editing && $id !== null) {
-                $uniqueRule .= ','.$id;
+            if ($editing && $recordId !== null) {
+                $uniqueRule .= ','.$recordId;
             }
 
             $form->text('username', 'Username')
@@ -108,8 +110,8 @@ class AdministratorsController extends ResourceController
                 ->relation('roles')
                 ->options(Role::query()->orderBy('name')->pluck('name', 'id')->all());
 
-            if ($editing && $id !== null) {
-                $record = $form->repository()->edit($id);
+            if ($editing && $recordId !== null) {
+                $record = $form->repository()->edit($recordId);
 
                 if ($record instanceof Administrator) {
                     $rolesField->value($record->roles->pluck('id')->all());
@@ -134,7 +136,9 @@ class AdministratorsController extends ResourceController
 
     protected function authorizeDestroy(mixed $record): ?JsonResponse
     {
-        if ($record instanceof Model && $record->getKey() === Admin::id()) {
+        $currentId = Admin::id();
+
+        if ($currentId !== null && $record instanceof Model && (int) $record->getKey() === $currentId) {
             return response()->json([
                 'status' => false,
                 'message' => 'Cannot delete current user.',

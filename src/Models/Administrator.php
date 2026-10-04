@@ -64,6 +64,8 @@ class Administrator extends Authenticatable
             return Storage::disk(config('blatui-admin.upload.disk', 'public'))->url($this->avatar);
         }
 
-        return 'https://ui-avatars.com/api/?name='.urlencode($this->name ?: $this->username).'&color=7F9CF5&background=EBF4FF';
+        $displayName = $this->name !== '' ? $this->name : $this->username;
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($displayName).'&color=7F9CF5&background=EBF4FF';
     }
 }

@@ -207,3 +207,20 @@ test('a repository that returns no eloquent model is left alone without relation
 
     expect(Role::query()->where('name', 'Author')->exists())->toBeFalse();
 });
+
+test('edit automatically pre-populates relation field values', function () {
+    $role = Role::query()->create(['name' => 'Editor', 'slug' => 'editor']);
+    $permissionA = Permission::query()->create(['name' => 'A', 'slug' => 'a', 'parent_id' => 0, 'order' => 1]);
+    $permissionB = Permission::query()->create(['name' => 'B', 'slug' => 'b', 'parent_id' => 0, 'order' => 2]);
+    $role->permissions()->attach([$permissionA->id, $permissionB->id]);
+
+    $field = pivotField('permission_ids', 'permissions');
+    $form = Form::make(Role::class, function (Form $form) use ($field) {
+        $form->text('name');
+        $form->pushField($field);
+    });
+
+    $form->edit($role->id);
+
+    expect($field->getValue())->toBe([$permissionA->id, $permissionB->id]);
+});

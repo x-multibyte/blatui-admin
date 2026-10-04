@@ -146,3 +146,15 @@ test('form can forget an input value and exclude it from prepared payload', func
     $prepared = (new ReflectionMethod($form, 'prepareDataForSave'))->invoke($form);
     expect($prepared)->not->toHaveKey('password');
 });
+
+test('form can forget dot-notated input values', function () {
+    $form = Form::make(new Administrator, function (Form $form) {
+        $form->text('username');
+    });
+
+    $form->setInput('meta.info', 'value');
+    expect($form->input('meta.info'))->toBe('value');
+
+    $form->forgetInput('meta.info');
+    expect($form->input('meta.info'))->toBeNull();
+});
