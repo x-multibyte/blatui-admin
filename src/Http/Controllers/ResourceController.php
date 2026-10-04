@@ -171,7 +171,39 @@ abstract class ResourceController extends AdminController
             ], 422);
         }
 
-        $this->repositoryFor()->destroy($validator->validated()['ids']);
+        $repository = $this->repositoryFor();
+        $ids = $validator->validated()['ids'];
+
+        // Look every record up before deleting any of them. The same 404-before-
+        // authorization discipline destroy() uses applies here: a missing record
+        // must not leak whether the caller would have been allowed to delete it,
+        // so the whole request is refused before authorizeDestroy() ever sees it.
+        $records = [];
+
+        foreach ($ids as $id) {
+            $record = $repository->edit($id);
+
+            if (! $record instanceof Model) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Record not found.',
+                ], 404);
+            }
+
+            $records[] = $record;
+        }
+
+        // All-or-nothing: one refusal aborts the whole batch rather than deleting
+        // the permitted subset and leaving the admin to guess which rows survived.
+        foreach ($records as $record) {
+            $refused = $this->authorizeDestroy($record);
+
+            if ($refused instanceof JsonResponse) {
+                return $refused;
+            }
+        }
+
+        $repository->destroy($ids);
 
         return response()->json([
             'status' => true,
@@ -184,6 +216,8 @@ abstract class ResourceController extends AdminController
      *
      * Returning a response refuses the delete; returning null allows it. The
      * base class has no opinion, so subclasses opt in to their own guards.
+     * Applies to destroy() and batchDestroy() alike, so a guard added here can
+     * never be sidestepped by selecting the row's checkbox instead of its button.
      */
     protected function authorizeDestroy(mixed $record): ?JsonResponse
     {
