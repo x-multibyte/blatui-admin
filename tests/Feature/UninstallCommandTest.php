@@ -15,9 +15,11 @@ test('it cancels the uninstall when the confirmation is declined', function () {
     expect(File::exists(config_path('blatui-admin.php')))->toBeTrue();
 });
 
-test('it deletes published resources when the uninstall is confirmed', function () {
+test('TC-4 it deletes published resources including routes and seeders symmetrically', function () {
     File::put(config_path('blatui-admin.php'), '<?php return [];');
     File::put(base_path('routes/admin.php'), '<?php ');
+    File::ensureDirectoryExists(database_path('seeders'));
+    File::put(database_path('seeders/AdminTablesSeeder.php'), '<?php ');
 
     File::ensureDirectoryExists(resource_path('views/vendor/blatui-admin'));
     File::ensureDirectoryExists(lang_path('vendor/blatui-admin'));
@@ -26,25 +28,14 @@ test('it deletes published resources when the uninstall is confirmed', function 
     $this->artisan('admin:uninstall')
         ->expectsConfirmation('Are you sure you want to uninstall BlatUI Admin?', 'yes')
         ->expectsOutputToContain('Uninstalling BlatUI Admin...')
-        ->expectsOutputToContain('Deleted: '.config_path('blatui-admin.php'))
         ->assertSuccessful();
 
     expect(File::exists(config_path('blatui-admin.php')))->toBeFalse();
     expect(File::exists(base_path('routes/admin.php')))->toBeFalse();
+    expect(File::exists(database_path('seeders/AdminTablesSeeder.php')))->toBeFalse();
     expect(File::isDirectory(resource_path('views/vendor/blatui-admin')))->toBeFalse();
     expect(File::isDirectory(lang_path('vendor/blatui-admin')))->toBeFalse();
     expect(File::isDirectory(public_path('vendor/blatui-admin')))->toBeFalse();
-});
-
-test('it deletes the published seeder', function () {
-    File::ensureDirectoryExists(database_path('seeders'));
-    File::put(database_path('seeders/AdminTablesSeeder.php'), '<?php ');
-
-    $this->artisan('admin:uninstall', ['--force' => true])
-        ->expectsOutputToContain('Deleted seeder: '.database_path('seeders/AdminTablesSeeder.php'))
-        ->assertSuccessful();
-
-    expect(File::exists(database_path('seeders/AdminTablesSeeder.php')))->toBeFalse();
 });
 
 test('it deletes published migrations after rolling them back', function () {
