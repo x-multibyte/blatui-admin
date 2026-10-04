@@ -1,5 +1,7 @@
 # RBAC Resource Pages Implementation Plan
 
+> **Status: COMPLETE (verified 2026-10-04).** All eight implementation tasks landed on `feature/rbac-resource-pages` as thirteen commits. The gate output at verification time: PHPStan level 7 with 0 errors, Pint clean, type coverage 100.0%, and 212 Pest tests passing with 1067 assertions. `grep -rn '{!!' resources/views` returns zero matches. All five Review Focus cases are pinned by tests: empty-input pivot clearing (`tests/Feature/Form/RelationPivotTest.php`), self-delete and `administrator`-role delete guards (`tests/Feature/Resource/AdministratorsTest.php`, `tests/Feature/Resource/RolesTest.php`), `batch-delete` route precedence and guest redirects (`tests/Feature/ResourceRoutesTest.php`), and self-aware `unique` validation on edit (`tests/Feature/Resource/AdministratorsTest.php`). Retained for reference; no further work is pending here.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give the four RBAC entities — Administrators, Roles, Permissions, Menus — working list/create/edit/delete/batch-delete pages, and add the two Form engine capabilities those forms require.
@@ -50,7 +52,7 @@ The engine cannot express "this field writes to a pivot table, not the model tab
   - `protected function syncRelations(mixed $record): void` on `Form`.
   - `Form::prepareDataForSave()` keeps its `array<string, mixed>` return type but omits every `Relation` column.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/Feature/Form/RelationPivotTest.php`. Define a local `Relation` subclass inline so the test does not depend on Task 2's `Multiselect`:
 
@@ -168,16 +170,16 @@ test('empty input clears the pivot', function () {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `vendor/bin/pest tests/Feature/Form/RelationPivotTest.php`
 Expected: FAIL — `Class "BlatUI\Admin\Form\Field\Relation" not found`.
 
-- [ ] **Step 3: Create `src/Form/Field/Relation.php`**
+- [x] **Step 3: Create `src/Form/Field/Relation.php`**
 
 `abstract class Relation extends Field`, `declare(strict_types=1)`, namespace `BlatUI\Admin\Form\Field`. Holds `protected string $relation = ''` plus the `relation()` / `getRelation()` pair, matching the getter/setter/fluent triple shape used throughout `src/Form/Field.php` (see `Field::label()` at line 109 for the house style). Both methods get docblocks.
 
-- [ ] **Step 4: Add relation handling to `src/Form.php`**
+- [x] **Step 4: Add relation handling to `src/Form.php`**
 
 Add `relationFields(): array<int, Relation>` returning `$this->fields` filtered by `instanceof Relation` — same collection-flavour as `fields()` at line 227.
 
@@ -212,17 +214,17 @@ placed after `$success = $this->repository->update($id, $data);` and before the 
 
 `sync()` failure is deliberately uncaught — the whole request fails. Do not wrap it.
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `vendor/bin/pest tests/Feature/Form/RelationPivotTest.php`
 Expected: PASS, 4 tests.
 
-- [ ] **Step 6: Run the full gate**
+- [x] **Step 6: Run the full gate**
 
 Run: `composer test`
 Expected: PHPStan 0 errors, Pint clean, type coverage 100%, all Pest suites green.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/Form.php src/Form/Field/Relation.php tests/Feature/Form/RelationPivotTest.php
@@ -248,7 +250,7 @@ Roles and Menus need "assign N permissions / N menus". `Field\Select` is single-
   - `public function searchable(bool $searchable = true): static`, `public function isSearchable(): bool` — defaults `true`.
   - `Multiselect::defaultVariables(): array<string, mixed>` — **overrides** the parent so `value` stays an array. Adds `options` and `searchable` alongside the parent's standard keys.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/Feature/Form/MultiselectFieldTest.php`:
 
@@ -319,12 +321,12 @@ test('multiselect is searchable by default and can be disabled', function () {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `vendor/bin/pest tests/Feature/Form/MultiselectFieldTest.php`
 Expected: FAIL — `Class "BlatUI\Admin\Form\Field\Multiselect" not found`.
 
-- [ ] **Step 3: Create `src/Form/Field/Multiselect.php`**
+- [x] **Step 3: Create `src/Form/Field/Multiselect.php`**
 
 `$view = 'blatui-admin::form.field.multiselect'`, `protected array $options = []`, `protected bool $searchable = true`, plus the four methods above.
 
@@ -350,7 +352,7 @@ public function defaultVariables(): array
 
 Keys are normalised to strings because the template compares them with a strict `in_array((string) $key, $value, true)`. This is required for correctness, not style: Eloquent relation ids come back as **ints**, so `in_array("3", [3, 7], true)` is `false`, every checkbox renders unchecked, and saving silently wipes the user's assignments. `getValue()` still returns the raw value untouched — only the template-bound array is normalised.
 
-- [ ] **Step 4: Create `resources/views/form/field/multiselect.blade.php`**
+- [x] **Step 4: Create `resources/views/form/field/multiselect.blade.php`**
 
 Model the `@props` block on `resources/views/form/field/select.blade.php` (same keys, plus `options`, `searchable`; `value` is now an array). Match that file's Tailwind classes and `sm:grid sm:grid-cols-4` label/field layout so the form reads consistently.
 
@@ -386,22 +388,22 @@ Pre-selection uses Blade's `@checked(in_array((string) $key, $value, true))`. Th
 
 Zero `{!! !!}`. All dynamic values through `{{ }}`.
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `vendor/bin/pest tests/Feature/Form/MultiselectFieldTest.php`
 Expected: PASS, 5 tests.
 
-- [ ] **Step 6: Verify no raw Blade output crept in**
+- [x] **Step 6: Verify no raw Blade output crept in**
 
 Run: `grep -rn '{!!' resources/views`
 Expected: no output.
 
-- [ ] **Step 7: Run the full gate**
+- [x] **Step 7: Run the full gate**
 
 Run: `composer test`
 Expected: green on all four stages.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/Form/Field/Multiselect.php resources/views/form/field/multiselect.blade.php tests/Feature/Form/MultiselectFieldTest.php
@@ -441,7 +443,7 @@ Nothing is reachable today: the Grid engine already emits `/admin/auth/users/{id
   - `config/blatui-admin.resources`: `array<string, class-string>` keyed `administrators`, `roles`, `permissions`, `menus`.
   - 28 named routes: `admin.{key}.index|create|store|edit|update|destroy|batch-destroy` for each key, under the configured `route.prefix`.
 
-- [ ] **Step 1: Write the failing route test**
+- [x] **Step 1: Write the failing route test**
 
 Create `tests/Feature/ResourceRoutesTest.php`:
 
@@ -500,12 +502,12 @@ test('the built-in controllers are wired from config', function () {
 
 Delete the `reconfigured prefix` test if you cannot make it pass without restructuring route registration — do not contort the route file for it. In that case note the deviation and move on.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `vendor/bin/pest tests/Feature/ResourceRoutesTest.php`
 Expected: FAIL — `Route [admin.users.index] not defined`.
 
-- [ ] **Step 3: Add the `resources` array to `config/blatui-admin.php`**
+- [x] **Step 3: Add the `resources` array to `config/blatui-admin.php`**
 
 Insert after the `auth` block, before `database`:
 
@@ -523,7 +525,7 @@ not exist until Tasks 4–7, so `::class` would hold the gate red across four co
 byte-identical to what `::class` would produce — `::class` on a missing class resolves at compile time
 without autoloading — so a test asserting against `::class` still compares real strings.
 
-- [ ] **Step 4: Create `src/Http/Controllers/ResourceController.php`**
+- [x] **Step 4: Create `src/Http/Controllers/ResourceController.php`**
 
 `extends AdminController`, `declare(strict_types=1)`.
 
@@ -556,7 +558,7 @@ Action bodies:
 
 **Guard order in `destroy()` matters:** 404 for a missing record *before* the authorization check, so probing for existence cannot leak authorization state.
 
-- [ ] **Step 5: Register the routes in `routes/blatui-admin.php`**
+- [x] **Step 5: Register the routes in `routes/blatui-admin.php`**
 
 Inside the existing `Route::group(['middleware' => [Authenticate::class]], ...)`, loop the config array.
 
@@ -594,17 +596,17 @@ The inner group sits inside the outer group that already applies `route.prefix`,
 
 The route file is a plain closure with no `$this` binding, so call the loop inline rather than through a method.
 
-- [ ] **Step 6: Run the route tests**
+- [x] **Step 6: Run the route tests**
 
 Run: `vendor/bin/pest tests/Feature/ResourceRoutesTest.php`
 Expected: the registration tests PASS. The controller-referencing tests may still fail with a "class not found" error — Tasks 4–7 create those classes. That is expected; note it and continue.
 
-- [ ] **Step 7: Run the full gate**
+- [x] **Step 7: Run the full gate**
 
 Run: `composer test`
 Expected: green, with the controller-dependent route assertions still outstanding until Tasks 4–7.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add config/blatui-admin.php routes/blatui-admin.php src/Http/Controllers/ResourceController.php tests/Feature/ResourceRoutesTest.php
@@ -623,7 +625,7 @@ git commit -m "feat(http): add resource controller base and register rbac routes
 - Consumes: `ResourceController` (Task 3), `Multiselect` (Task 2), `Grid::column()`, `Grid::filter()`, `Grid::actions()`, `Filter::like()`, `Filter::between()`, `Grid\Actions\Edit`, `Grid\Actions\Delete`, `Column::badge()`, `Column::datetime()`, `Column::display(Closure)`.
 - Produces: `class BlatUI\Admin\Http\Controllers\Resources\AdministratorsController extends ResourceController`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/Feature/Resource/AdministratorsTest.php`:
 
@@ -752,12 +754,12 @@ test('batch destroy rejects a malformed ids payload', function () {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `vendor/bin/pest tests/Feature/Resource/AdministratorsTest.php`
 Expected: FAIL — controller class not found.
 
-- [ ] **Step 3: Create the controller**
+- [x] **Step 3: Create the controller**
 
 ```php
 <?php
@@ -839,17 +841,17 @@ $form->saving(function (Form $form): void {
 
 `authorizeDestroy(mixed $record)`: return a 403 `JsonResponse` when `$record` is the authenticated user. Guard with `$record instanceof Model` and compare `$record->getKey()` against `Admin::id()`.
 
-- [ ] **Step 4: Run the tests**
+- [x] **Step 4: Run the tests**
 
 Run: `vendor/bin/pest tests/Feature/Resource/AdministratorsTest.php`
 Expected: PASS, 9 tests.
 
-- [ ] **Step 5: Run the full gate**
+- [x] **Step 5: Run the full gate**
 
 Run: `composer test`
 Expected: green.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/Http/Controllers/Resources/AdministratorsController.php tests/Feature/Resource/AdministratorsTest.php
@@ -870,7 +872,7 @@ git commit -m "feat(admin): add administrators resource page"
   - `class BlatUI\Admin\Http\Controllers\Resources\RolesController extends ResourceController`
   - `protected function treeOptions(string $modelClass, string $titleColumn): array<int, string>` — **reused by Task 6 and Task 7**, so place it here and have them call `RolesController::treeOptions()` or promote it to a trait. Prefer promoting it to a trait `src/Http/Controllers/Resources/Concerns/BuildsTreeOptions.php` so no controller depends on another controller.
 
-- [ ] **Step 1: Create the shared tree-options trait**
+- [x] **Step 1: Create the shared tree-options trait**
 
 Create `src/Http/Controllers/Resources/Concerns/BuildsTreeOptions.php`:
 
@@ -882,7 +884,7 @@ Loads rows ordered by `parent_id`, then `order`, then the title column, and flat
 
 `Permission` does **not** use the `ModelTree` trait (only `Menu` does), so this works off raw `parent_id`/`order` columns for both models.
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Create `tests/Feature/Resource/RolesTest.php`:
 
@@ -981,12 +983,12 @@ test('a role can be deleted', function () {
 });
 ```
 
-- [ ] **Step 3: Run the tests to verify they fail**
+- [x] **Step 3: Run the tests to verify they fail**
 
 Run: `vendor/bin/pest tests/Feature/Resource/RolesTest.php`
 Expected: FAIL — controller class not found.
 
-- [ ] **Step 4: Create the controller**
+- [x] **Step 4: Create the controller**
 
 `resourceKey()` returns `'roles'`, `model()` returns `Role::class`, `$title = 'Roles'`.
 
@@ -1002,17 +1004,17 @@ When editing, load the record and prefill both from `$record->permissions->pluck
 
 `authorizeDestroy()`: 403 when `$record->slug === 'administrator'`.
 
-- [ ] **Step 5: Run the tests**
+- [x] **Step 5: Run the tests**
 
 Run: `vendor/bin/pest tests/Feature/Resource/RolesTest.php`
 Expected: PASS, 7 tests.
 
-- [ ] **Step 6: Run the full gate**
+- [x] **Step 6: Run the full gate**
 
 Run: `composer test`
 Expected: green.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/Http/Controllers/Resources/Concerns/BuildsTreeOptions.php src/Http/Controllers/Resources/RolesController.php tests/Feature/Resource/RolesTest.php
@@ -1031,7 +1033,7 @@ git commit -m "feat(admin): add roles resource page with permission and menu ass
 - Consumes: `ResourceController` (Task 3), `BuildsTreeOptions` (Task 5), `Field\Textarea`, `Field\Select`.
 - Produces: `class BlatUI\Admin\Http\Controllers\Resources\PermissionsController extends ResourceController`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/Feature/Resource/PermissionsTest.php`:
 
@@ -1103,12 +1105,12 @@ test('validates slug uniqueness', function () {
 
 If the `parent` self-exclusion assertion proves brittle against the rendered markup, assert it directly instead: call the controller's option-building method and assert the returned array has no key equal to `$permission->id`. A test that passes for the wrong reason is worse than no test.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `vendor/bin/pest tests/Feature/Resource/PermissionsTest.php`
 Expected: FAIL — controller class not found.
 
-- [ ] **Step 3: Create the controller**
+- [x] **Step 3: Create the controller**
 
 `resourceKey()` returns `'permissions'`, `model()` returns `Permission::class`, `$title = 'Permissions'`.
 
@@ -1124,17 +1126,17 @@ Expected: FAIL — controller class not found.
 
 `parentOptions(mixed $excludeId)`: `['0' => '— Top level —']` merged with `BuildsTreeOptions::treeOptions(Permission::class, 'name')`, filtered to remove `$excludeId` when it is not null.
 
-- [ ] **Step 4: Run the tests**
+- [x] **Step 4: Run the tests**
 
 Run: `vendor/bin/pest tests/Feature/Resource/PermissionsTest.php`
 Expected: PASS, 5 tests.
 
-- [ ] **Step 5: Run the full gate**
+- [x] **Step 5: Run the full gate**
 
 Run: `composer test`
 Expected: green.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/Http/Controllers/Resources/PermissionsController.php tests/Feature/Resource/PermissionsTest.php
@@ -1153,7 +1155,7 @@ git commit -m "feat(admin): add permissions resource page"
 - Consumes: `ResourceController` (Task 3), `BuildsTreeOptions` (Task 5), `Multiselect`, `Field\SwitchField`, `Field\Select`.
 - Produces: `class BlatUI\Admin\Http\Controllers\Resources\MenusController extends ResourceController`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/Feature/Resource/MenusTest.php`:
 
@@ -1224,12 +1226,12 @@ test('menu parent options exclude the record itself', function () {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `vendor/bin/pest tests/Feature/Resource/MenusTest.php`
 Expected: FAIL — controller class not found.
 
-- [ ] **Step 3: Create the controller**
+- [x] **Step 3: Create the controller**
 
 `resourceKey()` returns `'menu'` (the Seeder's menu URI is `auth/menu`, singular — this is the one resource whose key differs from its plural name), `model()` returns `Menu::class`, `$title = 'Menu'`.
 
@@ -1244,17 +1246,17 @@ Expected: FAIL — controller class not found.
 - `parent_id` — `Select` with `->options($this->parentOptions($form->getKey()))`, same shape as Task 6
 - `roles` — `Multiselect` with `->relation('roles')` and `->options(Role::query()->orderBy('name')->pluck('name', 'id')->all())`; prefill `$record->roles->pluck('id')->all()` when editing
 
-- [ ] **Step 4: Run the tests**
+- [x] **Step 4: Run the tests**
 
 Run: `vendor/bin/pest tests/Feature/Resource/MenusTest.php`
 Expected: PASS, 5 tests.
 
-- [ ] **Step 5: Run the full gate**
+- [x] **Step 5: Run the full gate**
 
 Run: `composer test`
 Expected: green, with all four resource test files passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/Http/Controllers/Resources/MenusController.php tests/Feature/Resource/MenusTest.php
@@ -1270,7 +1272,7 @@ git commit -m "feat(admin): add menus resource page"
 **Files:**
 - Modify: `AGENTS.md`, `README.md`, `lang/en/admin.php`, `lang/zh_CN/admin.php`, `resources/boost/skills/blatui-admin-development/SKILL.md`
 
-- [ ] **Step 1: Update `AGENTS.md`**
+- [x] **Step 1: Update `AGENTS.md`**
 
 Under "Rendering Architecture & Security", extend the ViewModel bullet to record that `Form\Field\Relation` fields are persisted to pivot tables rather than the model table, and that `sync()` failures propagate rather than being swallowed.
 
@@ -1278,7 +1280,7 @@ Add a short "Resource Pages" section: `ResourceController` supplies the CRUD ske
 
 Record the rejections from the spec so they are not reinvented: nested tree fields, multiselect description sub-labels, silent pivot-failure tolerance, and authorization middleware (explicitly deferred).
 
-- [ ] **Step 2: Update the language files**
+- [x] **Step 2: Update the language files**
 
 Add to both `lang/en/admin.php` and `lang/zh_CN/admin.php`:
 
@@ -1294,25 +1296,25 @@ Add to both `lang/en/admin.php` and `lang/zh_CN/admin.php`:
 
 Keep the key sets identical across both locales.
 
-- [ ] **Step 3: Update `README.md`**
+- [x] **Step 3: Update `README.md`**
 
 Show the four resource routes in the quick-start, and document that `config('blatui-admin.resources')` swaps a controller without forking.
 
-- [ ] **Step 4: Update the Boost skill**
+- [x] **Step 4: Update the Boost skill**
 
 If `resources/boost/skills/blatui-admin-development/SKILL.md` documents the Form field list or the controller set, add `Multiselect` and `ResourceController`. If it does not mention either, leave it alone and say so in the commit message.
 
-- [ ] **Step 5: Run the full gate**
+- [x] **Step 5: Run the full gate**
 
 Run: `composer test`
 Expected: green.
 
-- [ ] **Step 6: Verify no raw Blade output**
+- [x] **Step 6: Verify no raw Blade output**
 
 Run: `grep -rn '{!!' resources/views`
 Expected: no output.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add AGENTS.md README.md lang/en/admin.php lang/zh_CN/admin.php resources/boost/skills/
