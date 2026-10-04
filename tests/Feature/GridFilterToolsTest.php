@@ -467,3 +467,62 @@ test('reload and filter buttons stay empty when disabled', function () {
     expect($tools->renderRefreshButton())->toBe('')
         ->and($tools->renderFilterButton())->toBe('');
 });
+
+test('tools create button escapes url and text', function () {
+    $tools = new Tools;
+
+    $tools->createButtonText('Add "quoted" & <script>');
+
+    $html = $tools->renderCreateButton();
+
+    expect($html)->toContain('Add &quot;quoted&quot; &amp; &lt;script&gt;')
+        ->and($html)->not->toContain('<script>')
+        ->and($html)->toStartWith('<a href="');
+});
+
+test('tools batch actions dropdown wraps rendered action items', function () {
+    $tools = new Tools;
+    $tools->resource('/admin/auth/users');
+
+    $html = $tools->renderBatchActions();
+
+    expect($html)->toContain('<div x-data="{ open: false }"')
+        ->and($html)->toContain('<span>Batch Actions</span>')
+        ->and($html)->toContain('Delete')
+        ->and($html)->toEndWith('</div>');
+});
+
+test('tools batch actions dropdown stays empty when no items are registered', function () {
+    $tools = new Tools;
+
+    // Removing the last batch action must leave no empty dropdown shell behind.
+    $tools->batch(function (Tools $batch) {
+        $batch->disableDelete();
+    });
+
+    expect($tools->renderBatchActions())->toBe('');
+});
+
+test('tools toolbar composes buttons in declared order', function () {
+    $tools = new Tools;
+    $tools->resource('/admin/auth/users');
+
+    $html = $tools->render();
+
+    // Order is the contract: batch actions, prepended, then filter, reload,
+    // create, appended. A refactor that reorders these silently changes the UI.
+    expect($html)->toContain('<div class="flex flex-wrap items-center justify-between gap-3 mb-4">')
+        ->and($html)->toContain('Batch Actions')
+        ->and($html)->toContain('<span>Filter</span>')
+        ->and($html)->toContain('<span>Reload</span>')
+        ->and($html)->toContain('<span>Create</span>');
+
+    $batchPos = strpos($html, 'Batch Actions');
+    $filterPos = strpos($html, '<span>Filter</span>');
+    $reloadPos = strpos($html, '<span>Reload</span>');
+    $createPos = strpos($html, '<span>Create</span>');
+
+    expect($batchPos)->toBeLessThan($filterPos)
+        ->and($filterPos)->toBeLessThan($reloadPos)
+        ->and($reloadPos)->toBeLessThan($createPos);
+});
