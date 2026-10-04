@@ -230,7 +230,9 @@ test('delete action renders alpine confirmation popover and ajax fetch delete', 
         ->and($html)->toContain('Are you sure you want to delete this record?');
 
     // AJAX fetch with DELETE method and headers
-    expect($html)->toContain("fetch('/admin/tags/33'")
+    // Js::from() escapes forward slashes as part of its JSON encoding — valid
+    // JavaScript, left at the encoder's safe default.
+    expect($html)->toContain("fetch('\\/admin\\/tags\\/33'")
         ->and($html)->toContain("method: 'DELETE'")
         ->and($html)->toContain("'X-Requested-With': 'XMLHttpRequest'")
         ->and($html)->toContain("'X-CSRF-TOKEN': token");
