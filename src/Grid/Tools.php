@@ -8,6 +8,7 @@ use BlatUI\Admin\Grid\Tools\BatchDelete;
 use Closure;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Support\HtmlString;
 use Stringable;
 
 class Tools implements Htmlable, Renderable, Stringable
@@ -413,15 +414,12 @@ class Tools implements Htmlable, Renderable, Stringable
             return '';
         }
 
-        $url = htmlspecialchars($this->getCreateUrl(), ENT_QUOTES, 'UTF-8');
-        $text = htmlspecialchars($this->createButtonText, ENT_QUOTES, 'UTF-8');
-
-        return <<<HTML
-<a href="{$url}" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 shadow-xs transition-colors cursor-pointer">
-    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-    <span>{$text}</span>
-</a>
-HTML;
+        // Raw values in; Blade's {{ }} is the only escaping layer, matching how
+        // Grid\Filter\Field hands its variables to its view.
+        return trim((string) view('blatui-admin::grid.tools.create', [
+            'url' => $this->getCreateUrl(),
+            'text' => $this->createButtonText,
+        ]));
     }
 
     /**
@@ -457,46 +455,19 @@ HTML;
             return '';
         }
 
-        $items = '';
         foreach ($this->batchActionItems as $action) {
             if ($this->resource !== null && $action->getResource() === null) {
                 $action->setResource($this->resource);
             }
-            $items .= $action->render()."\n";
         }
 
-        return <<<HTML
-<div x-data="{ open: false }" @click.outside="open = false" class="relative inline-block text-left">
-    <button
-        type="button"
-        @click="open = !open"
-        :class="selectedRows.length > 0 ? 'bg-white border-blue-500 text-blue-600 shadow-xs' : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-500'"
-        :disabled="selectedRows.length === 0"
-        class="inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors cursor-pointer"
-    >
-        <span>Batch Actions</span>
-        <span x-show="selectedRows.length > 0" x-text="'(' + selectedRows.length + ')'" class="font-semibold text-blue-600 dark:text-blue-400"></span>
-        <svg class="w-4 h-4 shrink-0 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-    </button>
-    <div
-        x-show="open"
-        x-transition:enter="transition ease-out duration-100"
-        x-transition:enter-start="transform opacity-0 scale-95"
-        x-transition:enter-end="transform opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-75"
-        x-transition:leave-start="transform opacity-100 scale-100"
-        x-transition:leave-end="transform opacity-0 scale-95"
-        class="absolute left-0 z-50 mt-1.5 w-48 origin-top-left rounded-md bg-white p-1 shadow-lg ring-1 ring-black/5 dark:bg-gray-800 dark:ring-gray-700"
-        style="display: none;"
-    >
-        <div class="py-1">
-            {$items}
-        </div>
-    </div>
-</div>
-HTML;
+        // The action objects are passed through, not their rendered strings:
+        // BatchAction implements Htmlable, so Blade's {{ }} routes each one to
+        // toHtml(). That keeps {!! !!} out of the views and avoids double-escaping
+        // markup the action already escaped itself.
+        return trim((string) view('blatui-admin::grid.tools.batch-actions', [
+            'actions' => $this->batchActionItems,
+        ]));
     }
 
     /**
@@ -504,35 +475,35 @@ HTML;
      */
     public function render(): string
     {
-        $prepended = '';
-        foreach ($this->prependedTools as $tool) {
-            $prepended .= is_string($tool) ? $tool : (string) $tool;
+        // Every slot below is either already-rendered HTML (the child render
+        // methods) or developer markup accepted by prepend()/append(). All of
+        // it is wrapped in HtmlString — the framework's own "already-escaped"
+        // contract — so Blade's {{ }} calls toHtml() and emits it verbatim.
+        // That is why this view needs no {!! !!}, which AGENTS.md forbids.
+        return trim((string) view('blatui-admin::grid.tools.toolbar', [
+            'batchActions' => new HtmlString($this->renderBatchActions()),
+            'prepended' => new HtmlString($this->joinTools($this->prependedTools)),
+            'filterBtn' => new HtmlString($this->renderFilterButton()),
+            'refreshBtn' => new HtmlString($this->renderRefreshButton()),
+            'createBtn' => new HtmlString($this->renderCreateButton()),
+            'appended' => new HtmlString($this->joinTools($this->appendedTools)),
+        ]));
+    }
+
+    /**
+     * Concatenate custom tool fragments into a single HTML string.
+     *
+     * @param  array<int, mixed>  $tools
+     */
+    protected function joinTools(array $tools): string
+    {
+        $html = '';
+
+        foreach ($tools as $tool) {
+            $html .= is_string($tool) ? $tool : (string) $tool;
         }
 
-        $appended = '';
-        foreach ($this->appendedTools as $tool) {
-            $appended .= is_string($tool) ? $tool : (string) $tool;
-        }
-
-        $batchActions = $this->renderBatchActions();
-        $filterBtn = $this->renderFilterButton();
-        $refreshBtn = $this->renderRefreshButton();
-        $createBtn = $this->renderCreateButton();
-
-        return <<<HTML
-<div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-    <div class="flex items-center gap-2">
-        {$batchActions}
-        {$prepended}
-    </div>
-    <div class="flex items-center gap-2 ml-auto">
-        {$filterBtn}
-        {$refreshBtn}
-        {$createBtn}
-        {$appended}
-    </div>
-</div>
-HTML;
+        return $html;
     }
 
     /**
