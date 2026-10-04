@@ -47,6 +47,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Resource Controllers
+    |--------------------------------------------------------------------------
+    |
+    | Each key becomes an `auth/{key}` route group below the admin prefix. The
+    | URL segment is the sidebar URI, which differs from the key for the
+    | administrators and menus resources.
+    |
+    | Point a key at your own controller to replace a bundled resource page
+    | without forking the package. A key whose class does not exist falls back
+    | to the package-bundled controller of the same name.
+    |
+    */
+    'resources' => [
+        'administrators' => 'BlatUI\Admin\Http\Controllers\Resources\AdministratorsController',
+        'roles' => 'BlatUI\Admin\Http\Controllers\Resources\RolesController',
+        'permissions' => 'BlatUI\Admin\Http\Controllers\Resources\PermissionsController',
+        'menus' => 'BlatUI\Admin\Http\Controllers\Resources\MenusController',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Database & Models
     |--------------------------------------------------------------------------
     */
