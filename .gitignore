@@ -22,3 +22,6 @@ composer.lock
 
 # Local UI smoke-test screenshots
 /*.png
+
+# Local opencode/LSP config
+/opencode.json
