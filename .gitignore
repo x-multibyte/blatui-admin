@@ -16,3 +16,9 @@ composer.lock
 
 # Hermes/agent scratch task briefs
 *_TASK.md
+
+# Agent tooling run cache (not the tracked skills)
+/.agents/.cache/
+
+# Local UI smoke-test screenshots
+/*.png
