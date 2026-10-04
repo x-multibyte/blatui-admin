@@ -19,6 +19,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use RuntimeException;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -247,15 +248,27 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
      *
      * A pivot sync failure is intentionally left uncaught so the whole
      * request fails rather than silently persisting a partial record.
+     * The same applies when there is nothing to sync against: a repository
+     * that does not hand back an Eloquent model throws instead of dropping
+     * every pivot write and still reporting success.
      */
     protected function syncRelations(mixed $record): void
     {
-        if (! $record instanceof Model) {
+        $relationFields = $this->relationFields();
+
+        if ($relationFields === []) {
             return;
         }
 
-        foreach ($this->relationFields() as $field) {
-            $record->{$field->getRelation()}()->sync($this->inputs[$field->getColumn()] ?? []);
+        if (! $record instanceof Model) {
+            throw new RuntimeException(sprintf(
+                'Cannot sync relation fields: the repository returned [%s] instead of an Eloquent model.',
+                get_debug_type($record),
+            ));
+        }
+
+        foreach ($relationFields as $field) {
+            $record->{$field->getRelation()}()->sync((array) ($this->inputs[$field->getColumn()] ?? []));
         }
     }
 

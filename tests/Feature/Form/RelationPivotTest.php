@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use BlatUI\Admin\Contracts\Repository;
 use BlatUI\Admin\Form;
 use BlatUI\Admin\Form\Field;
 use BlatUI\Admin\Models\Permission;
@@ -13,14 +14,77 @@ beforeEach(function () {
     // The roles table has no permission_ids column, so Eloquent would otherwise
     // discard a leaked Relation column and keep this suite green for the wrong
     // reason. Strict mode turns that silent discard into a MassAssignmentException.
-    Model::preventSilentlyDiscardingAttributes(! Model::preventsSilentlyDiscardingAttributes());
+    // Remember the incoming value so afterEach() can put it back untouched — the
+    // setting is global, and this file does not get to switch it off for whatever
+    // runs next.
+    $this->strictModeWasPreventing = Model::preventsSilentlyDiscardingAttributes();
+    Model::preventSilentlyDiscardingAttributes(! $this->strictModeWasPreventing);
 
     $this->artisan('migrate')->assertSuccessful();
 });
 
 afterEach(function () {
-    Model::preventSilentlyDiscardingAttributes(false);
+    Model::preventSilentlyDiscardingAttributes($this->strictModeWasPreventing);
 });
+
+/**
+ * Minimal Repository that hands back something other than an Eloquent model, so
+ * the pivot sync path can be proven to fail loudly rather than drop the write.
+ *
+ * @param  mixed  $stored  What store() and edit() report back to the form.
+ */
+function nonModelRepository(mixed $stored): Repository
+{
+    return new class($stored) implements Repository
+    {
+        public function __construct(protected mixed $stored) {}
+
+        public function getKeyName(): string
+        {
+            return 'id';
+        }
+
+        public function getCreatedAtColumn(): ?string
+        {
+            return 'created_at';
+        }
+
+        public function getUpdatedAtColumn(): ?string
+        {
+            return 'updated_at';
+        }
+
+        public function isSoftDeletes(): bool
+        {
+            return false;
+        }
+
+        public function model(): mixed
+        {
+            return null;
+        }
+
+        public function edit(mixed $key): mixed
+        {
+            return $this->stored;
+        }
+
+        public function store(array $values): mixed
+        {
+            return $this->stored;
+        }
+
+        public function update(mixed $key, array $values): bool
+        {
+            return true;
+        }
+
+        public function destroy(mixed $key): bool
+        {
+            return true;
+        }
+    };
+}
 
 /** Minimal pivot-backed field used to exercise Relation without Multiselect. */
 function pivotField(string $column, string $relation): Field\Relation
@@ -43,8 +107,6 @@ test('relation fields are excluded from the model payload', function () {
         $form->text('slug');
         $form->pushField(pivotField('permission_ids', 'permissions'));
     });
-
-    $form->fill(['name' => 'Editor', 'permission_ids' => [1, 2]]);
 
     $request = Request::create('/admin/auth/roles', 'POST', [
         'name' => 'Editor',
@@ -120,4 +182,28 @@ test('empty input clears the pivot', function () {
     ]));
 
     expect($role->fresh()->permissions)->toHaveCount(0);
+});
+
+test('a repository that returns no eloquent model throws instead of dropping the pivot write', function () {
+    $form = Form::make(nonModelRepository(['stored' => true]), function (Form $form) {
+        $form->text('name');
+        $form->pushField(pivotField('permission_ids', 'permissions'));
+    });
+
+    expect(fn () => $form->store(Request::create('/admin/auth/roles', 'POST', [
+        'name' => 'Author', 'permission_ids' => [1, 2],
+    ])))->toThrow(
+        RuntimeException::class,
+        'Cannot sync relation fields: the repository returned [array] instead of an Eloquent model.',
+    );
+});
+
+test('a repository that returns no eloquent model is left alone without relation fields', function () {
+    $form = Form::make(nonModelRepository(null), function (Form $form) {
+        $form->text('name');
+    });
+
+    $form->store(Request::create('/admin/auth/roles', 'POST', ['name' => 'Author']));
+
+    expect(Role::query()->where('name', 'Author')->exists())->toBeFalse();
 });
