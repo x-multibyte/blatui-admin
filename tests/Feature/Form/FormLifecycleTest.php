@@ -130,3 +130,19 @@ test('form aborts store or update if a saving hook returns false or a response',
     $admin = Administrator::find(1);
     expect($admin?->name)->not->toBe('Should Not Change');
 });
+
+test('form can forget an input value and exclude it from prepared payload', function () {
+    $form = Form::make(new Administrator, function (Form $form) {
+        $form->text('username');
+        $form->text('password');
+    });
+
+    $form->setInput('password', 'secret123');
+    expect($form->input('password'))->toBe('secret123');
+
+    $form->forgetInput('password');
+    expect($form->input('password'))->toBeNull();
+
+    $prepared = (new ReflectionMethod($form, 'prepareDataForSave'))->invoke($form);
+    expect($prepared)->not->toHaveKey('password');
+});
