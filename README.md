@@ -61,7 +61,13 @@ php artisan vendor:publish --tag="blatui-admin-assets"
 
 ## Usage
 
-<!-- Add a basic usage example here. -->
+The four bundled resource routes are available at:
+- `/admin/auth/users`
+- `/admin/auth/roles`
+- `/admin/auth/permissions`
+- `/admin/auth/menu`
+
+You can swap a controller without forking the package by updating `config('blatui-admin.resources')`.
 
 ## Changelog
 

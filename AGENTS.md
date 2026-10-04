@@ -35,6 +35,7 @@ BlatUI Admin employs a modernized, security-hardened rendering architecture that
 - **ViewModel Pattern (View-Model Separation):**
   - PHP classes (`Content`, `Grid`, `Filter`, `Tools`, `Column`, `Row`) act strictly as ViewModels and Data Transfer Objects (DTOs). They hold configuration, state, and business logic.
   - Never concatenate raw HTML strings inside PHP classes (`$html .= '<div...'`). All DOM markup, Tailwind CSS classes, and Alpine.js directives belong exclusively in `resources/views/` Blade templates.
+  - `Form\Field\Relation` fields are persisted to pivot tables rather than the model table, and `sync()` failures propagate rather than being swallowed.
 
 - **Native Laravel Contracts (`Htmlable`):**
   - All rendered UI components (`Filter`, `Tools`, `Column`, `Row`, `Content`) strictly implement `\Illuminate\Contracts\Support\Htmlable`.
@@ -56,6 +57,17 @@ BlatUI Admin employs a modernized, security-hardened rendering architecture that
   - The layer converted untrusted scalars into `HtmlString`. Because Blade routes `HtmlString` through `toHtml()` and then emits it unescaped, the pre-escaping and the native escaping cancelled each other out: the layer provided no defence in depth, and it could not intercept variables holding objects rather than scalars.
   - It was ineffective complexity. The single security boundary is Blade's compile-time escaping, as specified in `docs/superpowers/specs/2026-09-27-rendering-architecture-design.md` section 2.3.
 
+
+
+## Resource Pages
+
+`ResourceController` supplies the CRUD skeleton. The four bundled controllers live in `src/Http/Controllers/Resources/`. The `config('blatui-admin.resources')` maps a key to a controller class and the route file generates from it. Note that **registry key ≠ URL segment**.
+
+**Rejected from the spec (do not reinvent):**
+- Nested tree fields
+- Multiselect description sub-labels
+- Silent pivot-failure tolerance
+- Authorization middleware (explicitly deferred)
 
 ## Quick Commands
 
