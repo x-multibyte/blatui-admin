@@ -440,3 +440,30 @@ test('grid filter and tools implement Htmlable contract', function () {
         ->and($filter->toHtml())->toBe($filter->render())
         ->and($tools->toHtml())->toBe($tools->render());
 });
+
+test('tools reload and filter buttons render without markup drift', function () {
+    $tools = new Tools;
+
+    // Byte-for-byte assertions: these buttons are static markup, so extracting
+    // them to a Blade view must not alter a single character of output. The
+    // closing tag carries no trailing newline — PHP 7.3+ nowdoc semantics put
+    // the newline before the closing marker, not after it.
+    $reload = $tools->renderRefreshButton();
+    $filter = $tools->renderFilterButton();
+
+    expect($reload)->toStartWith('<button type="button" @click="window.location.reload()"')
+        ->and($reload)->toEndWith('</button>')
+        ->and($reload)->toContain('<span>Reload</span>')
+        ->and($filter)->toStartWith('<button type="button" @click="$dispatch(\'toggle-grid-filter\')"')
+        ->and($filter)->toEndWith('</button>')
+        ->and($filter)->toContain('<span>Filter</span>');
+});
+
+test('reload and filter buttons stay empty when disabled', function () {
+    $tools = new Tools;
+
+    $tools->disableRefreshButton()->disableFilterButton();
+
+    expect($tools->renderRefreshButton())->toBe('')
+        ->and($tools->renderFilterButton())->toBe('');
+});
