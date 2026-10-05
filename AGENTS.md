@@ -141,6 +141,16 @@ Four commands are registered in `AdminServiceProvider::registerCommands()`. They
   - Fluent hooks `Grid::resolving()`, `Grid::resolved()`, `Form::resolving()`, `Form::resolved()` delegate directly to `Container::resolving()` and `Container::afterResolving()`.
   - Subclasses and resolving hooks safely support deferred model/repository initialization without null-pointer crashes.
 
+**Rejected from the spec (do not reinvent):**
+- **Redundant Custom Auth & Model Events**:
+  - Do NOT create bespoke package event classes for standard authentication or CRUD actions (e.g., `AdminLoggedIn`, `AdminLoggedOut`, `ResourceCreated`).
+  - Laravel natively fires standard events under `Illuminate\Auth\Events\*` (e.g. `Login`, `Failed`, `Logout`) with `$event->guard === 'admin'`.
+  - Entity mutations belong in native Eloquent Observers and Model Events, preserving compatibility with standard Laravel listeners and avoiding duplicate event buses.
+- **Bespoke Context Callback Dictionaries (Dcat Legacy Workaround)**:
+  - Do NOT implement static context registries (e.g., `Admin::context()->resolving(...)`) to manage UI builder lifecycles.
+  - Modern Laravel Service Container natively manages resolution callbacks via `Container::getInstance()->resolving()` and `Container::getInstance()->afterResolving()`. Bespoke static dictionaries introduce memory leaks across worker processes (Octane) and bypass dependency injection.
+
+
 
 ## Quick Commands
 
