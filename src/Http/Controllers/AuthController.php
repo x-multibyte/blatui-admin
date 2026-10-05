@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BlatUI\Admin\Http\Controllers;
 
+use BlatUI\Admin\Admin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -48,8 +49,16 @@ class AuthController extends Controller
         if (Auth::guard($this->guard())->attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
+            Admin::logger()->info('Admin user logged in successfully', [
+                'username' => $credentials['username'],
+            ]);
+
             return redirect()->intended($this->redirectPath());
         }
+
+        Admin::logger()->warning('Admin login failed', [
+            'username' => $credentials['username'],
+        ]);
 
         throw ValidationException::withMessages([
             'username' => [trans('auth.failed')],
@@ -61,10 +70,16 @@ class AuthController extends Controller
      */
     public function getLogout(Request $request): RedirectResponse
     {
+        $username = Admin::user()?->username;
+
         Auth::guard($this->guard())->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        Admin::logger()->info('Admin user logged out', [
+            'username' => $username,
+        ]);
 
         $prefix = trim((string) config('blatui-admin.route.prefix', 'admin'), '/');
         $loginUrl = $prefix ? '/'.$prefix.'/auth/login' : '/auth/login';

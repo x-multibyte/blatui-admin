@@ -116,7 +116,31 @@ Four commands are registered in `AdminServiceProvider::registerCommands()`. They
   - `admin.permission:deny,{role1},{role2}` — deny users in specified roles.
   - `admin.permission:check,{perm1},{perm2}` — allow only users possessing specified permission slugs.
 - **Default RBAC Matching**: Iterates `$user->allPermissions()` and tests `$permission->shouldPassThrough($request)`.
-- **Denial Behavior**: AJAX/JSON requests receive HTTP 403 JSON (`{"status": false, "message": "..."}`); web requests invoke `abort(403, ...)`.
+- **Denial Behavior**: Logs a warning via `Admin::logger()->warning(...)` and throws `PermissionDeniedException` (which self-renders HTTP 403 JSON for JSON/AJAX requests or `blatui-admin::errors.page` within the standard admin shell for web requests).
+
+## Package Foundations: Exceptions, Logging, & Lifecycle Hooks
+
+- **Exception Handling Subsystem (`BlatUI\Admin\Exceptions`)**:
+  - `AdminException` extends `\RuntimeException` and implements `\Throwable`.
+  - Self-rendering via `render(Request $request): Response`:
+    - JSON / AJAX requests (`$request->expectsJson()`, `$request->ajax()`, `$request->isJson()`): returns standardized JSON `{ "status": false, "message": "...", "code": ..., "errors": [...] }` with valid HTTP status code.
+    - Web requests: renders within standard admin shell layout using `Admin::content()` and `blatui-admin::errors.page`.
+  - Domain exceptions: `PermissionDeniedException` (403), `ResourceNotFoundException` (404), `FormValidationException` (422, redirects back with input and errors for web requests, accepts `MessageBag` or array), `ConfigurationException` (500).
+  - Blade error template (`resources/views/errors/page.blade.php`) strictly adheres to zero `{!! !!}` and native `{{ }}` escaping.
+  - Implements `context(): array` alias forwarding to `getContext()` for Laravel exception logging integration.
+
+- **Global Runtime Logging Subsystem (`BlatUI\Admin\Support\Logger`)**:
+  - Implements `Psr\Log\LoggerInterface` wrapping Laravel's `LogManager`.
+  - Configured via `config('blatui-admin.logging')` (`enable`, `channel`, `level`).
+  - Auto-enriches log context on every call with `admin_user_id`, `admin_user`, `ip`, `method`, `path`. Safely handles CLI and non-HTTP environments.
+  - Facade entrypoints: `Admin::logger()` (singleton via container) and `Admin::log(string $level, string $message, array $context = [])`.
+  - Strategic telemetry instrumented across authentication (`AuthController`), permission gates (`Permission`), and resource mutations (`ResourceController`).
+
+- **Container-Driven Lifecycle Hooks (`Grid` & `Form`)**:
+  - `Grid::make()` and `Form::make()` resolve instances through the Laravel Service Container via `Container::getInstance()->make(static::class, ['repository' => $repository])`.
+  - Fluent hooks `Grid::resolving()`, `Grid::resolved()`, `Form::resolving()`, `Form::resolved()` delegate directly to `Container::resolving()` and `Container::afterResolving()`.
+  - Subclasses and resolving hooks safely support deferred model/repository initialization without null-pointer crashes.
+
 
 ## Quick Commands
 
@@ -164,3 +188,48 @@ This repository has a generated `openwiki/` evidence index. It is optional just-
 The scheduled OpenWiki GitHub Actions workflow refreshes the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate.
 
 <!-- OPENWIKI:END -->
+
+<!-- gitnexus:start -->
+# GitNexus — Code Intelligence
+
+This project is indexed by GitNexus as **blatui-admin** (1856 symbols, 4529 relationships, 149 execution flows).
+
+> Index stale? Run `node .gitnexus/run.cjs analyze --index-only` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? Bootstrap with `npx`, `bunx`, or `pnpm dlx` — e.g. `bunx gitnexus@latest analyze` (npm 11 npx crash; #1939).
+
+## Always Do
+
+- **MUST run impact before editing.** Use `impact({target: "symbolName", direction: "upstream"})` or `node .gitnexus/run.cjs impact "symbolName" --direction upstream --repo .`; report callers, processes, and risk. Never substitute grep for graph analysis.
+- **MUST analyze graph changes before committing.** Use `detect_changes({scope: "all"})` (MCP) or `node .gitnexus/run.cjs detect-changes --scope all --repo .` (CLI fallback). `partial: true` or `truncated: true` is not a clean check — a zero means unseen, not unaffected; re-run it. For regression review: `detect_changes({scope: "compare", base_ref: "main"})` or `node .gitnexus/run.cjs detect-changes --scope compare --base-ref "main" --repo .`.
+- MUST warn on HIGH/CRITICAL `risk` pre-edit; never use `riskSharedAxes` to waive a HIGH/CRITICAL `risk` warning. Compare File/symbol: MCP File omits axes; Graph-RAG expands File.
+- **MUST treat `risk: UNKNOWN` as unresolved, not as low.** An empty caller set is not evidence the symbol is unused — it can also mean the callers are not resolvable by the index (plain-object property access, dynamic dispatch, cross-language calls). `impact` pairs `UNKNOWN` with a `riskNote` saying so. Confirm with a text search before treating the symbol as safe to change or delete; do not proceed on the strength of a zero.
+- **MUST use `query({search_query: "concept"})` for concepts/flows, `context({name: "symbolName"})` for a named symbol, or `impact` for blast radius, on read-only callers, dependencies, imports, or execution flow.** Graph first; text search only for empty/`UNKNOWN`/literals.
+- For security review, `explain({target: "fileOrSymbol"})` lists taint findings (source→sink flows; needs `analyze --pdg`).
+
+## Never Do
+
+- NEVER edit a function, class, or method before MCP/CLI impact analysis.
+- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis, and never read `UNKNOWN` as an all-clear — it means the walk could not answer, which is the one verdict that requires confirming by other means.
+- NEVER rename symbols with find-and-replace — use `rename` which understands the call graph.
+- NEVER commit before MCP/CLI graph change analysis.
+
+## Resources
+
+| Resource | Use for |
+| --- | --- |
+| `gitnexus://repo/blatui-admin/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/blatui-admin/clusters` | All functional areas |
+| `gitnexus://repo/blatui-admin/processes` | All execution flows |
+| `gitnexus://repo/blatui-admin/process/{name}` | Step-by-step execution trace |
+
+## CLI
+
+| Task | Read this skill file |
+| --- | --- |
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.claude/skills/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus-guide/SKILL.md` |
+| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus-cli/SKILL.md` |
+
+<!-- gitnexus:end -->

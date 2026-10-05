@@ -129,4 +129,15 @@ return [
         'dark_mode_switch' => true,
         'sidebar_collapsed' => false,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Global Logging Settings
+    |--------------------------------------------------------------------------
+    */
+    'logging' => [
+        'enable' => env('ADMIN_LOGGING_ENABLE', true),
+        'channel' => env('ADMIN_LOG_CHANNEL', null),
+        'level' => env('ADMIN_LOG_LEVEL', 'debug'),
+    ],
 ];

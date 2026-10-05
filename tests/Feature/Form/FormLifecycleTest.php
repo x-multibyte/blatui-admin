@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use BlatUI\Admin\Form;
 use BlatUI\Admin\Models\Administrator;
+use BlatUI\Admin\Repositories\EloquentRepository;
 use Database\Seeders\AdminTablesSeeder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -157,4 +158,87 @@ test('form can forget dot-notated input values', function () {
 
     $form->forgetInput('meta.info');
     expect($form->input('meta.info'))->toBeNull();
+});
+
+test('Form::resolving registers container hook executed before instance is returned', function () {
+    $called = false;
+    Form::resolving(function (Form $form) use (&$called) {
+        $called = true;
+        $form->title('Injected Form Title');
+    });
+
+    $form = Form::make(Administrator::class);
+
+    expect($called)->toBeTrue()
+        ->and($form->getTitle())->toBe('Injected Form Title');
+});
+
+test('Form::resolved registers container hook executed after instance is resolved', function () {
+    $called = false;
+    Form::resolved(function (Form $form) use (&$called) {
+        $called = true;
+    });
+
+    $form = Form::make(Administrator::class);
+
+    expect($called)->toBeTrue();
+});
+
+test('native container resolving hook also intercepts Form::make', function () {
+    $called = false;
+    app()->resolving(Form::class, function (Form $form) use (&$called) {
+        $called = true;
+        $form->title('Container Form Title');
+    });
+
+    $form = Form::make(Administrator::class);
+
+    expect($called)->toBeTrue()
+        ->and($form->getTitle())->toBe('Container Form Title');
+});
+
+test('Form::resolving and resolved pass container as second parameter', function () {
+    $resolvingContainer = null;
+    $resolvedContainer = null;
+
+    Form::resolving(function (Form $form, $app) use (&$resolvingContainer) {
+        $resolvingContainer = $app;
+    });
+
+    Form::resolved(function (Form $form, $app) use (&$resolvedContainer) {
+        $resolvedContainer = $app;
+    });
+
+    Form::make(Administrator::class);
+
+    expect($resolvingContainer)->toBe(app())
+        ->and($resolvedContainer)->toBe(app());
+});
+
+test('Form allows empty repository and can set repository later or throw informative exception', function () {
+    $form = Form::make();
+
+    expect(fn () => $form->repository())
+        ->toThrow(RuntimeException::class, 'Form repository is not initialized.')
+        ->and(fn () => $form->edit(1))
+        ->toThrow(RuntimeException::class, 'Form repository is not initialized.')
+        ->and(fn () => $form->store(Request::create('/admin/test', 'POST')))
+        ->toThrow(RuntimeException::class, 'Form repository is not initialized.')
+        ->and(fn () => $form->update(1, Request::create('/admin/test/1', 'POST')))
+        ->toThrow(RuntimeException::class, 'Form repository is not initialized.');
+
+    // 1. Pass Repository instance
+    $repo = new EloquentRepository(Administrator::class);
+    $form->repository($repo);
+    expect($form->repository())->toBe($repo);
+
+    // 2. Pass Model class-string
+    $form2 = Form::make();
+    $form2->repository(Administrator::class);
+    expect($form2->repository())->toBeInstanceOf(EloquentRepository::class);
+
+    // 3. Pass Model instance
+    $form3 = Form::make();
+    $form3->repository(new Administrator);
+    expect($form3->repository())->toBeInstanceOf(EloquentRepository::class);
 });

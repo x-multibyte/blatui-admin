@@ -72,6 +72,16 @@ class Filter implements Htmlable, Renderable, Stringable
     }
 
     /**
+     * Set underlying model.
+     */
+    public function setModel(mixed $model): static
+    {
+        $this->model = $model;
+
+        return $this;
+    }
+
+    /**
      * Add an Equal filter.
      */
     public function equal(string $column, ?string $label = null): Equal

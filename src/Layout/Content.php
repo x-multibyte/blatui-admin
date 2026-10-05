@@ -201,7 +201,7 @@ class Content implements Htmlable, Renderable, Responsable
     public function bodyView(string $view, array $data = []): static
     {
         if (view()->exists($view)) {
-            return $this->body(view($view, $data)->render());
+            return $this->body(new HtmlString(view($view, $data)->render()));
         }
 
         return $this;

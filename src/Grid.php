@@ -11,12 +11,14 @@ use BlatUI\Admin\Grid\Row;
 use BlatUI\Admin\Grid\Tools;
 use BlatUI\Admin\Layout\Content;
 use Closure;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 
@@ -25,7 +27,7 @@ class Grid implements Htmlable, Renderable, Responsable
     /**
      * Grid model coordinator.
      */
-    protected Model $model;
+    protected ?Model $model = null;
 
     /**
      * Registered columns collection.
@@ -37,7 +39,7 @@ class Grid implements Htmlable, Renderable, Responsable
     /**
      * Filter instance.
      */
-    protected Filter $filter;
+    protected ?Filter $filter = null;
 
     /**
      * Tools instance.
@@ -75,6 +77,16 @@ class Grid implements Htmlable, Renderable, Responsable
     protected bool $filterDisabled = false;
 
     /**
+     * Buffered per page setting before model is initialized.
+     */
+    protected int|bool|null $perPageSetting = null;
+
+    /**
+     * Buffered filter disabled setting before model is initialized.
+     */
+    protected ?bool $disableFilterSetting = null;
+
+    /**
      * Cached rows collection.
      *
      * @var Collection<int, Row>|null
@@ -98,6 +110,22 @@ class Grid implements Htmlable, Renderable, Responsable
     {
         $this->columns = collect();
 
+        if ($repository !== null) {
+            $this->initModel($repository);
+        }
+
+        $this->tools = new Tools($this);
+
+        if ($callback instanceof Closure) {
+            $callback($this);
+        }
+    }
+
+    /**
+     * Initialize grid model and filter instances.
+     */
+    protected function initModel(mixed $repository): void
+    {
         if ($repository instanceof Model) {
             $this->model = $repository;
         } else {
@@ -110,22 +138,56 @@ class Grid implements Htmlable, Renderable, Responsable
             $modelInstance = $repository;
         }
 
-        $this->filter = new Filter($modelInstance);
+        if ($this->filter === null) {
+            $this->filter = new Filter($modelInstance);
+        } else {
+            $this->filter->setModel($modelInstance);
+        }
+
         $this->model->setFilter($this->filter);
 
-        $this->tools = new Tools($this);
+        if ($this->perPageSetting !== null) {
+            $this->paginate($this->perPageSetting);
+        }
 
-        if ($callback instanceof Closure) {
-            $callback($this);
+        if ($this->disableFilterSetting !== null) {
+            $this->disableFilter($this->disableFilterSetting);
         }
     }
 
     /**
-     * Static factory method.
+     * Register a callback to be run while the grid is resolving.
+     */
+    public static function resolving(Closure $callback): void
+    {
+        Container::getInstance()->resolving(static::class, function (Grid $instance, Container $container) use ($callback): void {
+            $callback($instance, $container);
+        });
+    }
+
+    /**
+     * Register a callback to be run after the grid is resolved.
+     */
+    public static function resolved(Closure $callback): void
+    {
+        Container::getInstance()->afterResolving(static::class, function (Grid $instance, Container $container) use ($callback): void {
+            $callback($instance, $container);
+        });
+    }
+
+    /**
+     * Static factory method resolving through the service container.
      */
     public static function make(mixed $repository = null, ?Closure $callback = null): static
     {
-        return new static($repository, $callback);
+        /** @var static $instance */
+        $instance = Container::getInstance()->make(static::class, ['repository' => $repository]);
+
+        if ($callback instanceof Closure) {
+            $callback($instance);
+        }
+
+        return $instance;
     }
 
     /**
@@ -150,10 +212,18 @@ class Grid implements Htmlable, Renderable, Responsable
     }
 
     /**
-     * Get underlying Grid model coordinator.
+     * Get or set underlying Grid model coordinator.
      */
-    public function model(): Model
+    public function model(mixed $repository = null): Model
     {
+        if ($repository !== null) {
+            $this->initModel($repository);
+        }
+
+        if ($this->model === null) {
+            throw new RuntimeException('Grid model is not initialized.');
+        }
+
         return $this->model;
     }
 
@@ -162,6 +232,10 @@ class Grid implements Htmlable, Renderable, Responsable
      */
     public function filter(?Closure $callback = null): Filter
     {
+        if ($this->filter === null) {
+            $this->filter = new Filter;
+        }
+
         if ($callback instanceof Closure) {
             $callback($this->filter);
         }
@@ -210,11 +284,15 @@ class Grid implements Htmlable, Renderable, Responsable
      */
     public function paginate(int|bool $perPage = 20): static
     {
-        if (is_bool($perPage)) {
-            $this->model->paginate($perPage);
-        } else {
-            $this->model->paginate(true);
-            $this->model->setPerPage($perPage);
+        $this->perPageSetting = $perPage;
+
+        if ($this->model !== null) {
+            if (is_bool($perPage)) {
+                $this->model->paginate($perPage);
+            } else {
+                $this->model->paginate(true);
+                $this->model->setPerPage($perPage);
+            }
         }
 
         return $this;
@@ -283,9 +361,7 @@ class Grid implements Htmlable, Renderable, Responsable
      */
     public function disablePagination(bool $disable = true): static
     {
-        $this->model->paginate(! $disable);
-
-        return $this;
+        return $this->paginate(! $disable);
     }
 
     /**
@@ -294,8 +370,12 @@ class Grid implements Htmlable, Renderable, Responsable
     public function disableFilter(bool $disable = true): static
     {
         $this->filterDisabled = $disable;
+        $this->disableFilterSetting = $disable;
         $this->tools->disableFilterButton($disable);
-        $this->model->setFilter($disable ? null : $this->filter);
+
+        if ($this->model !== null) {
+            $this->model->setFilter($disable ? null : $this->filter);
+        }
 
         return $this;
     }
@@ -323,9 +403,9 @@ class Grid implements Htmlable, Renderable, Responsable
         }
 
         try {
-            $model = $this->model->getModel();
+            $model = $this->model?->getModel();
 
-            return Admin::url($model->getTable());
+            return $model ? Admin::url($model->getTable()) : null;
         } catch (Throwable) {
             if (function_exists('request') && ($path = trim((string) request()->path(), '/')) !== '') {
                 return '/'.$path;
@@ -436,7 +516,8 @@ class Grid implements Htmlable, Renderable, Responsable
             return $this->cachedRows;
         }
 
-        $data = $this->model->buildData();
+        $model = $this->model();
+        $data = $model->buildData();
 
         if ($data instanceof LengthAwarePaginator) {
             $this->paginator = $data;
@@ -447,7 +528,7 @@ class Grid implements Htmlable, Renderable, Responsable
         }
 
         $resource = $this->resource();
-        $keyName = $this->model->getKeyName();
+        $keyName = $model->getKeyName();
 
         /** @var Collection<int, Row> $rows */
         $rows = collect();
@@ -477,7 +558,7 @@ class Grid implements Htmlable, Renderable, Responsable
      */
     public function getSortDirection(string $column): ?string
     {
-        $sorts = $this->model->resolveSortFromRequest();
+        $sorts = $this->model ? $this->model->resolveSortFromRequest() : [];
 
         return $sorts[$column] ?? null;
     }

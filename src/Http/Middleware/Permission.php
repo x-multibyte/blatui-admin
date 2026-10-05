@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BlatUI\Admin\Http\Middleware;
 
 use BlatUI\Admin\Admin;
+use BlatUI\Admin\Exceptions\PermissionDeniedException;
 use BlatUI\Admin\Models\Administrator;
 use Closure;
 use Illuminate\Http\Request;
@@ -176,13 +177,12 @@ class Permission
             $message = 'Permission denied.';
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'status' => false,
-                'message' => $message,
-            ], 403);
-        }
+        Admin::logger()->warning('Admin access denied', [
+            'admin_user_id' => Admin::id(),
+            'route' => $request->route()?->getName() ?? $request->path(),
+            'method' => $request->method(),
+        ]);
 
-        abort(403, $message);
+        throw new PermissionDeniedException($message);
     }
 }
