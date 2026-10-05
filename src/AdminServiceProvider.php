@@ -11,6 +11,7 @@ use BlatUI\Admin\Console\Commands\PublishCommand;
 use BlatUI\Admin\Console\Commands\UninstallCommand;
 use BlatUI\Admin\Http\Middleware\Authenticate;
 use BlatUI\Admin\Http\Middleware\Permission;
+use BlatUI\Admin\Support\Logger;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
@@ -27,6 +28,7 @@ class AdminServiceProvider extends ServiceProvider
         $this->loadAdminAuthConfig();
 
         $this->app->singleton(Admin::class);
+        $this->app->singleton(Logger::class);
     }
 
     /**

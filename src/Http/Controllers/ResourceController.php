@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use LogicException;
+use Throwable;
 
 abstract class ResourceController extends AdminController
 {
@@ -101,7 +102,16 @@ abstract class ResourceController extends AdminController
      */
     public function store(Request $request): JsonResponse|RedirectResponse
     {
-        return $this->formFor(false)->store($request);
+        try {
+            return $this->formFor(false)->store($request);
+        } catch (Throwable $e) {
+            Admin::logger()->error('Resource store failed: '.$e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
+        }
     }
 
     /**
@@ -119,7 +129,17 @@ abstract class ResourceController extends AdminController
      */
     public function update(Request $request, int $id): JsonResponse|RedirectResponse
     {
-        return $this->formFor(true, $id)->update($id, $request);
+        try {
+            return $this->formFor(true, $id)->update($id, $request);
+        } catch (Throwable $e) {
+            Admin::logger()->error('Resource update failed: '.$e->getMessage(), [
+                'id' => $id,
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
+        }
     }
 
     /**
@@ -145,7 +165,17 @@ abstract class ResourceController extends AdminController
             return $refused;
         }
 
-        $repository->destroy($id);
+        try {
+            $repository->destroy($id);
+        } catch (Throwable $e) {
+            Admin::logger()->error('Resource destroy failed: '.$e->getMessage(), [
+                'id' => $id,
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
+        }
 
         return response()->json([
             'status' => true,
@@ -203,7 +233,17 @@ abstract class ResourceController extends AdminController
             }
         }
 
-        $repository->destroy($ids);
+        try {
+            $repository->destroy($ids);
+        } catch (Throwable $e) {
+            Admin::logger()->error('Resource batch destroy failed: '.$e->getMessage(), [
+                'ids' => $ids,
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
+        }
 
         return response()->json([
             'status' => true,

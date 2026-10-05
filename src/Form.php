@@ -9,6 +9,7 @@ use BlatUI\Admin\Form\Field;
 use BlatUI\Admin\Layout\Content;
 use BlatUI\Admin\Repositories\EloquentRepository;
 use Closure;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
@@ -25,13 +26,14 @@ use Illuminate\Support\Facades\Validator;
 use RuntimeException;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Throwable;
 
 class Form implements Htmlable, Renderable, Responsable, Stringable
 {
     /**
      * Underlying repository instance.
      */
-    protected Repository $repository;
+    protected ?Repository $repository = null;
 
     /**
      * Primary key of the record being edited (null when creating).
@@ -103,27 +105,58 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
      *
      * @param  mixed  $repository  Repository, Model instance, Model class name, or Builder
      */
-    final public function __construct(mixed $repository)
+    final public function __construct(mixed $repository = null)
+    {
+        if ($repository !== null) {
+            $this->initRepository($repository);
+        }
+    }
+
+    /**
+     * Initialize form repository instance.
+     */
+    protected function initRepository(mixed $repository): void
     {
         if ($repository instanceof Repository) {
             $this->repository = $repository;
         } elseif ($repository instanceof Model || $repository instanceof Builder || is_string($repository)) {
             /** @var Model|Builder<Model>|class-string<Model> $repository */
             $this->repository = new EloquentRepository($repository);
-        } else {
+        } elseif ($repository !== null) {
             /** @var Model $repository */
             $this->repository = new EloquentRepository($repository);
         }
     }
 
     /**
-     * Create and initialize a new form instance.
+     * Register a callback to be run while the form is resolving.
      */
-    public static function make(mixed $repository, ?Closure $callback = null): static
+    public static function resolving(Closure $callback): void
     {
-        $form = new static($repository);
+        Container::getInstance()->resolving(static::class, function (Form $instance, Container $container) use ($callback): void {
+            $callback($instance, $container);
+        });
+    }
 
-        if ($callback !== null) {
+    /**
+     * Register a callback to be run after the form is resolved.
+     */
+    public static function resolved(Closure $callback): void
+    {
+        Container::getInstance()->afterResolving(static::class, function (Form $instance, Container $container) use ($callback): void {
+            $callback($instance, $container);
+        });
+    }
+
+    /**
+     * Create and initialize a new form instance resolving through the service container.
+     */
+    public static function make(mixed $repository = null, ?Closure $callback = null): static
+    {
+        /** @var static $form */
+        $form = Container::getInstance()->make(static::class, ['repository' => $repository]);
+
+        if ($callback instanceof Closure) {
             $callback($form);
         }
 
@@ -270,8 +303,17 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
             ));
         }
 
-        foreach ($relationFields as $field) {
-            $record->{$field->getRelation()}()->sync((array) ($this->inputs[$field->getColumn()] ?? []));
+        try {
+            foreach ($relationFields as $field) {
+                $record->{$field->getRelation()}()->sync((array) ($this->inputs[$field->getColumn()] ?? []));
+            }
+        } catch (Throwable $e) {
+            Admin::logger()->error('Failed to sync relations: '.$e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
         }
     }
 
@@ -343,7 +385,7 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
         $this->key = $id;
         $this->method = 'PUT';
 
-        $record = $this->repository->edit($id);
+        $record = $this->repository()->edit($id);
 
         if ($record instanceof Arrayable) {
             $this->fill($record->toArray());
@@ -416,10 +458,18 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
     }
 
     /**
-     * Get the underlying repository instance.
+     * Get or set the underlying repository instance.
      */
-    public function repository(): Repository
+    public function repository(mixed $repository = null): Repository
     {
+        if ($repository !== null) {
+            $this->initRepository($repository);
+        }
+
+        if ($this->repository === null) {
+            throw new RuntimeException('Form repository is not initialized.');
+        }
+
         return $this->repository;
     }
 
@@ -540,7 +590,7 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
         }
 
         $data = $this->prepareDataForSave();
-        $record = $this->repository->store($data);
+        $record = $this->repository()->store($data);
 
         $this->syncRelations($record);
 
@@ -606,10 +656,10 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
         }
 
         $data = $this->prepareDataForSave();
-        $success = $this->repository->update($id, $data);
+        $success = $this->repository()->update($id, $data);
 
         if ($success) {
-            $this->syncRelations($this->repository->edit($id));
+            $this->syncRelations($this->repository()->edit($id));
         }
 
         $this->callHooks('updated', $this);
@@ -749,6 +799,14 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
         $this->title = $title;
 
         return $this;
+    }
+
+    /**
+     * Get the form card title.
+     */
+    public function getTitle(): ?string
+    {
+        return $this->title;
     }
 
     /**

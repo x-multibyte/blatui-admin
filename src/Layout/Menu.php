@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace BlatUI\Admin\Layout;
 
+use BlatUI\Admin\Admin;
 use BlatUI\Admin\Models\Administrator;
 use BlatUI\Admin\Models\Menu as MenuModel;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
@@ -57,7 +57,7 @@ class Menu implements Htmlable, Renderable
         }
 
         /** @var Administrator|null $user */
-        $user = Auth::guard('admin')->user();
+        $user = Admin::user();
 
         // Filter authorized items
         $filtered = $nodes->filter(function (MenuModel $item) use ($user): bool {
