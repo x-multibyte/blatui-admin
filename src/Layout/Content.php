@@ -8,7 +8,6 @@ use Closure;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Contracts\Support\Responsable;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Traits\Macroable;
@@ -272,10 +271,8 @@ class Content implements Htmlable, Renderable, Responsable
 
     /**
      * Create an HTTP response that represents the object.
-     *
-     * @param  Request  $request
      */
-    public function toResponse($request): SymfonyResponse
+    public function toResponse(mixed $request): SymfonyResponse
     {
         return new Response($this->render(), 200, [
             'Content-Type' => 'text/html; charset=UTF-8',

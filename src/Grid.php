@@ -16,7 +16,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Contracts\Support\Responsable;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -711,10 +710,8 @@ class Grid implements Htmlable, Renderable, Responsable
 
     /**
      * Create an HTTP response that represents the object.
-     *
-     * @param  Request  $request
      */
-    public function toResponse($request): SymfonyResponse
+    public function toResponse(mixed $request): SymfonyResponse
     {
         $content = Content::make();
 
