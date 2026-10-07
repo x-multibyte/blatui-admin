@@ -72,10 +72,6 @@ class AdminServiceProvider extends ServiceProvider
         ], ['blatui-admin', 'blatui-admin-lang']);
 
         $this->publishes([
-            __DIR__.'/../public' => public_path('vendor/blatui-admin'),
-        ], ['blatui-admin', 'blatui-admin-assets']);
-
-        $this->publishes([
             __DIR__.'/../database/seeders' => database_path('seeders'),
         ], ['blatui-admin', 'blatui-admin-seeders']);
 

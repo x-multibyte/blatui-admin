@@ -23,7 +23,6 @@ test('TC-4 it deletes published resources including routes and seeders symmetric
 
     File::ensureDirectoryExists(resource_path('views/vendor/blatui-admin'));
     File::ensureDirectoryExists(lang_path('vendor/blatui-admin'));
-    File::ensureDirectoryExists(public_path('vendor/blatui-admin'));
 
     $this->artisan('admin:uninstall')
         ->expectsConfirmation('Are you sure you want to uninstall BlatUI Admin?', 'yes')
@@ -35,7 +34,6 @@ test('TC-4 it deletes published resources including routes and seeders symmetric
     expect(File::exists(database_path('seeders/AdminTablesSeeder.php')))->toBeFalse();
     expect(File::isDirectory(resource_path('views/vendor/blatui-admin')))->toBeFalse();
     expect(File::isDirectory(lang_path('vendor/blatui-admin')))->toBeFalse();
-    expect(File::isDirectory(public_path('vendor/blatui-admin')))->toBeFalse();
 });
 
 test('it deletes published migrations after rolling them back', function () {

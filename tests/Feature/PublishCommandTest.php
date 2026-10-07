@@ -19,7 +19,6 @@ function cleanUpPublishedResources(): void
     File::delete(database_path('seeders/AdminTablesSeeder.php'));
     File::deleteDirectory(resource_path('views/vendor/blatui-admin'));
     File::deleteDirectory(lang_path('vendor/blatui-admin'));
-    File::deleteDirectory(public_path('vendor/blatui-admin'));
 
     foreach (File::glob(database_path('migrations/*_create_admin_tables.php')) as $migration) {
         File::delete($migration);
@@ -114,7 +113,6 @@ test('it publishes all resources when using the --all option', function () {
         ->toBe(File::get(packageSourcePath('database/seeders/AdminTablesSeeder.php')));
     expect(File::isDirectory(resource_path('views/vendor/blatui-admin')))->toBeTrue();
     expect(File::isDirectory(lang_path('vendor/blatui-admin')))->toBeTrue();
-    expect(File::isDirectory(public_path('vendor/blatui-admin')))->toBeTrue();
     expect(File::glob(database_path('migrations/*_create_admin_tables.php')))->not->toBeEmpty();
 });
 
