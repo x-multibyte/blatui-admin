@@ -23,9 +23,6 @@ composer.lock
 # Agent tooling run cache (not the tracked skills)
 /.agents/.cache/
 
-# Local UI smoke-test screenshots
-/*.png
-
 # Local opencode/LSP config
 /opencode.json
 
