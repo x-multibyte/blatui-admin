@@ -4,7 +4,6 @@
 /.phpunit.result.cache
 /coverage
 /workbench
-/openwiki
 /public
 composer.lock
 .phpunit.cache
