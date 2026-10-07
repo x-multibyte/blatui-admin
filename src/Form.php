@@ -880,10 +880,8 @@ class Form implements Htmlable, Renderable, Responsable, Stringable
 
     /**
      * Create an HTTP response that represents the object.
-     *
-     * @param  Request  $request
      */
-    public function toResponse($request): SymfonyResponse
+    public function toResponse(mixed $request): SymfonyResponse
     {
         $content = Content::make();
 
