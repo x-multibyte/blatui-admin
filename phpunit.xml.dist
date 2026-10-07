@@ -31,4 +31,7 @@
             <directory suffix=".php">src</directory>
         </include>
     </source>
+    <php>
+        <env name="__PEST_PLUGIN_ENV" value="1"/>
+    </php>
 </phpunit>
