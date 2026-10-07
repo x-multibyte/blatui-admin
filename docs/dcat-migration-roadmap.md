@@ -41,7 +41,7 @@
 ### 阶段一：补齐核心开发利器与悬空入口 (高优先级)
 - [ ] **代码生成脚手架 (`admin:make`)**：
   - 借鉴 Dcat 的 `Scaffold` 思维，通过命令行交互读取数据库表元信息，一键生成 Controller、Model 与基础 `grid()` / `form()` 模板代码。
-- [ ] **操作日志管理页 (`auth/logs`)**：
+- [x] **操作日志管理页 (`auth/logs`)**：
   - 补全目前侧边栏唯一悬空的系统功能，实现 `OperationLogController`，记录并查看后台操作日志（IP、Method、Path、Input）。
 
 ### 阶段二：常用表单与表格交互扩充 (中优先级)

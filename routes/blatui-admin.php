@@ -5,6 +5,7 @@ declare(strict_types=1);
 use BlatUI\Admin\Http\Controllers\AuthController;
 use BlatUI\Admin\Http\Controllers\DashboardController;
 use BlatUI\Admin\Http\Middleware\Authenticate;
+use BlatUI\Admin\Http\Middleware\OperationLog;
 use BlatUI\Admin\Http\Middleware\Permission;
 use Illuminate\Support\Facades\Route;
 
@@ -24,7 +25,7 @@ Route::group([
     Route::get('auth/logout', [AuthController::class, 'getLogout']);
 
     // Authenticated admin routes
-    Route::group(['middleware' => [Authenticate::class, Permission::class]], function () {
+    Route::group(['middleware' => [Authenticate::class, Permission::class, OperationLog::class]], function () {
         Route::get('/', [DashboardController::class, 'index'])->name('admin.home');
 
         // Resource pages, generated from `blatui-admin.resources` so an
@@ -37,6 +38,7 @@ Route::group([
         $segments = [
             'administrators' => 'users',
             'menus' => 'menu',
+            'logs' => 'logs',
         ];
 
         foreach ((array) config('blatui-admin.resources', []) as $key => $controller) {
