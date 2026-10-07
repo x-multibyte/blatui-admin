@@ -4,7 +4,8 @@
 /.phpunit.result.cache
 /coverage
 /workbench
-/public
+/public/*
+!/public/.gitkeep
 composer.lock
 .phpunit.cache
 .phpunit.result.cache
