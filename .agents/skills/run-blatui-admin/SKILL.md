@@ -69,13 +69,13 @@ composer exec bash -- .agents/skills/run-blatui-admin/driver.sh logout
 composer exec bash -- .agents/skills/run-blatui-admin/driver.sh login
 
 # Take a screenshot of the current page
-composer exec bash -- .agents/skills/run-blatui-admin/driver.sh screenshot dashboard.png
+composer exec bash -- .agents/skills/run-blatui-admin/driver.sh screenshot
 
 # Stop the running background server
 composer exec bash -- .agents/skills/run-blatui-admin/driver.sh stop
 ```
 
-Screenshots land at `dashboard.png` (or a specified path). Server logs land at `/tmp/blatui-admin-server.log`.
+Screenshots land at `.agents/.cache/screenshots/dashboard.png` (or a specified path). Server logs land at `/tmp/blatui-admin-server.log`.
 
 ### Interactive browser driving via agent-browser
 
@@ -94,7 +94,7 @@ composer exec /home/linuxbrew/.linuxbrew/bin/agent-browser -- fill 'input[name="
 composer exec /home/linuxbrew/.linuxbrew/bin/agent-browser -- click 'button[type="submit"]'
 
 # Capture screenshot
-composer exec /home/linuxbrew/.linuxbrew/bin/agent-browser -- screenshot dashboard.png
+composer exec /home/linuxbrew/.linuxbrew/bin/agent-browser -- screenshot .agents/.cache/screenshots/dashboard.png
 ```
 
 ## Run (human path)
