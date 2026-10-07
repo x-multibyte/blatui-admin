@@ -5,6 +5,7 @@ SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SKILL_DIR}/../../.." && pwd)"
 PID_FILE="${SKILL_DIR}/server.pid"
 LOG_FILE="/tmp/blatui-admin-server.log"
+SCREENSHOTS_DIR="${ROOT_DIR}/.agents/.cache/screenshots"
 PORT="${PORT:-8000}"
 HOST="127.0.0.1"
 BASE_URL="http://${HOST}:${PORT}"
@@ -141,12 +142,13 @@ cmd_login() {
 }
 
 cmd_screenshot() {
-    local target="${1:-${ROOT_DIR}/dashboard.png}"
+    local target="${1:-${SCREENSHOTS_DIR}/dashboard.png}"
     if [ -z "$AGENT_BROWSER" ]; then
         echo "ERROR: agent-browser CLI not found."
         return 1
     fi
 
+    mkdir -p "$(dirname "$target")"
     echo "==> Capturing screenshot to ${target}..."
     "$AGENT_BROWSER" screenshot "${target}"
     echo "==> Screenshot captured: ${target}"
@@ -160,7 +162,7 @@ cmd_smoke() {
     cmd_start
     cmd_logout
     cmd_login
-    local shot_path="${ROOT_DIR}/dashboard.png"
+    local shot_path="${SCREENSHOTS_DIR}/dashboard.png"
     cmd_screenshot "${shot_path}"
     echo "=========================================="
     echo "SMOKE TEST PASSED! Screenshot: ${shot_path}"
@@ -188,7 +190,7 @@ case "${1:-smoke}" in
         ;;
     screenshot)
         shift
-        cmd_screenshot "${1:-${ROOT_DIR}/dashboard.png}"
+        cmd_screenshot "${1:-${SCREENSHOTS_DIR}/dashboard.png}"
         ;;
     smoke)
         cmd_smoke
