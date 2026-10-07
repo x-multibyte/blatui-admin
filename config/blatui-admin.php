@@ -82,6 +82,7 @@ return [
         'roles' => 'BlatUI\Admin\Http\Controllers\Resources\RolesController',
         'permissions' => 'BlatUI\Admin\Http\Controllers\Resources\PermissionsController',
         'menus' => 'BlatUI\Admin\Http\Controllers\Resources\MenusController',
+        'logs' => 'BlatUI\Admin\Http\Controllers\Resources\OperationLogController',
     ],
 
     /*
@@ -128,6 +129,24 @@ return [
         'color' => 'default',
         'dark_mode_switch' => true,
         'sidebar_collapsed' => false,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Operation Log Settings
+    |--------------------------------------------------------------------------
+    */
+    'operation_log' => [
+        'enable' => env('ADMIN_OPERATION_LOG_ENABLE', true),
+        'allowed_methods' => ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'],
+        'except' => [
+            'auth/logs*',
+        ],
+        'secret_fields' => [
+            'password',
+            'password_confirmation',
+            '_token',
+        ],
     ],
 
     /*

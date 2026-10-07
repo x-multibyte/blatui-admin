@@ -97,12 +97,13 @@ Four commands are registered in `AdminServiceProvider::registerCommands()`. They
 
 ## Resource Pages
 
-`ResourceController` supplies the CRUD skeleton. The four bundled controllers live in `src/Http/Controllers/Resources/`. The `config('blatui-admin.resources')` maps a key to a controller class and the route file generates from it. Note that **registry key ≠ URL segment**.
+`ResourceController` supplies the CRUD skeleton. The five bundled controllers live in `src/Http/Controllers/Resources/` (`AdministratorsController`, `RolesController`, `PermissionsController`, `MenusController`, `OperationLogController`). The `config('blatui-admin.resources')` maps a key to a controller class and the route file generates from it. Note that **registry key ≠ URL segment**.
 
 **Rejected from the spec (do not reinvent):**
 - Nested tree fields
 - Multiselect description sub-labels
 - Silent pivot-failure tolerance
+- Form editing or creation for Operation Logs (`OperationLogController` enforces read-only access for `create`, `store`, `edit`, `update` via HTTP 404)
 
 ## Authorization Architecture & Middleware
 
@@ -117,6 +118,18 @@ Four commands are registered in `AdminServiceProvider::registerCommands()`. They
   - `admin.permission:check,{perm1},{perm2}` — allow only users possessing specified permission slugs.
 - **Default RBAC Matching**: Iterates `$user->allPermissions()` and tests `$permission->shouldPassThrough($request)`.
 - **Denial Behavior**: Logs a warning via `Admin::logger()->warning(...)` and throws `PermissionDeniedException` (which self-renders HTTP 403 JSON for JSON/AJAX requests or `blatui-admin::errors.page` within the standard admin shell for web requests).
+
+## Operation Log Subsystem
+
+`BlatUI\Admin\Http\Middleware\OperationLog` and `BlatUI\Admin\Http\Controllers\Resources\OperationLogController`:
+- **Middleware Alias & Attachment**: Registered as `admin.operation-log` in `AdminServiceProvider` and attached to the authenticated admin routes group in `routes/blatui-admin.php`.
+- **Audit Persistence**: Records authenticated operator HTTP requests into `admin_operation_log` table with `user_id`, `path`, `method`, `ip`, and json-encoded `input`.
+- **Configurable Filters & Masking**: Configured via `config('blatui-admin.operation_log')`:
+  - `enable`: Toggle automatic audit logging.
+  - `allowed_methods`: Whitelist of HTTP methods to track (defaults to all standard HTTP methods).
+  - `except`: Paths exempt from tracking (defaults to `['auth/logs*']` to prevent recursive log ingestion).
+  - `secret_fields`: Recursively masks keys (e.g. `password`, `password_confirmation`, `_token`) as `'******'` before storage.
+- **Resource Management**: Exposed via `OperationLogController` at `/admin/auth/logs` with Grid sorting, Badge styling, and multi-field filtering. Creation and editing are strictly forbidden (404), while record deletion and batch deletion are supported.
 
 ## Package Foundations: Exceptions, Logging, & Lifecycle Hooks
 

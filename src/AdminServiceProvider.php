@@ -10,6 +10,7 @@ use BlatUI\Admin\Console\Commands\ListCommand;
 use BlatUI\Admin\Console\Commands\PublishCommand;
 use BlatUI\Admin\Console\Commands\UninstallCommand;
 use BlatUI\Admin\Http\Middleware\Authenticate;
+use BlatUI\Admin\Http\Middleware\OperationLog;
 use BlatUI\Admin\Http\Middleware\Permission;
 use BlatUI\Admin\Support\Logger;
 use Illuminate\Routing\Router;
@@ -105,5 +106,6 @@ class AdminServiceProvider extends ServiceProvider
 
         $router->aliasMiddleware('admin.auth', Authenticate::class);
         $router->aliasMiddleware('admin.permission', Permission::class);
+        $router->aliasMiddleware('admin.operation-log', OperationLog::class);
     }
 }
