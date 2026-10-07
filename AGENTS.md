@@ -10,6 +10,14 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 - Prefer explicit Laravel package code over helper abstractions unless the extension point is real.
 - Keep tests focused on observable package behavior through public APIs, service provider wiring, commands, routes, published resources, and documentation promises.
 
+## Supported Platforms
+
+- **PHP:** 8.4, 8.5
+- **Laravel:** 12.*, 13.*
+- **OS:** Ubuntu (`ubuntu-latest`)
+
+Windows and `prefer-lowest` dependencies are explicitly **rejected** and unsupported. The Windows CI lane was removed because it never completed a run. The `prefer-lowest` lane was removed because it fails to resolve valid dependency trees (e.g. Testbench 10 vs PHPUnit 13), measuring the toolchain rather than this package's compatibility.
+
 ## Documentation Authority
 
 This file is the authority for how this package is built and what its constraints are. The documents under `docs/superpowers/` and `.agents/teamwork/` record decisions and plans, but they are not binding on their own.
