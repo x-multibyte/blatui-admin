@@ -3,29 +3,48 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
-# Laravel
+# Laravel & Composer Package
+composer.lock
 .env
 .env.backup
 .env.example
 .phpunit.result.cache
+.phpunit.cache/
 Homestead.json
 Homestead.yaml
-npm-debug.log
-yarn-error.log
 .phpactor.json
 .php-cs-fixer.cache
 phpstan.neon.cache
 rector.php.cache
 
-# IDEs
+# IDEs & System
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
 .DS_Store
+Thumbs.db
+opencode.json
+.mcp.json
+.mcp.local.json
 
-# Package specific
+# Local Binaries & Tools
+/bin/
+
+# Agent & AI Tooling Caches / Settings
+/.agents/
+/.agent/
+/.claude
+/.claude/
+/.codegraph/
+/.gitnexus/
+/.hermes/
+/.superpowers/
+skills-lock.json
+
+# Package specific & Builds
 /public/
 /workbench/
 /build/
+
