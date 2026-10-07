@@ -37,14 +37,14 @@
 **Interfaces:**
 - Produces: 完整的工作区本地物理压缩包，脱敏后的 `.agents/settings.local.json`。
 
-- [ ] **Step 1: 创建本地完整工作区快照**
+- [x] **Step 1: 创建本地完整工作区快照**
 
 在执行任何不可逆的 Git 历史重写前，将当前工作区完整打包至临时目录：
 ```bash
 tar -czf /tmp/blatui-admin-backup-20261008.tar.gz -C /laravel/packages/x-multibyte/blatui-admin .
 ```
 
-- [ ] **Step 2: 验证备份包完整性**
+- [x] **Step 2: 验证备份包完整性**
 
 运行命令验证备份包大小及内部关键文件（`.agents/settings.local.json` 等）：
 ```bash
@@ -53,7 +53,7 @@ tar -tf /tmp/blatui-admin-backup-20261008.tar.gz | grep "settings.local.json"
 ```
 预期结果：备份文件存在且包含 `.agents/settings.local.json`。
 
-- [ ] **Step 3: 脱敏 `.agents/settings.local.json` 中的 Anthropic Token**
+- [x] **Step 3: 脱敏 `.agents/settings.local.json` 中的 Anthropic Token**
 
 将 `.agents/settings.local.json` 中的硬编码 Token 清空，防止本地文件后续被误读或二次提交：
 ```json
@@ -64,7 +64,7 @@ tar -tf /tmp/blatui-admin-backup-20261008.tar.gz | grep "settings.local.json"
 }
 ```
 
-- [ ] **Step 4: 记录安全提示：吊销泄露的 Token**
+- [x] **Step 4: 记录安全提示：吊销泄露的 Token**
 
 确认已提醒用户立即访问 Anthropic 控制台吊销 `sk-f06774bef620334d-zr9rfk-94b7a5e4`。
 
@@ -79,7 +79,7 @@ tar -tf /tmp/blatui-admin-backup-20261008.tar.gz | grep "settings.local.json"
 - Consumes: Task 1 备份
 - Produces: 规则严密的 `.gitignore`，涵盖所有扩展包规范与 AI 本地工具。
 
-- [ ] **Step 1: 校验 .gitignore 中的规则清单**
+- [x] **Step 1: 校验 .gitignore 中的规则清单**
 
 确认 `.gitignore` 包含以下所有规则：
 ```gitignore
@@ -134,7 +134,7 @@ skills-lock.json
 /build/
 ```
 
-- [ ] **Step 2: 验证规则生效性**
+- [x] **Step 2: 验证规则生效性**
 
 运行测试检查 `composer.lock`、`bin/act`、`.agents/` 是否均被 git 判定为 ignored：
 ```bash
@@ -153,14 +153,14 @@ git check-ignore -v .agents bin/act composer.lock opencode.json .mcp.json
 - Consumes: Task 1 备份
 - Produces: 彻底不含 `.agents`、`.claude`、`.mcp.json`、`skills-lock.json` 的新 Git 提交树。
 
-- [ ] **Step 1: 检查并安装 git-filter-repo**
+- [x] **Step 1: 检查并安装 git-filter-repo**
 
 检查系统是否已安装 `git-filter-repo`，若未安装则通过 pip 安装：
 ```bash
 which git-filter-repo || pip install git-filter-repo
 ```
 
-- [ ] **Step 2: 执行全历史物理过滤**
+- [x] **Step 2: 执行全历史物理过滤**
 
 针对所有历史提交和标签，彻底剔除目标文件：
 ```bash
@@ -173,14 +173,14 @@ git filter-repo \
   --force
 ```
 
-- [ ] **Step 3: 重新添加 Git Remote 远端关联**
+- [x] **Step 3: 重新添加 Git Remote 远端关联**
 
 `git-filter-repo` 运行后会自动移除 remote 以防误推，需重新绑定：
 ```bash
 git remote add origin git@github.com:x-multibyte/blatui-admin.git
 ```
 
-- [ ] **Step 4: 验证历史提交中彻底无残留**
+- [x] **Step 4: 验证历史提交中彻底无残留**
 
 执行 log 检索，确保所有历史中没有任何提及目标路径的提交：
 ```bash
@@ -199,7 +199,7 @@ git log --all -- .agents .claude .mcp.json skills-lock.json
 - Consumes: Task 1 备份文件 `/tmp/blatui-admin-backup-20261008.tar.gz`
 - Produces: 磁盘上完整保留的本地 Agent 环境与配置。
 
-- [ ] **Step 1: 检查本地磁盘并按需从快照精准还原**
+- [x] **Step 1: 检查本地磁盘并按需从快照精准还原**
 
 检查工作区，如果 `git filter-repo` 将工作目录中的 `.agents` 删除了，则从快照中仅解压还原该目录：
 ```bash
@@ -208,7 +208,7 @@ if [ ! -d ".agents" ]; then
 fi
 ```
 
-- [ ] **Step 2: 验证工作区 Git 状态**
+- [x] **Step 2: 验证工作区 Git 状态**
 
 运行 `git status` 确认当前工作树干净，且还原的本地文件已被 `.gitignore` 成功接管：
 ```bash
@@ -227,14 +227,14 @@ git status
 - Consumes: Task 3 生成的新提交树
 - Produces: 远端 GitHub 仓库彻底净化的 Git 状态。
 
-- [ ] **Step 1: 强制推送所有分支与标签至远端**
+- [x] **Step 1: 强制推送所有分支与标签至远端**
 
 ```bash
 git push origin --force --all
 git push origin --force --tags
 ```
 
-- [ ] **Step 2: 验证远端分支与标签状态**
+- [x] **Step 2: 验证远端分支与标签状态**
 
 检查远端引用与最新 commit 信息：
 ```bash
@@ -242,6 +242,6 @@ git log -n 5 --oneline
 git branch -vv
 ```
 
-- [ ] **Step 3: 清理临时备份（可选，或保留至确认无误后再删）**
+- [x] **Step 3: 清理临时备份（可选，或保留至确认无误后再删）**
 
 确认本地与远端一切就绪后，保留 `/tmp/blatui-admin-backup-20261008.tar.gz` 7天后自动清理或手动移除。
