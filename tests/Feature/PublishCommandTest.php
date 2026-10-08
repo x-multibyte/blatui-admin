@@ -19,6 +19,7 @@ function cleanUpPublishedResources(): void
     File::delete(database_path('seeders/AdminTablesSeeder.php'));
     File::deleteDirectory(resource_path('views/vendor/blatui-admin'));
     File::deleteDirectory(lang_path('vendor/blatui-admin'));
+    File::deleteDirectory(public_path('vendor/blatui-admin'));
 
     foreach (File::glob(database_path('migrations/*_create_admin_tables.php')) as $migration) {
         File::delete($migration);
@@ -113,7 +114,25 @@ test('it publishes all resources when using the --all option', function () {
         ->toBe(File::get(packageSourcePath('database/seeders/AdminTablesSeeder.php')));
     expect(File::isDirectory(resource_path('views/vendor/blatui-admin')))->toBeTrue();
     expect(File::isDirectory(lang_path('vendor/blatui-admin')))->toBeTrue();
+    expect(File::isDirectory(public_path('vendor/blatui-admin')))->toBeTrue();
+    expect(File::exists(public_path('vendor/blatui-admin/admin.css')))->toBeTrue();
+    expect(File::exists(public_path('vendor/blatui-admin/admin.js')))->toBeTrue();
     expect(File::glob(database_path('migrations/*_create_admin_tables.php')))->not->toBeEmpty();
+});
+
+test('TC-6 it publishes assets into public directory byte for byte', function () {
+    $this->artisan('admin:publish', [
+        '--assets' => true,
+        '--force' => true,
+    ])->assertSuccessful();
+
+    expect(File::isDirectory(public_path('vendor/blatui-admin')))->toBeTrue();
+    expect(File::exists(public_path('vendor/blatui-admin/admin.css')))->toBeTrue();
+    expect(File::exists(public_path('vendor/blatui-admin/admin.js')))->toBeTrue();
+    expect(File::get(public_path('vendor/blatui-admin/admin.css')))
+        ->toBe(File::get(packageSourcePath('dist/admin.css')));
+    expect(File::get(public_path('vendor/blatui-admin/admin.js')))
+        ->toBe(File::get(packageSourcePath('dist/admin.js')));
 });
 
 test('it prompts interactively when no options are passed', function () {

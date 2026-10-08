@@ -13,6 +13,7 @@ test('all 8 blatui-admin publish tags are properly registered', function () {
         'blatui-admin-routes',
         'blatui-admin-views',
         'blatui-admin-lang',
+        'blatui-admin-assets',
     ];
 
     $registeredGroups = ServiceProvider::publishableGroups();

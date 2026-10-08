@@ -41,9 +41,10 @@ class InstallCommand extends Command
             $this->call('db:seed', ['--class' => AdminTablesSeeder::class]);
         }
 
-        // 3. Publish config and routes if needed
+        // 3. Publish config, routes, and assets
         $this->callSilent('vendor:publish', ['--tag' => 'blatui-admin-config']);
         $this->callSilent('vendor:publish', ['--tag' => 'blatui-admin-routes']);
+        $this->callSilent('vendor:publish', ['--tag' => 'blatui-admin-assets']);
 
         // 4. Create upload storage directory
         $disk = config('blatui-admin.upload.disk', 'public');
