@@ -8,13 +8,10 @@
 <!DOCTYPE html>
 <html
     lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    :class="{ 'dark': darkMode }"
     x-data="{
         sidebarCollapsed: false,
-        mobileSidebarOpen: false,
-        darkMode: localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        mobileSidebarOpen: false
     }"
-    x-init="$watch('darkMode', val => localStorage.setItem('theme', val ? 'dark' : 'light'))"
 >
 <head>
     <meta charset="utf-8">
@@ -23,11 +20,11 @@
 
     <title>{{ ($title ? $title . ' - ' : '') . \BlatUI\Admin\Admin::title() }}</title>
 
-    <!-- Tailwind CSS v4 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- BlatUI Admin Styles -->
+    <link rel="stylesheet" href="{{ asset('vendor/blatui-admin/admin.css') }}">
 
-    <!-- Alpine.js CDN -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- BlatUI Admin Scripts -->
+    <script defer src="{{ asset('vendor/blatui-admin/admin.js') }}"></script>
 
     @stack('styles')
 </head>

@@ -7,11 +7,11 @@
 
     <title>{{ __('blatui-admin::admin.login') ?? 'Login' }} - {{ \BlatUI\Admin\Admin::title() }}</title>
 
-    <!-- Tailwind CSS v4 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- BlatUI Admin Styles -->
+    <link rel="stylesheet" href="{{ asset('vendor/blatui-admin/admin.css') }}">
 
-    <!-- Alpine.js CDN -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- BlatUI Admin Scripts -->
+    <script defer src="{{ asset('vendor/blatui-admin/admin.js') }}"></script>
 </head>
 <body class="h-full flex items-center justify-center p-4 antialiased text-gray-900 dark:text-gray-100">
     <div class="w-full max-w-md">

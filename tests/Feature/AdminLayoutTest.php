@@ -18,3 +18,17 @@ test('authenticated admin can access dashboard with master layout', function () 
     $response->assertSee('Dashboard');
     $response->assertSee('Administrator');
 });
+
+test('layout renders compiled assets and eliminates external CDNs', function () {
+    $this->artisan('migrate')->assertSuccessful();
+    $this->seed(AdminTablesSeeder::class);
+
+    /** @var Administrator $admin */
+    $admin = Administrator::query()->where('username', 'admin')->firstOrFail();
+
+    $response = $this->actingAs($admin, 'admin')->get('/admin');
+    $response->assertStatus(200);
+    $response->assertSee('vendor/blatui-admin/admin.css');
+    $response->assertSee('vendor/blatui-admin/admin.js');
+    $response->assertDontSee('cdn.jsdelivr.net');
+});
