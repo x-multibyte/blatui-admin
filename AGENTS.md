@@ -77,7 +77,37 @@ BlatUI Admin employs a modernized, security-hardened rendering architecture that
   - The layer converted untrusted scalars into `HtmlString`. Because Blade routes `HtmlString` through `toHtml()` and then emits it unescaped, the pre-escaping and the native escaping cancelled each other out: the layer provided no defence in depth, and it could not intercept variables holding objects rather than scalars.
   - It was ineffective complexity. The single security boundary is Blade's compile-time escaping, as specified in `docs/superpowers/specs/2026-09-27-rendering-architecture-design.md` section 2.3.
 
+## Asset Pipeline & Distribution Subsystem
 
+BlatUI Admin ships a self-contained, precompiled front-end asset pipeline that guarantees zero Node/npm dependencies for host applications, zero runtime CDN requests, and offline/air-gapped operation:
+
+- **Precompiled Standalone Bundles (`dist/`):**
+  - Compiled bundles (`dist/admin.css` and `dist/admin.js`) are tracked directly in git and distributed via Composer.
+  - The build pipeline uses internal Vite 6, Tailwind CSS v4, and Alpine.js with ESM-safe module resolution and BlatUI core registration (`registerBlatUI(window.Alpine, { darkMode: 'system' })`).
+  - `resources/css/admin.css` preserves all upstream BlatUI theme tokens, scales, and `[data-*]` theme preset blocks verbatim, rewriting `@source` scans to include views, `src/`, and Lucide icons.
+
+- **Zero Runtime CDN Dependencies:**
+  - Runtime CDN scripts (`cdn.jsdelivr.net` for `@tailwindcss/browser@4` and unbundled Alpine) are completely eliminated from all views.
+  - Layouts and views link to local published assets via standard Blade tags:
+    `<link rel="stylesheet" href="{{ asset('vendor/blatui-admin/admin.css') }}">` and `<script defer src="{{ asset('vendor/blatui-admin/admin.js') }}"></script>`.
+
+- **Single-Writer Dark Mode Architecture:**
+  - Dark mode state is owned exclusively by BlatUI's `themeStore` (`$store.theme`).
+  - Layout `<html>` tag contains zero Alpine `:class="{ 'dark': ... }"` bindings and no `darkMode` state in `x-data`. The `.dark` class is manipulated strictly by `themeStore.apply()`.
+  - Header toggle buttons invoke `$store.theme.toggle()`, with icon visibility bound to `$store.theme.isDark`.
+  - Persistence is managed under `localStorage('theme:mode')` with system preference fallback (`prefers-color-scheme`).
+
+- **Symmetric Asset Lifecycle:**
+  - Published to `public/vendor/blatui-admin/` via tag `blatui-admin-assets` (part of the default `blatui-admin` publish group).
+  - Automatically published on `admin:install`.
+  - Publishable flag-driven via `admin:publish --assets` or `--all`.
+  - Removed symmetrically on `admin:uninstall`.
+
+**Rejected from the spec (do not reinvent):**
+- **Coupling Host Applications to `laravel-vite-plugin` + `@vite`**:
+  - Requiring host Laravel applications to configure Node/Vite build pipelines to import package asset sources is explicitly rejected. An admin package must be self-contained and drop-in. Forcing host apps to configure Node/Vite build pipelines destroys zero-configuration onboarding and couples package internals to host tooling.
+- **Runtime JIT CDN in Production**:
+  - Relying on `@tailwindcss/browser@4` or Alpine CDN scripts is rejected. Runtime CDNs introduce network latency, availability vulnerabilities, CSP friction, and complete failure in air-gapped intranet environments.
 
 ## Artisan Commands
 

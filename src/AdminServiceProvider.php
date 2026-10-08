@@ -83,6 +83,10 @@ class AdminServiceProvider extends ServiceProvider
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], ['blatui-admin', 'blatui-admin-migrations']);
 
+        $this->publishes([
+            __DIR__.'/../dist' => public_path('vendor/blatui-admin'),
+        ], ['blatui-admin', 'blatui-admin-assets']);
+
         $this->commands([
             AdminCommand::class,
             InstallCommand::class,

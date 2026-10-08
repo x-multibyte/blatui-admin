@@ -28,6 +28,7 @@ workbench:
     - migrate-fresh
   assets:
     - laravel-assets
+    - blatui-admin-assets
   sync:
     - from: storage
       to: workbench/storage
