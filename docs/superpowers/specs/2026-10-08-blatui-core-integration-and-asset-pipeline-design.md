@@ -11,6 +11,26 @@ Per explicit user directive:
 > "先focus 做好 第一&第二. 之后再另开分支做后续其他工作"
 > (Focus strictly on Phase 1: Package Dependencies & Composer Alignment and Phase 2: Front-end Asset Build & Distribution Pipeline. Component migration to `admin::` namespace is deferred to a future branch).
 
+### 1.1 Non-Goals & Rejected Alternatives (Do Not Reinvent)
+
+- **Deferred to Next Branch**:
+  - Full component migration and view refactoring to `admin::` namespace is deferred to a subsequent branch. Existing components in `resources/views/components/ui/` remain functional and gain access to `twMerge()` and Lucide icons without breaking current views.
+- **Rejected: Coupling Host Applications to `laravel-vite-plugin` + `@vite`**:
+  - Requiring host Laravel applications to import and compile package asset sources in their host `vite.config.js` is explicitly rejected. An admin package must be self-contained and drop-in. Forcing host apps to configure Node/Vite build pipelines for package internals destroys zero-configuration onboarding and introduces brittle dependency coupling.
+- **Rejected: Runtime JIT CDN in Production**:
+  - Relying on `@tailwindcss/browser@4` and unbundled Alpine CDN scripts from `cdn.jsdelivr.net` is rejected. Runtime CDNs introduce network latency, availability vulnerabilities, CSP friction, and complete failure in offline or air-gapped intranet environments.
+
+### 1.2 Architecture Authority & Documentation Contract
+
+Per `AGENTS.md` binding rules (*"An architecture decision change updates this file in the same commit"*):
+- Introducing an internal asset build pipeline (`package.json`, Vite, `dist/`) and three runtime package dependencies constitutes an architecture-level decision.
+- The implementation commit **must** update `AGENTS.md` in the same commit, adding an **"Asset Pipeline & Distribution Subsystem"** section that documents:
+  1. Shipped precompiled distribution (`dist/admin.css` & `dist/admin.js`) tracked in git.
+  2. Complete elimination of runtime CDN scripts.
+  3. Single-writer dark mode contract owned by BlatUI's `themeStore` (`$store.theme.toggle()`, `localStorage('theme:mode')`).
+  4. Symmetric asset lifecycle across `AdminServiceProvider`, `PublishCommand`, `UninstallCommand`, and `InstallCommand`.
+  5. The recorded rejection of host-app Vite coupling.
+
 ---
 
 ## 2. Current State (Evidenced)
@@ -168,7 +188,10 @@ Ensure that `TestCase::getPackageProviders()` registers the service providers fo
 ```javascript
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
-import path from 'path';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [
@@ -176,7 +199,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@blatui': path.resolve(__dirname, 'vendor/anousss007/blatui/stubs/foundations'),
+      '@blatui': path.resolve(dirname, 'vendor/anousss007/blatui/stubs/foundations'),
     },
   },
   build: {
@@ -184,11 +207,12 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        admin: path.resolve(__dirname, 'resources/js/admin.js'),
+        admin: path.resolve(dirname, 'resources/js/admin.js'),
       },
       output: {
         entryFileNames: 'admin.js',
-        chunkFileNames: 'admin.js',
+        // Never collide with a constant name: split chunks keep their own hashed names.
+        chunkFileNames: 'admin-[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && assetInfo.name.endsWith('.css')) {
             return 'admin.css';
@@ -201,8 +225,26 @@ export default defineConfig({
 });
 ```
 
+> `__dirname` is undefined under `"type": "module"`; derive it from `import.meta.url`.
+> `chunkFileNames` must keep `[hash]` — a constant `admin.js` makes every chunk overwrite the entry.
+
+> `package-lock.json` is committed so downstream rebuilds and the CI freshness check (§6 step 6) are reproducible.
+
 #### 3.2.3 Source Styles: `resources/css/admin.css`
-The stylesheet provides full Tailwind CSS v4 utility classes and BlatUI design tokens:
+`admin.css` is a **verbatim copy** of the upstream `vendor/anousss007/blatui/stubs/foundations/app.css`, with only the `@source` paths rewritten to this package's layout (`../views`, `../../src`, `../../vendor/...`). Do **not** hand-trim the `@theme inline` tokens or the `[data-base]` / `[data-theme]` / `[data-font]` / `[data-shadow]` / `[data-spacing]` preset blocks:
+
+- `themeStore` writes those `data-*` attributes on `<html>`; without the CSS, preset switching is silently dead.
+- The `--tracking-*` and `--shadow-*` scales are live utility drivers; trimming them breaks every `tracking-*` / `shadow-*` class.
+
+The copy must preserve, from the upstream file:
+- `@import 'tailwindcss';`
+- rewritten `@source` lines for views, `src/`, and lucide SVGs
+- `@custom-variant dark (&:is(.dark *));`
+- the full `@theme inline` token mapping
+- the complete `:root` / `.dark` token sets
+- every `[data-*]` preset override block
+- `[x-cloak]` and any Tailwind plugin directives the upstream ships
+
 ```css
 @import "tailwindcss";
 
@@ -212,167 +254,26 @@ The stylesheet provides full Tailwind CSS v4 utility classes and BlatUI design t
 
 @custom-variant dark (&:is(.dark *));
 
-/* -------------------------------------------------------------------------- */
-/*  BlatUI Design Tokens & Theme Variables                                    */
-/* -------------------------------------------------------------------------- */
-@theme inline {
-    --font-sans: var(--font-sans);
-    --font-serif: var(--font-serif);
-    --font-mono: var(--font-mono);
-    --font-heading: var(--font-heading);
-
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
-
-    --spacing: var(--spacing);
-
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
-    --color-popover: var(--popover);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-secondary: var(--secondary);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-accent: var(--accent);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-destructive: var(--destructive);
-    --color-destructive-foreground: var(--destructive-foreground);
-    --color-success: var(--success);
-    --color-success-foreground: var(--success-foreground);
-    --color-warning: var(--warning);
-    --color-warning-foreground: var(--warning-foreground);
-    --color-info: var(--info);
-    --color-info-foreground: var(--info-foreground);
-    --color-border: var(--border);
-    --color-input: var(--input);
-    --color-ring: var(--ring);
-    --color-sidebar: var(--sidebar);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-ring: var(--sidebar-ring);
-}
-
-:root {
-    --radius: 0.625rem;
-    --spacing: 0.25rem;
-    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.49 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.505 0.225 27.325);
-    --destructive-foreground: oklch(0.985 0 0);
-    --success: oklch(0.455 0.125 150);
-    --success-foreground: oklch(0.985 0.018 155);
-    --warning: oklch(0.48 0.11 65);
-    --warning-foreground: oklch(0.987 0.022 95);
-    --info: oklch(0.475 0.16 250);
-    --info-foreground: oklch(0.985 0.015 255);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --destructive-foreground: oklch(0.985 0 0);
-    --success: oklch(0.7 0.15 155);
-    --success-foreground: oklch(0.21 0.05 155);
-    --warning: oklch(0.78 0.14 82);
-    --warning-foreground: oklch(0.26 0.05 75);
-    --info: oklch(0.7 0.14 245);
-    --info-foreground: oklch(0.21 0.05 250);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
-}
-
-[x-cloak] {
-    display: none !important;
-}
+/* ... remainder copied verbatim from stubs/foundations/app.css ... */
 ```
 
 #### 3.2.4 Source Scripts: `resources/js/admin.js`
+Mirrors the upstream greenfield bootstrap (`stubs/foundations/app.js`), with two package-level adjustments: (1) `registerBlatUI` receives `{ darkMode: 'system' }` so the theme store owns the `.dark` class and follows the OS preference by default; (2) the layout's own `darkMode` x-data is removed (§3.2.9) so only the store writes `.dark`.
+
 ```javascript
 import '../css/admin.css';
 import Alpine from 'alpinejs';
-import anchor from '@alpinejs/anchor';
-import focus from '@alpinejs/focus';
-import collapse from '@alpinejs/collapse';
 import { registerBlatUI } from '@blatui/blatui-core.js';
 
-const initBlatUI = (alpine) => {
-    if (!alpine || alpine._blatui_admin_registered) {
-        return;
-    }
-    alpine.plugin(anchor);
-    alpine.plugin(focus);
-    alpine.plugin(collapse);
-    registerBlatUI(alpine);
-    alpine._blatui_admin_registered = true;
-};
-
+// registerBlatUI already registers the anchor/focus/collapse plugins and the
+// theme store; calling alpine.plugin(...) for them here would double-register.
 document.addEventListener('alpine:init', () => {
-    initBlatUI(window.Alpine);
+    registerBlatUI(window.Alpine, { darkMode: 'system' });
 });
 
 if (!window.Alpine) {
     window.Alpine = Alpine;
-    initBlatUI(Alpine);
     Alpine.start();
-} else if (window.Alpine.version) {
-    initBlatUI(window.Alpine);
 }
 ```
 
@@ -413,6 +314,8 @@ With:
     <script defer src="{{ asset('vendor/blatui-admin/admin.js') }}"></script>
 ```
 
+同时移除 `x-data="{ ..., darkMode: ... }"`、`x-init="$watch('darkMode', ...)"` 与 `<html :class="{ 'dark': darkMode }">`（详见 §3.2.9）。
+
 ##### `resources/views/auth/login.blade.php:10-14`
 Replace:
 ```blade
@@ -445,6 +348,22 @@ workbench:
     - blatui-admin-assets
 ```
 
+#### 3.2.9 Dark Mode Migration to `themeStore`
+删除 layout 自带的双写入者，暗色状态只由 `themeStore`（`$store.theme`）写入：
+
+- `resources/views/layouts/app.blade.php`：移除 `x-data` 中的 `darkMode` 字段、`x-init` 的 `$watch` 与 `<html :class="{ 'dark': darkMode }">` 绑定。`<html>` 不再通过 Alpine 绑定 `.dark`；`.dark` 完全由 `themeStore.apply()` 切换。
+- `resources/views/partials/header.blade.php`：切换按钮改为调用 `$store.theme.toggle()`；图标 `x-show` 绑定改为 `$store.theme.isDark`（按现有 sun/moon 语义反转）。
+- 持久化键从 `localStorage('theme')` 迁移到 `localStorage('theme:mode')`；老键可一次性清理。
+- 默认策略 `darkMode: 'system'`：无显式选择时跟随 `prefers-color-scheme`，避免亮色应用被翻转。
+
+```blade
+<!-- header.blade.php -->
+<button type="button" @click="$store.theme.toggle()" ...>
+    <svg x-show="!$store.theme.isDark" ...>...</svg>
+    <svg x-show="$store.theme.isDark" style="display: none;" ...>...</svg>
+</button>
+```
+
 ---
 
 ## 4. Behavioural Impact
@@ -458,6 +377,7 @@ workbench:
 - **Zero CDN Dependencies**: No outbound requests to `cdn.jsdelivr.net`. The admin panel is fully operational offline and in secure air-gapped intranet environments.
 - **Production Asset Delivery**: Precompiled CSS and JS are loaded via standard `<link rel="stylesheet">` and `<script defer>` tags from `public/vendor/blatui-admin/`.
 - **Precompiled Bundles**: Shipped in `dist/` and committed to the repository so downstream package users require zero Node.js/npm dependencies.
+- **Dark Mode Owned by `themeStore`**: `<html>` 的 `.dark` class 只由 `themeStore.apply()` 切换（策略 `darkMode: 'system'`），layout 的 `darkMode` x-data 双写入者已移除。持久化键为 `localStorage('theme:mode')`。
 
 ---
 
@@ -579,6 +499,19 @@ workbench:
    # Passes: phpstan (0 errors), pint (clean), pest (100% type coverage, 0 failures)
    ```
 
+6. **Asset Freshness Check (CI)**:
+   ```bash
+   npm ci && npm run build
+   git diff --exit-code dist/
+   # Expected: no diff — committed dist/ matches the source + lockfile build
+   ```
+
+7. **Dark Mode Single-Writer Check**:
+   ```bash
+   grep -rn "localStorage.getItem('theme')\|localStorage.setItem('theme'" resources/views
+   # Expected: EMPTY (0 results — only theme:mode may appear)
+   ```
+
 ---
 
 ## 7. Risks & Mitigation
@@ -587,5 +520,5 @@ workbench:
 | :--- | :--- | :--- |
 | Downstream app doesn't have Node/npm | Asset compilation failure | Precompiled assets in `dist/` are tracked in git and distributed via Composer. Downstream users only run `vendor:publish`. |
 | Tailwind v4 utility purging misses dynamic classes in PHP | Styles missing on badges/alerts | `@source "../../src"` scans PHP classes (e.g. `src/Grid/Displayers/Badge.php`). |
-| Conflict with host application's Alpine instance | Duplicate stores/plugins error | `initBlatUI` guards against duplicate registration using `_blatui_admin_registered` and checks `window.Alpine`. |
+| Conflict with host application's Alpine instance | Duplicate stores/plugins error | `registerBlatUI` is wired through `alpine:init`, which Alpine guarantees fires exactly once before start; a Livewire-provided `window.Alpine` is adopted via the `window.Alpine` check, mirroring the upstream bootstrap. |
 | Downstream user upgrades package but old assets cached | Outdated CSS/JS in public directory | Users re-publish with `--force`. Documented in `admin:publish` guide. |
