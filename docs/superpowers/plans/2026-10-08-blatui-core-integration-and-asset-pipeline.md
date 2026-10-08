@@ -41,7 +41,7 @@
 - Modify: `tests/TestCase.php:38-48`
 - Create: `tests/Feature/DependenciesTest.php`
 
-- [ ] **Step 1: Write failing test for runtime dependencies and auto-discovery**
+- [x] **Step 1: Write failing test for runtime dependencies and auto-discovery**
   Create `tests/Feature/DependenciesTest.php`:
   ```php
   <?php
@@ -63,22 +63,22 @@
   });
   ```
 
-- [ ] **Step 2: Run test to confirm it fails**
+- [x] **Step 2: Run test to confirm it fails**
   Run: `vendor/bin/pest tests/Feature/DependenciesTest.php`
   Expected: Fails due to missing classes.
 
-- [ ] **Step 3: Update `composer.json` with required packages**
+- [x] **Step 3: Update `composer.json` with required packages**
   Add `"anousss007/blatui": "^1.3"`, `"gehrisandro/tailwind-merge-laravel": "^1.0"`, and `"mallardduck/blade-lucide-icons": "^1.21||^2.0"` to `require`.
   Update `tests/TestCase.php` `getPackageProviders()` to include the three providers.
 
-- [ ] **Step 4: Run composer update**
+- [x] **Step 4: Run composer update**
   Run: `composer update --no-interaction`
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
   Run: `vendor/bin/pest tests/Feature/DependenciesTest.php`
   Expected: 1 test passed.
 
-- [ ] **Step 6: Commit changes**
+- [x] **Step 6: Commit changes**
   Commit: `feat(deps): add blatui core, tailwind-merge, and blade-lucide-icons dependencies`
 
 ---
@@ -95,7 +95,7 @@
 - Create: `package-lock.json`
 - Create: `tests/Feature/AssetBundleTest.php`
 
-- [ ] **Step 1: Write failing test for asset bundle presence and non-emptiness**
+- [x] **Step 1: Write failing test for asset bundle presence and non-emptiness**
   Create `tests/Feature/AssetBundleTest.php`:
   ```php
   <?php
@@ -115,27 +115,27 @@
   });
   ```
 
-- [ ] **Step 2: Run test to confirm it fails**
+- [x] **Step 2: Run test to confirm it fails**
   Run: `vendor/bin/pest tests/Feature/AssetBundleTest.php`
   Expected: Fails because `dist/admin.css` does not exist.
 
-- [ ] **Step 3: Create `package.json` and `vite.config.js`**
+- [x] **Step 3: Create `package.json` and `vite.config.js`**
   Write `package.json` with Vite 6, Tailwind v4, and Alpine dependencies.
   Write `vite.config.js` with ESM-safe `fileURLToPath(import.meta.url)` path resolution and `chunkFileNames: 'admin-[name]-[hash].js'`.
 
-- [ ] **Step 4: Create `resources/css/admin.css` and `resources/js/admin.js`**
+- [x] **Step 4: Create `resources/css/admin.css` and `resources/js/admin.js`**
   Copy upstream foundations `app.css` from `vendor/anousss007/blatui/stubs/foundations/app.css` into `resources/css/admin.css`, rewriting `@source` paths.
   Write `resources/js/admin.js` with `alpine:init` registering `registerBlatUI(window.Alpine, { darkMode: 'system' })` and `window.Alpine` bootstrap.
 
-- [ ] **Step 5: Install npm packages and build `dist/`**
+- [x] **Step 5: Install npm packages and build `dist/`**
   Run: `npm install && npm run build`
   Verify: `dist/admin.css` and `dist/admin.js` exist.
 
-- [ ] **Step 6: Run test to verify it passes**
+- [x] **Step 6: Run test to verify it passes**
   Run: `vendor/bin/pest tests/Feature/AssetBundleTest.php`
   Expected: 1 test passed.
 
-- [ ] **Step 7: Commit changes**
+- [x] **Step 7: Commit changes**
   Commit: `feat(assets): configure vite build pipeline and generate precompiled assets`
 
 ---
@@ -151,7 +151,7 @@
 - Modify: `tests/Feature/UninstallCommandTest.php`
 - Modify: `tests/Feature/InstallCommandTest.php`
 
-- [ ] **Step 1: Write failing assertions for `blatui-admin-assets` publish tag and command integration**
+- [x] **Step 1: Write failing assertions for `blatui-admin-assets` publish tag and command integration**
   Update `tests/Feature/PublishTest.php` to include `'blatui-admin-assets'`.
   Update `tests/Feature/PublishCommandTest.php` with:
   - `cleanUpPublishedResources()` removing `public_path('vendor/blatui-admin')`.
@@ -159,11 +159,11 @@
   Update `tests/Feature/UninstallCommandTest.php` to assert `public_path('vendor/blatui-admin')` is deleted.
   Update `tests/Feature/InstallCommandTest.php` to assert `admin:install` publishes assets.
 
-- [ ] **Step 2: Run tests to confirm failures**
+- [x] **Step 2: Run tests to confirm failures**
   Run: `vendor/bin/pest tests/Feature/PublishTest.php tests/Feature/PublishCommandTest.php tests/Feature/UninstallCommandTest.php tests/Feature/InstallCommandTest.php`
   Expected: Fails on missing `blatui-admin-assets` publish tag.
 
-- [ ] **Step 3: Register `blatui-admin-assets` in `AdminServiceProvider.php`**
+- [x] **Step 3: Register `blatui-admin-assets` in `AdminServiceProvider.php`**
   Add publishes mapping:
   ```php
   $this->publishes([
@@ -171,18 +171,18 @@
   ], ['blatui-admin', 'blatui-admin-assets']);
   ```
 
-- [ ] **Step 4: Update `InstallCommand.php` and `testbench.yaml`**
+- [x] **Step 4: Update `InstallCommand.php` and `testbench.yaml`**
   In `InstallCommand::handle()`, add:
   ```php
   $this->callSilent('vendor:publish', ['--tag' => 'blatui-admin-assets']);
   ```
   In `testbench.yaml`, ensure `blatui-admin-assets` is listed under `workbench.assets`.
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
   Run: `vendor/bin/pest tests/Feature/PublishTest.php tests/Feature/PublishCommandTest.php tests/Feature/UninstallCommandTest.php tests/Feature/InstallCommandTest.php`
   Expected: All tests pass.
 
-- [ ] **Step 6: Commit changes**
+- [x] **Step 6: Commit changes**
   Commit: `feat(publish): register blatui-admin-assets tag with install and uninstall symmetry`
 
 ---
@@ -195,7 +195,7 @@
 - Modify: `resources/views/partials/header.blade.php:65-80`
 - Create: `tests/Feature/ViewAssetAndDarkModeTest.php`
 
-- [ ] **Step 1: Write failing test for CDN elimination and single-writer dark mode**
+- [x] **Step 1: Write failing test for CDN elimination and single-writer dark mode**
   Create `tests/Feature/ViewAssetAndDarkModeTest.php`:
   ```php
   <?php
@@ -229,11 +229,11 @@
   });
   ```
 
-- [ ] **Step 2: Run test to confirm it fails**
+- [x] **Step 2: Run test to confirm it fails**
   Run: `vendor/bin/pest tests/Feature/ViewAssetAndDarkModeTest.php`
   Expected: Fails due to existing CDN references and layout `darkMode` state.
 
-- [ ] **Step 3: Update `layouts/app.blade.php` and `auth/login.blade.php`**
+- [x] **Step 3: Update `layouts/app.blade.php` and `auth/login.blade.php`**
   In `layouts/app.blade.php`:
   - Remove CDN `<script>` tags.
   - Add `<link rel="stylesheet" href="{{ asset('vendor/blatui-admin/admin.css') }}">` and `<script defer src="{{ asset('vendor/blatui-admin/admin.js') }}"></script>`.
@@ -244,11 +244,11 @@
   - Update dark mode toggle button to `@click="$store.theme.toggle()"`.
   - Update sun/moon icon `x-show` bindings to `$store.theme.isDark`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   Run: `vendor/bin/pest tests/Feature/ViewAssetAndDarkModeTest.php`
   Expected: 3 tests passed.
 
-- [ ] **Step 5: Commit changes**
+- [x] **Step 5: Commit changes**
   Commit: `feat(views): eliminate runtime CDNs and migrate dark mode to themeStore`
 
 ---
@@ -259,7 +259,7 @@
 - Modify: `AGENTS.md`
 - Modify: `.github/workflows/tests.yml`
 
-- [ ] **Step 1: Update `AGENTS.md` with Asset Pipeline & Distribution Subsystem**
+- [x] **Step 1: Update `AGENTS.md` with Asset Pipeline & Distribution Subsystem**
   Add section "Asset Pipeline & Distribution Subsystem" to `AGENTS.md` detailing:
   - Precompiled assets in `dist/` tracked in git.
   - Complete elimination of runtime CDN scripts.
@@ -267,7 +267,7 @@
   - Symmetric asset publishing via `blatui-admin-assets`.
   - Explicitly document rejection of host-app Vite coupling (`laravel-vite-plugin` + `@vite`).
 
-- [ ] **Step 2: Update `.github/workflows/tests.yml` with asset freshness check**
+- [x] **Step 2: Update `.github/workflows/tests.yml` with asset freshness check**
   Add a build step before composer tests:
   ```yaml
       - name: Verify asset freshness
@@ -277,7 +277,7 @@
           git diff --exit-code dist/
   ```
 
-- [ ] **Step 3: Run full verification suite**
+- [x] **Step 3: Run full verification suite**
   Run:
   ```bash
   composer test
@@ -287,10 +287,10 @@
   ```
   Expected: 0 errors across all checks.
 
-- [ ] **Step 4: Update specification status to `COMPLETE`**
+- [x] **Step 4: Update specification status to `COMPLETE`**
   In `docs/superpowers/specs/2026-10-08-blatui-core-integration-and-asset-pipeline-design.md`, update status header from `IN PROGRESS` to `COMPLETE`.
 
-- [ ] **Step 5: Commit changes**
+- [x] **Step 5: Commit changes**
   Commit: `docs: document asset pipeline subsystem in AGENTS.md and add CI freshness check`
 
 ---
