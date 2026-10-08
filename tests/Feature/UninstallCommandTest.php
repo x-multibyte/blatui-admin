@@ -55,11 +55,14 @@ test('it deletes published migrations after rolling them back', function () {
 
 test('it uninstalls without prompting when the --force option is used', function () {
     File::put(config_path('blatui-admin.php'), '<?php return [];');
+    File::ensureDirectoryExists(public_path('vendor/blatui-admin'));
+    File::put(public_path('vendor/blatui-admin/admin.css'), '/* css */');
 
     $this->artisan('admin:uninstall', ['--force' => true])
         ->expectsOutputToContain('Uninstalling BlatUI Admin...')
         ->doesntExpectOutputToContain('Are you sure you want to uninstall BlatUI Admin?')
         ->assertSuccessful();
 
-    expect(File::exists(config_path('blatui-admin.php')))->toBeFalse();
+    expect(File::exists(config_path('blatui-admin.php')))->toBeFalse()
+        ->and(File::isDirectory(public_path('vendor/blatui-admin')))->toBeFalse();
 });

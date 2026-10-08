@@ -7,10 +7,14 @@ use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
     File::deleteDirectory(public_path('vendor/blatui-admin'));
+    File::delete(config_path('blatui-admin.php'));
+    File::delete(base_path('routes/admin.php'));
 });
 
 afterEach(function () {
     File::deleteDirectory(public_path('vendor/blatui-admin'));
+    File::delete(config_path('blatui-admin.php'));
+    File::delete(base_path('routes/admin.php'));
 });
 
 test('admin:install command migrates database and seeds default admin account', function () {

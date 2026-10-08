@@ -22,4 +22,9 @@ test('all 8 blatui-admin publish tags are properly registered', function () {
         expect($registeredGroups)->toContain($tag);
         expect(ServiceProvider::pathsToPublish(null, $tag))->not->toBeEmpty();
     }
+
+    $assetPaths = ServiceProvider::pathsToPublish(null, 'blatui-admin-assets');
+    $expectedSource = realpath(dirname(__DIR__, 2).'/dist');
+    expect(realpath(array_keys($assetPaths)[0]))->toBe($expectedSource)
+        ->and(array_values($assetPaths)[0])->toBe(public_path('vendor/blatui-admin'));
 });

@@ -12,4 +12,15 @@ test('precompiled assets exist and are non-empty in dist directory', function ()
         ->and(File::size($cssPath))->toBeGreaterThan(1024)
         ->and(File::exists($jsPath))->toBeTrue()
         ->and(File::size($jsPath))->toBeGreaterThan(1024);
+
+    $cssContent = File::get($cssPath);
+    expect($cssContent)->toContain('--primary')
+        ->and($cssContent)->toContain('--spacing')
+        ->and($cssContent)->toContain('--radius')
+        ->and($cssContent)->toContain('.dark');
+
+    $jsContent = File::get($jsPath);
+    expect($jsContent)->toContain('Alpine')
+        ->and($jsContent)->toContain('theme:mode')
+        ->and($jsContent)->toContain('alpine:init');
 });

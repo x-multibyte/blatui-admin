@@ -153,3 +153,26 @@ test('it handles an empty interactive selection gracefully', function () {
 
     expect(File::exists(config_path('blatui-admin.php')))->toBeFalse();
 });
+
+test('it publishes assets interactively when selected', function () {
+    $this->artisan('admin:publish')
+        ->expectsQuestion('Which resources would you like to publish?', ['blatui-admin-assets'])
+        ->expectsConfirmation('Do you want to overwrite any existing files?', 'yes')
+        ->assertSuccessful();
+
+    expect(File::isDirectory(public_path('vendor/blatui-admin')))->toBeTrue();
+    expect(File::exists(public_path('vendor/blatui-admin/admin.css')))->toBeTrue();
+    expect(File::exists(public_path('vendor/blatui-admin/admin.js')))->toBeTrue();
+});
+
+test('it refuses to overwrite existing assets without --force', function () {
+    File::ensureDirectoryExists(public_path('vendor/blatui-admin'));
+    File::put(public_path('vendor/blatui-admin/admin.css'), '/* custom stylesheet */');
+
+    $this->artisan('admin:publish', ['--assets' => true])
+        ->expectsConfirmation('Do you want to overwrite any existing files?', 'no')
+        ->assertSuccessful();
+
+    expect(File::get(public_path('vendor/blatui-admin/admin.css')))
+        ->toBe('/* custom stylesheet */');
+});
