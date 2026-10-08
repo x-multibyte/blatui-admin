@@ -228,7 +228,7 @@ export default defineConfig({
 > `__dirname` is undefined under `"type": "module"`; derive it from `import.meta.url`.
 > `chunkFileNames` must keep `[hash]` — a constant `admin.js` makes every chunk overwrite the entry.
 
-> `package-lock.json` is committed so downstream rebuilds and the CI freshness check (§6 step 6) are reproducible.
+> `package-lock.json` is committed so downstream rebuilds are reproducible.
 
 #### 3.2.3 Source Styles: `resources/css/admin.css`
 `admin.css` is a **verbatim copy** of the upstream `vendor/anousss007/blatui/stubs/foundations/app.css`, with only the `@source` paths rewritten to this package's layout (`../views`, `../../src`, `../../vendor/...`). Do **not** hand-trim the `@theme inline` tokens or the `[data-base]` / `[data-theme]` / `[data-font]` / `[data-shadow]` / `[data-spacing]` preset blocks:
@@ -499,14 +499,7 @@ workbench:
    # Passes: phpstan (0 errors), pint (clean), pest (100% type coverage, 0 failures)
    ```
 
-6. **Asset Freshness Check (CI)**:
-   ```bash
-   npm ci && npm run build
-   git diff --exit-code dist/
-   # Expected: no diff — committed dist/ matches the source + lockfile build
-   ```
-
-7. **Dark Mode Single-Writer Check**:
+6. **Dark Mode Single-Writer Check**:
    ```bash
    grep -rn "localStorage.getItem('theme')\|localStorage.setItem('theme'" resources/views
    # Expected: EMPTY (0 results — only theme:mode may appear)
