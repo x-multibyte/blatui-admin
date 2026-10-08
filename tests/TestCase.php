@@ -16,6 +16,10 @@ abstract class TestCase extends Orchestra
     {
         return [
             AdminServiceProvider::class,
+            \BlatUI\BlatuiServiceProvider::class,
+            \TailwindMerge\Laravel\TailwindMergeServiceProvider::class,
+            \BladeUI\Icons\BladeIconsServiceProvider::class,
+            \MallardDuck\LucideIcons\BladeLucideIconsServiceProvider::class,
         ];
     }
 
