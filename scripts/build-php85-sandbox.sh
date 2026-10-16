@@ -33,8 +33,10 @@ apt-get install -y -qq curl ca-certificates gnupg lsb-release apt-transport-http
 # 2. 配置 sury.org APT 源（若已存在则跳过） -----------------------------------
 if ! grep -rq "packages.sury.org/php" /etc/apt/sources.list.d/ 2>/dev/null; then
     log "添加 sury.org PHP APT 源"
-    curl -fsSL https://packages.sury.org/php/gpgkey \
-        | gpg --dearmor -o /etc/apt/trusted.gpg.d/sury-php.gpg
+    # sury 官方文档推荐直接下载已 dearmor 的 apt.gpg；
+    # gpg --dearmor 方式需要 --batch --yes 以避免文件已存在时交互阻塞。
+    curl -fsSL https://packages.sury.org/php/apt.gpg \
+        -o /etc/apt/trusted.gpg.d/sury-php.gpg
     echo "deb [signed-by=/etc/apt/trusted.gpg.d/sury-php.gpg] https://packages.sury.org/php $(lsb_release -sc) main" \
         > /etc/apt/sources.list.d/sury-php.list
 else
@@ -44,7 +46,8 @@ apt-get update -qq
 
 # 3. 安装 PHP 8.5 CLI 及 Laravel 项目常用扩展 ----------------------------------
 log "安装 php${PHP_VERSION}-cli 与常用扩展"
-EXTENSIONS=(mbstring xml curl zip intl mysql pgsql sqlite3 gd bcmath opcache readline)
+# opcache 已编译进 php8.5-cli 本体（Zend OPcache），sury 无独立 php8.5-opcache 包
+EXTENSIONS=(mbstring xml curl zip intl mysql pgsql sqlite3 gd bcmath readline)
 PKGS=("php${PHP_VERSION}-cli")
 for ext in "${EXTENSIONS[@]}"; do
     PKGS+=("php${PHP_VERSION}-${ext}")
