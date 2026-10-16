@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BlatUI\Admin;
 
 use BlatUI\Admin\Console\Commands\AdminCommand;
+use BlatUI\Admin\Console\Commands\AdminInstallCommand;
 use Illuminate\Support\ServiceProvider;
 
 class AdminServiceProvider extends ServiceProvider
@@ -56,6 +57,7 @@ class AdminServiceProvider extends ServiceProvider
 
         $this->commands([
             AdminCommand::class,
+            AdminInstallCommand::class,
         ]);
     }
 }
