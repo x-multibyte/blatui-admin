@@ -9,3 +9,10 @@ composer.lock
 .DS_Store
 .idea
 .vscode
+/.codegraph
+/.agents
+/.claude
+/.gitnexus
+/workbench
+/public
+/skills-lock.json
