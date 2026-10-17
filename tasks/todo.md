@@ -14,11 +14,11 @@
   - [x] 2.4 创建 `StubManager` (模板分发与已有组件防覆盖检查)
   - [x] 2.5 编写并通过 Phase 2 单元测试 (`ProcessRunnerTest`, `ViteWiringManagerTest`, `ArtisanRunnerTest`, `StubManagerTest`)
 
-- [ ] **Phase 3: Wizard (交互向导与编排)**
-  - [ ] 3.1 创建 `InstallContext` DTO (封装 dryRun, force, fresh, interactive, apexcharts, components 偏好)
-  - [ ] 3.2 创建 `StepResult` DTO (封装步骤成功/失败/计划操作输出)
-  - [ ] 3.3 创建 `InstallWizard` (纯 `laravel/prompts` 驱动：渲染表格、问询偏好、spin 执行 Actions、outro 总结)
-  - [ ] 3.4 编写并通过 Phase 3 单元测试 (`InstallContextTest`, `InstallWizardTest`)
+- [x] **Phase 3: Wizard (交互向导与编排)**
+  - [x] 3.1 创建 `InstallContext` DTO (封装 dryRun, force, fresh, interactive, apexcharts, components 偏好)
+  - [x] 3.2 创建 `StepResult` DTO (封装步骤成功/失败/计划操作输出)
+  - [x] 3.3 创建 `InstallWizard` (纯 `laravel/prompts` 驱动：渲染表格、问询偏好、spin 执行 Actions、outro 总结)
+  - [x] 3.4 编写并通过 Phase 3 单元测试 (`InstallContextTest`, `StepResultTest`, `InstallWizardTest`)
 
 - [ ] **Phase 4: CLI Commands (控制台接入点)**
   - [ ] 4.1 创建 `BlatuiAdminCommand` 主命令 (`php artisan blatui:admin {--install}`)
