@@ -7,12 +7,12 @@
   - [x] 1.4 创建 `EnvironmentDetector` 服务 (Composer/Node/PM/Livewire/Flux/Tailwind/PeerPackages 探测)
   - [x] 1.5 编写并通过 Phase 1 单元测试 (`CheckStatusTest`, `CheckResultTest`, `DiagnosticReportTest`, `EnvironmentDetectorTest`)
 
-- [ ] **Phase 2: Actions (无状态执行工具箱)**
-  - [ ] 2.1 创建 `ProcessRunner` (封装 npm/pnpm/yarn/bun/npx/composer 执行与超时隔离)
-  - [ ] 2.2 创建 `ViteWiringManager` (实现 Tailwind v4 `@import` 追加与 3 种 JS 环境防 Duplicate-Alpine 插桩)
-  - [ ] 2.3 创建 `ArtisanRunner` (安全执行内部 Artisan 命令如 publish/migrate/blatui:add)
-  - [ ] 2.4 创建 `StubManager` (模板分发与已有组件防覆盖检查)
-  - [ ] 2.5 编写并通过 Phase 2 单元测试 (`ProcessRunnerTest`, `ViteWiringManagerTest`, `ArtisanRunnerTest`)
+- [x] **Phase 2: Actions (无状态执行工具箱)**
+  - [x] 2.1 创建 `ProcessRunner` (封装 npm/pnpm/yarn/bun/npx/composer 执行与超时隔离)
+  - [x] 2.2 创建 `ViteWiringManager` (实现 Tailwind v4 `@import` 追加与 3 种 JS 环境防 Duplicate-Alpine 插桩)
+  - [x] 2.3 创建 `ArtisanRunner` (安全执行内部 Artisan 命令如 publish/migrate/blatui:add)
+  - [x] 2.4 创建 `StubManager` (模板分发与已有组件防覆盖检查)
+  - [x] 2.5 编写并通过 Phase 2 单元测试 (`ProcessRunnerTest`, `ViteWiringManagerTest`, `ArtisanRunnerTest`, `StubManagerTest`)
 
 - [ ] **Phase 3: Wizard (交互向导与编排)**
   - [ ] 3.1 创建 `InstallContext` DTO (封装 dryRun, force, fresh, interactive, apexcharts, components 偏好)
