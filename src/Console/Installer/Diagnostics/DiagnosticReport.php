@@ -72,7 +72,13 @@ final class DiagnosticReport implements Countable, IteratorAggregate
 
     public function hasCriticalFailures(): bool
     {
-        return $this->failCount() > 0;
+        foreach ($this->results as $result) {
+            if ($result->isCritical()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function hasWarnings(): bool

@@ -12,6 +12,8 @@ final class EnvironmentDetector
 {
     private string $basePath;
 
+    private string $defaultBasePath;
+
     /**
      * @var array<string, string>|null
      */
@@ -20,6 +22,7 @@ final class EnvironmentDetector
     public function __construct(?string $basePath = null)
     {
         $defaultBase = function_exists('base_path') ? base_path() : (getcwd() ?: '.');
+        $this->defaultBasePath = rtrim($defaultBase, '/');
         $this->basePath = rtrim($basePath ?? $defaultBase, '/');
     }
 
@@ -217,23 +220,41 @@ final class EnvironmentDetector
 
     public function hasComposerPackage(string $package): bool
     {
-        if (class_exists(InstalledVersions::class)) {
-            try {
-                return InstalledVersions::isInstalled($package);
-            } catch (Throwable) {
-                // Ignore and fall through to lockfile inspection.
-            }
-        }
-
         $lockPath = $this->basePath('composer.lock');
 
         if (is_readable($lockPath)) {
             /** @var array{packages?: array<int, array{name?: string}>, packages-dev?: array<int, array{name?: string}>} $lock */
             $lock = json_decode((string) file_get_contents($lockPath), true) ?: [];
-            foreach ([...$lock['packages'] ?? [], ...$lock['packages-dev'] ?? []] as $pkg) {
-                if (isset($pkg['name']) && $pkg['name'] === $package) {
+
+            foreach ($lock['packages'] ?? [] as $pkg) {
+                if (($pkg['name'] ?? null) === $package) {
                     return true;
                 }
+            }
+
+            foreach ($lock['packages-dev'] ?? [] as $pkg) {
+                if (($pkg['name'] ?? null) === $package) {
+                    return true;
+                }
+            }
+        }
+
+        $jsonPath = $this->basePath('composer.json');
+
+        if (is_readable($jsonPath)) {
+            /** @var array{require?: array<string, string>, require-dev?: array<string, string>} $json */
+            $json = json_decode((string) file_get_contents($jsonPath), true) ?: [];
+
+            if (isset($json['require'][$package]) || isset($json['require-dev'][$package])) {
+                return true;
+            }
+        }
+
+        if ($this->basePath === $this->defaultBasePath && class_exists(InstalledVersions::class)) {
+            try {
+                return InstalledVersions::isInstalled($package);
+            } catch (Throwable) {
+                // Ignore and fall through
             }
         }
 
@@ -301,11 +322,10 @@ final class EnvironmentDetector
         if (is_readable($pkgJson)) {
             /** @var array{packageManager?: string} $json */
             $json = json_decode((string) file_get_contents($pkgJson), true) ?: [];
+            $pm = explode('@', $json['packageManager'] ?? '')[0];
 
-            foreach (array_keys($managers) as $manager) {
-                if (str_starts_with($json['packageManager'] ?? '', $manager.'@')) {
-                    return $manager;
-                }
+            if (isset($managers[$pm])) {
+                return $pm;
             }
         }
 
@@ -323,13 +343,13 @@ final class EnvironmentDetector
 
             $output = trim($process->output());
 
-            if ($output === '' || ! str_starts_with($output, 'v')) {
-                return null;
+            if (preg_match('/v?(\d+)\.\d+/', $output, $matches) === 1) {
+                $major = filter_var($matches[1], FILTER_VALIDATE_INT);
+
+                return $major !== false ? $major : null;
             }
 
-            $major = filter_var(explode('.', ltrim($output, 'v'))[0], FILTER_VALIDATE_INT);
-
-            return $major !== false ? $major : null;
+            return null;
         } catch (Throwable) {
             return null;
         }
