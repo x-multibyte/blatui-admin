@@ -2,6 +2,17 @@
 
 All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
+## v0.0.2 - 2026-10-17
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Other Changes
+
+* chore: configure gitignore exclusions and update core dependencies by @x-multibyte in https://github.com/x-multibyte/blatui-admin/pull/6
+
+**Full Changelog**: https://github.com/x-multibyte/blatui-admin/compare/v0.0.1...v0.0.2
+
 ## v0.0.1 - 2026-10-17
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
