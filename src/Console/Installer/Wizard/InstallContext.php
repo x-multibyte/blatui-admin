@@ -31,6 +31,12 @@ final readonly class InstallContext
         $composerPath = isset($options['composer-path']) && is_string($options['composer-path']) && $options['composer-path'] !== ''
             ? $options['composer-path']
             : null;
+        $installApexCharts = (bool) ($options['install-apex-charts'] ?? false);
+
+        /** @var array<int, string> $components */
+        $components = isset($options['components']) && is_array($options['components'])
+            ? array_values(array_filter($options['components'], 'is_string'))
+            : [];
 
         return new self(
             dryRun: $dryRun,
@@ -38,6 +44,8 @@ final readonly class InstallContext
             fresh: $fresh,
             interactive: $interactive,
             composerPath: $composerPath,
+            installApexCharts: $installApexCharts,
+            selectedComponents: $components,
         );
     }
 

@@ -23,13 +23,17 @@ it('creates context from command options array', function () {
         'fresh' => false,
         'no-interaction' => true,
         'composer-path' => '/custom/bin/composer',
+        'install-apex-charts' => true,
+        'components' => ['button', 'card'],
     ]);
 
     expect($context->dryRun)->toBeTrue()
         ->and($context->force)->toBeTrue()
         ->and($context->fresh)->toBeFalse()
         ->and($context->interactive)->toBeFalse()
-        ->and($context->composerPath)->toBe('/custom/bin/composer');
+        ->and($context->composerPath)->toBe('/custom/bin/composer')
+        ->and($context->installApexCharts)->toBeTrue()
+        ->and($context->selectedComponents)->toBe(['button', 'card']);
 });
 
 it('creates derived context with user preferences', function () {

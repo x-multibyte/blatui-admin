@@ -6,6 +6,14 @@ namespace BlatUI\Admin;
 
 use BlatUI\Admin\Console\Commands\AdminCommand;
 use BlatUI\Admin\Console\Commands\AdminInstallCommand;
+use BlatUI\Admin\Console\Commands\BlatuiAdminCommand;
+use BlatUI\Admin\Console\Installer\Actions\ArtisanRunner;
+use BlatUI\Admin\Console\Installer\Actions\ProcessRunner;
+use BlatUI\Admin\Console\Installer\Actions\StubManager;
+use BlatUI\Admin\Console\Installer\Actions\ViteWiringManager;
+use BlatUI\Admin\Console\Installer\Diagnostics\EnvironmentDetector;
+use BlatUI\Admin\Console\Installer\Wizard\InstallWizard;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 class AdminServiceProvider extends ServiceProvider
@@ -18,6 +26,19 @@ class AdminServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/blatui-admin.php', 'blatui-admin');
 
         $this->app->singleton(Admin::class);
+
+        $this->app->singleton(EnvironmentDetector::class, fn (): EnvironmentDetector => new EnvironmentDetector);
+        $this->app->singleton(ProcessRunner::class, fn (Application $app): ProcessRunner => new ProcessRunner($app->make(EnvironmentDetector::class)));
+        $this->app->singleton(ViteWiringManager::class, fn (Application $app): ViteWiringManager => new ViteWiringManager($app->make(EnvironmentDetector::class)));
+        $this->app->singleton(ArtisanRunner::class, fn (): ArtisanRunner => new ArtisanRunner);
+        $this->app->singleton(StubManager::class, fn (): StubManager => new StubManager);
+        $this->app->singleton(InstallWizard::class, fn (Application $app): InstallWizard => new InstallWizard(
+            $app->make(EnvironmentDetector::class),
+            $app->make(ProcessRunner::class),
+            $app->make(ViteWiringManager::class),
+            $app->make(ArtisanRunner::class),
+            $app->make(StubManager::class),
+        ));
     }
 
     /**
@@ -58,6 +79,7 @@ class AdminServiceProvider extends ServiceProvider
         $this->commands([
             AdminCommand::class,
             AdminInstallCommand::class,
+            BlatuiAdminCommand::class,
         ]);
     }
 }
