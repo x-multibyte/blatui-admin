@@ -69,6 +69,51 @@ it('inserts blatui.css after existing @import statements', function () {
         ->and($blatuiPos)->toBeLessThan($buttonPos);
 });
 
+it('places blatui.css after bundled imports preserving external font imports first', function () {
+    $cssDir = $this->tempDir.'/resources/css';
+    mkdir($cssDir, 0755, true);
+    $css = <<<'CSS'
+@import url("https://fonts.googleapis.com/css2?family=Kreon&display=swap");
+@import "tailwindcss";
+
+.user-card { color: blue; }
+CSS;
+    file_put_contents($cssDir.'/app.css', $css);
+
+    $manager = new ViteWiringManager($this->detector, $this->tempDir);
+    $manager->wireCSS();
+
+    $content = file_get_contents($cssDir.'/app.css');
+    $fontPos = strpos($content, '@import url("https://fonts.googleapis.com');
+    $tailwindPos = strpos($content, '@import "tailwindcss";');
+    $blatuiPos = strpos($content, '@import "./blatui.css";');
+    $cardPos = strpos($content, '.user-card');
+
+    expect($fontPos)->toBeLessThan($tailwindPos)
+        ->and($tailwindPos)->toBeLessThan($blatuiPos)
+        ->and($blatuiPos)->toBeLessThan($cardPos);
+});
+
+it('inserts blatui.css before leading layer blocks', function () {
+    $cssDir = $this->tempDir.'/resources/css';
+    mkdir($cssDir, 0755, true);
+    $css = <<<'CSS'
+@layer base {
+    html { color: red; }
+}
+CSS;
+    file_put_contents($cssDir.'/app.css', $css);
+
+    $manager = new ViteWiringManager($this->detector, $this->tempDir);
+    $manager->wireCSS();
+
+    $content = file_get_contents($cssDir.'/app.css');
+    $blatuiPos = strpos($content, '@import "./blatui.css";');
+    $layerPos = strpos($content, '@layer base {');
+
+    expect($blatuiPos)->toBeLessThan($layerPos);
+});
+
 it('wires JS for greenfield projects with blatui.js bootstrap', function () {
     $manager = new ViteWiringManager($this->detector, $this->tempDir);
     $result = $manager->wireJS();

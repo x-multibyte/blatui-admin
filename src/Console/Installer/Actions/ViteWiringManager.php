@@ -166,14 +166,14 @@ JS;
     /**
      * Insert @import rule before non-import rules, complying with CSS specification.
      */
-    public function insertCSSImport(string $contents, string $import = '@import "./blatui.css";'): string
+    private function insertCSSImport(string $contents, string $import = '@import "./blatui.css";'): string
     {
         if (str_contains($contents, 'blatui.css')) {
             return $contents;
         }
 
-        // Check if there are existing @import rules; if so, insert right after the last one
-        if (preg_match_all('/^@import\s+[^;]+;\s*$/m', $contents, $matches, PREG_OFFSET_CAPTURE) === 1 && ! empty($matches[0])) {
+        // If existing @import rules are present, insert immediately after the last @import statement
+        if (preg_match_all('/^@import\s+[^;]+;\s*$/m', $contents, $matches, PREG_OFFSET_CAPTURE) > 0) {
             $lastMatch = end($matches[0]);
             /** @var array{0: string, 1: int} $lastMatch */
             $insertPos = $lastMatch[1] + strlen($lastMatch[0]);
@@ -181,7 +181,7 @@ JS;
             return substr($contents, 0, $insertPos)."\n".$import.substr($contents, $insertPos);
         }
 
-        // Otherwise find the first line that is not a comment, empty line, or @charset/@layer
+        // If no @import exists, find the insertion point before any rules or blocks
         $lines = explode("\n", $contents);
         $insertIndex = 0;
         $inComment = false;
@@ -207,7 +207,8 @@ JS;
                 continue;
             }
 
-            if (str_starts_with($trimmed, '@charset') || str_starts_with($trimmed, '@layer')) {
+            // @charset and statement-only @layer declarations (e.g. "@layer a, b;") can precede @import
+            if (str_starts_with($trimmed, '@charset') || (str_starts_with($trimmed, '@layer') && str_ends_with($trimmed, ';'))) {
                 $insertIndex = $i + 1;
 
                 continue;
@@ -219,7 +220,7 @@ JS;
                 continue;
             }
 
-            // Encountered the first real CSS selector or rule, insert before it
+            // Encountered first real CSS selector or block, insert before it
             $insertIndex = $i;
 
             break;
