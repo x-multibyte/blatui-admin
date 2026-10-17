@@ -1,8 +1,5 @@
 # Release Notes
 
-## [Unreleased](https://github.com/x-multibyte/blatui-admin/compare/v0.1.0...1.x)
+All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
-
-## [v0.1.0](https://github.com/x-multibyte/blatui-admin/compare/...v0.1.0) - 202x-xx-xx
-
-Initial pre-release.
+## [Unreleased]

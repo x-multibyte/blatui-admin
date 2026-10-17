@@ -1,0 +1,149 @@
+name: Release on Merge
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type (auto, patch, minor, major)'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    name: Create Release & Update Changelog
+    if: >-
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'skip-release') && !contains(github.event.pull_request.title, 'Update CHANGELOG') && !contains(github.event.pull_request.title, 'chore(release)')) ||
+      (github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Determine next version
+        id: semver
+        shell: bash
+        env:
+          INPUT_BUMP: ${{ github.event.inputs.bump || 'auto' }}
+          PR_TITLE: ${{ github.event.pull_request.title || '' }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          git fetch --tags --force 2>/dev/null || true
+          
+          LATEST_TAG=$(git tag -l "v*" --sort=-v:refname | head -n 1)
+          
+          if [ -z "$LATEST_TAG" ]; then
+            # Initial pre-release starting at v0.0.1
+            NEXT_VERSION="v0.0.1"
+            PREV_TAG=""
+          else
+            PREV_TAG="$LATEST_TAG"
+            
+            BUMP="patch"
+            if [ "$INPUT_BUMP" != "auto" ] && [ -n "$INPUT_BUMP" ]; then
+              BUMP="$INPUT_BUMP"
+            elif echo "$PR_LABELS" | grep -qiE 'breaking|major'; then
+              BUMP="major"
+            elif echo "$PR_LABELS" | grep -qiE 'enhancement|minor|feature'; then
+              BUMP="minor"
+            elif echo "$PR_TITLE" | grep -qiE '^feat(\(.*\))?!:|^.*BREAKING CHANGE'; then
+              BUMP="major"
+            elif echo "$PR_TITLE" | grep -qiE '^feat(\(.*\))?:'; then
+              BUMP="minor"
+            fi
+            
+            CLEAN="${LATEST_TAG#v}"
+            MAJOR=$(echo "$CLEAN" | cut -d. -f1)
+            MINOR=$(echo "$CLEAN" | cut -d. -f2)
+            PATCH=$(echo "$CLEAN" | cut -d. -f3 | cut -d- -f1)
+            
+            MAJOR=${MAJOR:-0}
+            MINOR=${MINOR:-0}
+            PATCH=${PATCH:-0}
+            
+            case "$BUMP" in
+              major)
+                NEXT_VERSION="v$((MAJOR + 1)).0.0"
+                ;;
+              minor)
+                NEXT_VERSION="v${MAJOR}.$((MINOR + 1)).0"
+                ;;
+              patch|*)
+                NEXT_VERSION="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+                ;;
+            esac
+          fi
+          
+          echo "previous_tag=$PREV_TAG" >> "$GITHUB_OUTPUT"
+          echo "next_version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Next release version: $NEXT_VERSION (previous: $PREV_TAG)"
+
+      - name: Generate release notes
+        id: release_notes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.semver.outputs.next_version }}
+          PREV_TAG: ${{ steps.semver.outputs.previous_tag }}
+        run: |
+          PARAMS=("-f" "tag_name=${TAG_NAME}" "-f" "target_commitish=main")
+          if [ -n "$PREV_TAG" ]; then
+            PARAMS+=("-f" "previous_tag_name=${PREV_TAG}")
+          fi
+          
+          BODY=$(gh api "repos/${{ github.repository }}/releases/generate-notes" "${PARAMS[@]}" --jq .body)
+          
+          echo "$BODY" > /tmp/release_notes.md
+          
+          {
+            echo "notes<<EOF"
+            cat /tmp/release_notes.md
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Update CHANGELOG.md
+        uses: stefanzweifel/changelog-updater-action@a938690fad7edf25368f37e43a1ed1b34303eb36 # v1
+        with:
+          latest-version: ${{ steps.semver.outputs.next_version }}
+          release-notes: ${{ steps.release_notes.outputs.notes }}
+          compare-url-target-name: main
+
+      - name: Commit updated CHANGELOG.md
+        uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7
+        with:
+          branch: main
+          commit_message: "chore(release): update CHANGELOG for ${{ steps.semver.outputs.next_version }} [skip ci]"
+          file_pattern: CHANGELOG.md
+
+      - name: Create GitHub Release and Tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.semver.outputs.next_version }}
+        run: |
+          git checkout main
+          git pull origin main
+          
+          gh release create "$TAG_NAME" \
+            --title "$TAG_NAME" \
+            --notes-file /tmp/release_notes.md \
+            --target main
