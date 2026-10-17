@@ -114,6 +114,12 @@ class AdminInstallCommand extends Command
                 plan: fn (): string => 'Verify php -v, composer -V and node -v are available.',
             ),
             new InstallStep(
+                title: 'Install Livewire (livewire/livewire)',
+                shouldRun: fn (): bool => ! $this->hasComposerPackage('livewire/livewire'),
+                run: fn (): int => $this->requireComposerPackages('livewire/livewire'),
+                plan: fn (): string => 'composer require livewire/livewire',
+            ),
+            new InstallStep(
                 title: 'Install the BlatUI CLI (anousss007/blatui)',
                 shouldRun: fn (): bool => ! $this->hasComposerPackage('anousss007/blatui'),
                 run: fn (): int => $this->requireComposerPackages('anousss007/blatui'),
@@ -207,6 +213,8 @@ class AdminInstallCommand extends Command
 
         if (! $this->hasBinary('node')) {
             $failures[] = 'Node.js 18+ was not found. BlatUI components need Tailwind CSS v4 + Alpine.js built through Vite.';
+        } elseif (($nodeMajor = $this->nodeMajorVersion()) !== null && $nodeMajor < 18) {
+            $failures[] = "Node.js 18 or newer is required (v{$nodeMajor} detected).";
         }
 
         if ($failures !== []) {
@@ -215,6 +223,14 @@ class AdminInstallCommand extends Command
             }
 
             return self::FAILURE;
+        }
+
+        if ($this->hasNodeDependency('tailwindcss')) {
+            $tailwindMajor = $this->tailwindMajorVersion();
+
+            if ($tailwindMajor !== null && $tailwindMajor < 4) {
+                warning("Tailwind CSS v{$tailwindMajor} detected. BlatUI requires Tailwind CSS v4+. Run 'npx @tailwindcss/upgrade' to upgrade.");
+            }
         }
 
         note('Laravel '.$this->laravelMajorVersion().' · PHP '.PHP_VERSION.' · Node '.$this->nodeVersion().' · package manager: '.($this->detectNodePackageManager() ?? 'none'));
@@ -277,12 +293,37 @@ class AdminInstallCommand extends Command
 
         $livewireInstalled = $this->hasComposerPackage('livewire/livewire');
 
-        if (file_exists($cssEntry) && ! str_contains((string) file_get_contents($cssEntry), 'blatui.css')) {
+        if (! file_exists($cssEntry)) {
+            if (! is_dir(dirname($cssEntry))) {
+                mkdir(dirname($cssEntry), 0755, true);
+            }
+            file_put_contents($cssEntry, '@import "tailwindcss";'."\n".'@import "./blatui.css";'."\n");
+            note('Created resources/css/app.css with Tailwind CSS and BlatUI imports');
+        } elseif (! str_contains((string) file_get_contents($cssEntry), 'blatui.css')) {
             file_put_contents($cssEntry, "\n".'@import "./blatui.css";'."\n", FILE_APPEND);
             note('Added @import "./blatui.css"; to resources/css/app.css');
         }
 
-        if (file_exists($jsEntry)) {
+        if (! file_exists($jsEntry)) {
+            if (! is_dir(dirname($jsEntry))) {
+                mkdir(dirname($jsEntry), 0755, true);
+            }
+
+            if ($livewireInstalled) {
+                file_put_contents($jsEntry, <<<'JS'
+import { registerBlatUI } from './blatui-core.js'
+
+document.addEventListener('alpine:init', () => {
+    registerBlatUI(window.Alpine)
+})
+
+JS);
+                note('Created resources/js/app.js and registered BlatUI onto Livewire\'s Alpine');
+            } else {
+                file_put_contents($jsEntry, 'import "./blatui.js";'."\n");
+                note('Created resources/js/app.js with BlatUI bootstrap');
+            }
+        } else {
             $contents = (string) file_get_contents($jsEntry);
 
             if ($livewireInstalled) {
@@ -291,12 +332,12 @@ class AdminInstallCommand extends Command
                 // of booting a second copy with blatui.js.
                 if (! str_contains($contents, 'blatui-core.js')) {
                     file_put_contents($jsEntry, "\n".<<<'JS'
-                        import { registerBlatUI } from './blatui-core.js'
+import { registerBlatUI } from './blatui-core.js'
 
-                        document.addEventListener('alpine:init', () => {
-                            registerBlatUI(window.Alpine)
-                        })
-                        JS."\n", FILE_APPEND);
+document.addEventListener('alpine:init', () => {
+    registerBlatUI(window.Alpine)
+})
+JS."\n", FILE_APPEND);
                     note('Registered BlatUI onto Livewire\'s Alpine in resources/js/app.js');
                 }
             } elseif (! str_contains($contents, 'blatui.js')) {
