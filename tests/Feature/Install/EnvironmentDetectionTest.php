@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use BlatUI\Admin\Console\Commands\AdminInstallCommand;
-use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 
 /**
@@ -13,7 +12,6 @@ function installCommand(): AdminInstallCommand
 {
     $command = new AdminInstallCommand;
     $command->setLaravel(app());
-    app(Kernel::class)->resolve($command);
 
     return $command;
 }
@@ -29,12 +27,21 @@ function callProtected(AdminInstallCommand $command, string $method, array $argu
     return $reflection->invoke($command, ...$arguments);
 }
 
+afterEach(function () {
+    foreach (['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'bun.lockb', 'bun.lock'] as $file) {
+        if (file_exists(base_path($file))) {
+            unlink(base_path($file));
+        }
+    }
+});
+
 it('detects installed composer packages from vendor/composer/installed.json', function () {
     $command = installCommand();
 
     expect(callProtected($command, 'hasComposerPackage', ['x-multibyte/blatui-admin']))->toBeTrue()
         ->and(callProtected($command, 'hasComposerPackage', ['laravel/framework']))->toBeTrue()
-        ->and(callProtected($command, 'hasComposerPackage', ['anousss007/blatui']))->toBeFalse();
+        ->and(callProtected($command, 'hasComposerPackage', ['anousss007/blatui']))->toBeTrue()
+        ->and(callProtected($command, 'hasComposerPackage', ['nonexistent/package']))->toBeFalse();
 });
 
 it('detects the host laravel major version', function () {
@@ -110,6 +117,25 @@ it('skips the standalone alpinejs dependency when livewire is installed', functi
     expect(callProtected($command, 'requiredNpmDependencies'))->not->toContain('alpinejs');
 });
 
+it('detects node major version', function () {
+    $command = installCommand();
+
+    $major = callProtected($command, 'nodeMajorVersion');
+
+    expect($major)->toBeInt()
+        ->and($major)->toBeGreaterThanOrEqual(18);
+});
+
+it('detects tailwind major version from package.json', function () {
+    file_put_contents(base_path('package.json'), json_encode([
+        'devDependencies' => ['tailwindcss' => '^4.0.0'],
+    ]));
+
+    $command = installCommand();
+
+    expect(callProtected($command, 'tailwindMajorVersion'))->toBe(4);
+});
+
 it('exposes an environment-aware installation pipeline', function () {
     $command = installCommand();
 
@@ -118,6 +144,7 @@ it('exposes an environment-aware installation pipeline', function () {
     expect($steps)->toBeArray()
         ->and(array_map(fn ($step) => $step->title, $steps))
         ->toContain(
+            'Install Livewire (livewire/livewire)',
             'Install the BlatUI CLI (anousss007/blatui)',
             'Publish the BlatUI foundations (theme tokens + Alpine engine)',
             'Install the admin panel npm dependencies (Alpine.js plugins)',

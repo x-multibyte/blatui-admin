@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BlatUI\Admin\Console\Commands\Concerns;
 
+use Composer\InstalledVersions;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Process;
@@ -23,8 +24,8 @@ trait InteractsWithEnvironment
     /**
      * All packages currently installed in the host app (name => true).
      *
-     * Reads `vendor/composer/installed.json` when available and falls back
-     * to walking `composer.lock`.
+     * Queries Composer\InstalledVersions when available and falls back
+     * to vendor/composer/installed.json or composer.lock.
      *
      * @return array<string, bool>
      */
@@ -36,27 +37,35 @@ trait InteractsWithEnvironment
 
         $packages = [];
 
-        $installedJson = base_path('vendor/composer/installed.json');
-
-        if (is_readable($installedJson)) {
-            /** @var array{packages?: array<int, array{name?: string}>} $decoded */
-            $decoded = json_decode((string) file_get_contents($installedJson), true) ?: [];
-
-            foreach ($decoded['packages'] ?? [] as $package) {
-                if (isset($package['name'])) {
-                    $packages[$package['name']] = true;
-                }
+        if (class_exists(InstalledVersions::class)) {
+            foreach (InstalledVersions::getInstalledPackages() as $package) {
+                $packages[$package] = true;
             }
-        } else {
-            $lockPath = base_path('composer.lock');
+        }
 
-            if (is_readable($lockPath)) {
-                /** @var array{packages?: array<int, array{name?: string}>, packages-dev?: array<int, array{name?: string}>} $lock */
-                $lock = json_decode((string) file_get_contents($lockPath), true) ?: [];
+        if ($packages === []) {
+            $installedJson = base_path('vendor/composer/installed.json');
 
-                foreach ([...$lock['packages'] ?? [], ...$lock['packages-dev'] ?? []] as $package) {
+            if (is_readable($installedJson)) {
+                /** @var array{packages?: array<int, array{name?: string}>} $decoded */
+                $decoded = json_decode((string) file_get_contents($installedJson), true) ?: [];
+
+                foreach ($decoded['packages'] ?? [] as $package) {
                     if (isset($package['name'])) {
                         $packages[$package['name']] = true;
+                    }
+                }
+            } else {
+                $lockPath = base_path('composer.lock');
+
+                if (is_readable($lockPath)) {
+                    /** @var array{packages?: array<int, array{name?: string}>, packages-dev?: array<int, array{name?: string}>} $lock */
+                    $lock = json_decode((string) file_get_contents($lockPath), true) ?: [];
+
+                    foreach ([...$lock['packages'] ?? [], ...$lock['packages-dev'] ?? []] as $package) {
+                        if (isset($package['name'])) {
+                            $packages[$package['name']] = true;
+                        }
                     }
                 }
             }
@@ -67,6 +76,10 @@ trait InteractsWithEnvironment
 
     protected function hasComposerPackage(string $package): bool
     {
+        if (class_exists(InstalledVersions::class)) {
+            return InstalledVersions::isInstalled($package);
+        }
+
         return isset($this->composerPackages()[$package]);
     }
 
@@ -117,6 +130,22 @@ trait InteractsWithEnvironment
      */
     protected function lockedVersions(): array
     {
+        $versions = [];
+
+        if (class_exists(InstalledVersions::class)) {
+            foreach (InstalledVersions::getInstalledPackages() as $package) {
+                $version = InstalledVersions::getPrettyVersion($package);
+
+                if ($version !== null) {
+                    $versions[$package] = ltrim($version, 'v');
+                }
+            }
+        }
+
+        if ($versions !== []) {
+            return $versions;
+        }
+
         $lockPath = base_path('composer.lock');
 
         if (! is_readable($lockPath)) {
@@ -125,8 +154,6 @@ trait InteractsWithEnvironment
 
         /** @var array{packages?: array<int, array{name?: string, version?: string}>, packages-dev?: array<int, array{name?: string, version?: string}>} $lock */
         $lock = json_decode((string) file_get_contents($lockPath), true) ?: [];
-
-        $versions = [];
 
         foreach ([...$lock['packages'] ?? [], ...$lock['packages-dev'] ?? []] as $package) {
             if (isset($package['name'], $package['version'])) {
@@ -195,5 +222,38 @@ trait InteractsWithEnvironment
         }
 
         return null;
+    }
+
+    /**
+     * The Node.js major version installed on this machine, or null if unparseable.
+     */
+    protected function nodeMajorVersion(): ?int
+    {
+        $output = trim(Process::timeout(10)->run(['node', '-v'])->output());
+
+        if ($output === '' || ! str_starts_with($output, 'v')) {
+            return null;
+        }
+
+        $major = filter_var(explode('.', ltrim($output, 'v'))[0], FILTER_VALIDATE_INT);
+
+        return $major !== false ? $major : null;
+    }
+
+    /**
+     * Detect Tailwind CSS major version from host application's package.json.
+     */
+    protected function tailwindMajorVersion(): ?int
+    {
+        $deps = $this->nodeDependencies();
+
+        if (! isset($deps['tailwindcss'])) {
+            return null;
+        }
+
+        $clean = ltrim($deps['tailwindcss'], '^~>=<v ');
+        $major = filter_var(explode('.', $clean)[0], FILTER_VALIDATE_INT);
+
+        return $major !== false ? $major : null;
     }
 }
