@@ -13,16 +13,8 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    if (isset($this->tempDir) && is_dir($this->tempDir)) {
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($this->tempDir, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::CHILD_FIRST,
-        );
-        foreach ($files as $fileinfo) {
-            $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
-            $todo($fileinfo->getRealPath());
-        }
-        rmdir($this->tempDir);
+    if (isset($this->tempDir)) {
+        deleteDirectory($this->tempDir);
     }
 });
 
@@ -105,6 +97,23 @@ it('builds frontend assets using detected package manager', function () {
     });
 });
 
+it('executes npx commands', function () {
+    Process::fake([
+        '*npx*@tailwindcss/upgrade*' => Process::result('upgrade complete', 0),
+    ]);
+
+    $runner = new ProcessRunner($this->detector, $this->tempDir);
+    $result = $runner->npx(['@tailwindcss/upgrade', '--force']);
+
+    expect($result->successful())->toBeTrue()
+        ->and($runner->getPlanForNpx(['@tailwindcss/upgrade', '--force']))
+        ->toBe('npx @tailwindcss/upgrade --force');
+
+    Process::assertRan(function ($process) {
+        return $process->command === ['npx', '@tailwindcss/upgrade', '--force'];
+    });
+});
+
 it('generates dry run plan descriptions', function () {
     touch($this->tempDir.'/pnpm-lock.yaml');
     $runner = new ProcessRunner($this->detector, $this->tempDir);
@@ -114,5 +123,7 @@ it('generates dry run plan descriptions', function () {
         ->and($runner->getPlanForComposerRequire(['livewire/livewire']))
         ->toBe('composer require livewire/livewire --no-interaction')
         ->and($runner->getPlanForFrontendBuild())
-        ->toBe('pnpm run build');
+        ->toBe('pnpm run build')
+        ->and($runner->getPlanForNpx(['@tailwindcss/upgrade']))
+        ->toBe('npx @tailwindcss/upgrade');
 });

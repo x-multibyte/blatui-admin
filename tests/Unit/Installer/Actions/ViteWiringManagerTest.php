@@ -12,16 +12,8 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    if (isset($this->tempDir) && is_dir($this->tempDir)) {
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($this->tempDir, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::CHILD_FIRST,
-        );
-        foreach ($files as $fileinfo) {
-            $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
-            $todo($fileinfo->getRealPath());
-        }
-        rmdir($this->tempDir);
+    if (isset($this->tempDir)) {
+        deleteDirectory($this->tempDir);
     }
 });
 
@@ -36,24 +28,45 @@ it('creates resources/css/app.css if missing with tailwind and blatui imports', 
         ->and($result)->toContain('Created resources/css/app.css');
 });
 
-it('appends blatui.css to existing app.css preserving user styles and remains idempotent', function () {
+it('inserts blatui.css before user rules adhering to CSS specification and remains idempotent', function () {
     $cssDir = $this->tempDir.'/resources/css';
     mkdir($cssDir, 0755, true);
-    file_put_contents($cssDir.'/app.css', '/* Custom User CSS */'."\n".'.custom-card { color: red; }'."\n");
+    file_put_contents($cssDir.'/app.css', "/* Custom User CSS */\n.custom-card { color: red; }\n");
 
     $manager = new ViteWiringManager($this->detector, $this->tempDir);
     $result = $manager->wireCSS();
 
     $content = file_get_contents($cssDir.'/app.css');
-    expect($content)->toContain('.custom-card { color: red; }')
-        ->and($content)->toContain('@import "./blatui.css";')
-        ->and($result)->toContain('Appended');
+    $importPos = strpos($content, '@import "./blatui.css";');
+    $rulePos = strpos($content, '.custom-card');
 
-    // Re-run wireCSS: should be idempotent and not append again
+    expect($importPos)->not->toBeFalse()
+        ->and($rulePos)->not->toBeFalse()
+        ->and($importPos)->toBeLessThan($rulePos)
+        ->and($result)->toContain('Inserted');
+
+    // Re-run wireCSS: should be idempotent and not insert again
     $secondResult = $manager->wireCSS();
     $secondContent = file_get_contents($cssDir.'/app.css');
     expect(substr_count($secondContent, '@import "./blatui.css";'))->toBe(1)
         ->and($secondResult)->toContain('already wired');
+});
+
+it('inserts blatui.css after existing @import statements', function () {
+    $cssDir = $this->tempDir.'/resources/css';
+    mkdir($cssDir, 0755, true);
+    file_put_contents($cssDir.'/app.css', "@import \"tailwindcss\";\n\n.my-button { padding: 4px; }\n");
+
+    $manager = new ViteWiringManager($this->detector, $this->tempDir);
+    $manager->wireCSS();
+
+    $content = file_get_contents($cssDir.'/app.css');
+    $tailwindPos = strpos($content, '@import "tailwindcss";');
+    $blatuiPos = strpos($content, '@import "./blatui.css";');
+    $buttonPos = strpos($content, '.my-button');
+
+    expect($tailwindPos)->toBeLessThan($blatuiPos)
+        ->and($blatuiPos)->toBeLessThan($buttonPos);
 });
 
 it('wires JS for greenfield projects with blatui.js bootstrap', function () {
@@ -90,7 +103,29 @@ it('wires JS for Livewire projects using alpine:init hook without duplicate alpi
         ->and($result)->toContain('Livewire');
 });
 
-it('wires JS for Livewire and Flux projects passing theme false option', function () {
+it('upgrades standalone JS bootstrap to alpine:init when Livewire is subsequently added', function () {
+    $jsDir = $this->tempDir.'/resources/js';
+    mkdir($jsDir, 0755, true);
+    file_put_contents($jsDir.'/app.js', "/* Existing JS */\nimport \"./blatui.js\";\n");
+
+    file_put_contents($this->tempDir.'/composer.json', json_encode([
+        'require' => ['livewire/livewire' => '^3.5'],
+    ]));
+
+    $manager = new ViteWiringManager($this->detector, $this->tempDir);
+    $result = $manager->wireJS();
+
+    $content = file_get_contents($jsDir.'/app.js');
+    expect($content)->not->toContain('import "./blatui.js"')
+        ->and($content)->toContain('registerBlatUI(window.Alpine)')
+        ->and($result)->toContain('Replaced standalone BlatUI import');
+});
+
+it('upgrades Livewire JS registration to include theme false when Flux is added', function () {
+    $jsDir = $this->tempDir.'/resources/js';
+    mkdir($jsDir, 0755, true);
+    file_put_contents($jsDir.'/app.js', "import { registerBlatUI } from './blatui-core.js'\n\ndocument.addEventListener('alpine:init', () => {\n    registerBlatUI(window.Alpine)\n})\n");
+
     file_put_contents($this->tempDir.'/composer.json', json_encode([
         'require' => [
             'livewire/livewire' => '^3.5',
@@ -99,15 +134,21 @@ it('wires JS for Livewire and Flux projects passing theme false option', functio
     ]));
 
     $manager = new ViteWiringManager($this->detector, $this->tempDir);
-    $manager->wireJS();
+    $result = $manager->wireJS();
 
-    $jsPath = $this->tempDir.'/resources/js/app.js';
-    $content = file_get_contents($jsPath);
-
-    expect($content)->toContain('registerBlatUI(window.Alpine, { theme: false })');
+    $content = file_get_contents($jsDir.'/app.js');
+    expect($content)->toContain('registerBlatUI(window.Alpine, { theme: false })')
+        ->and($result)->toContain('Upgraded BlatUI registration for Flux UI');
 });
 
-it('does not touch filesystem in dry run mode', function () {
+it('does not touch filesystem in dry run mode and includes accurate plan', function () {
+    file_put_contents($this->tempDir.'/composer.json', json_encode([
+        'require' => [
+            'livewire/livewire' => '^3.5',
+            'livewire/flux' => '^2.0',
+        ],
+    ]));
+
     $manager = new ViteWiringManager($this->detector, $this->tempDir);
 
     $planCSS = $manager->wireCSS(dryRun: true);
@@ -116,5 +157,5 @@ it('does not touch filesystem in dry run mode', function () {
     expect(file_exists($this->tempDir.'/resources/css/app.css'))->toBeFalse()
         ->and(file_exists($this->tempDir.'/resources/js/app.js'))->toBeFalse()
         ->and($planCSS)->toContain('blatui.css')
-        ->and($planJS)->toContain('blatui');
+        ->and($planJS)->toContain('{ theme: false }');
 });

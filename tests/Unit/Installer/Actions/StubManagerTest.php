@@ -10,16 +10,8 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    if (isset($this->tempDir) && is_dir($this->tempDir)) {
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($this->tempDir, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::CHILD_FIRST,
-        );
-        foreach ($files as $fileinfo) {
-            $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
-            $todo($fileinfo->getRealPath());
-        }
-        rmdir($this->tempDir);
+    if (isset($this->tempDir)) {
+        deleteDirectory($this->tempDir);
     }
 });
 

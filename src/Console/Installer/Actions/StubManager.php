@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace BlatUI\Admin\Console\Installer\Actions;
 
+use RuntimeException;
+
 final class StubManager
 {
     private string $basePath;
@@ -78,8 +80,8 @@ final class StubManager
     {
         $path = $this->componentsPath();
 
-        if (! is_dir($path)) {
-            mkdir($path, 0755, true);
+        if (! is_dir($path) && ! @mkdir($path, 0755, true) && ! is_dir($path)) {
+            throw new RuntimeException("Failed to create components directory [{$path}]. Check directory permissions.");
         }
     }
 }

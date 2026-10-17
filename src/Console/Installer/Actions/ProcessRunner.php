@@ -51,9 +51,18 @@ final class ProcessRunner
 
     public function buildFrontendAssets(): ProcessResult
     {
-        $manager = $this->detector->detectNodePackageManager() ?? 'npm';
+        $manager = $this->resolvedPackageManager();
 
         return $this->run([$manager, 'run', 'build'], timeout: 300);
+    }
+
+    /**
+     * @param  array<int, string>  $command
+     * @param  array<string, string>  $env
+     */
+    public function npx(array $command, ?int $timeout = 60, array $env = []): ProcessResult
+    {
+        return $this->run(['npx', ...$command], $timeout, $env);
     }
 
     /**
@@ -83,7 +92,7 @@ final class ProcessRunner
      */
     public function buildNodeInstallCommand(array $packages, bool $dev = true): array
     {
-        $manager = $this->detector->detectNodePackageManager() ?? 'npm';
+        $manager = $this->resolvedPackageManager();
 
         $args = match ($manager) {
             'pnpm', 'yarn', 'bun' => $dev ? [$manager, 'add', '-D'] : [$manager, 'add'],
@@ -135,8 +144,21 @@ final class ProcessRunner
 
     public function getPlanForFrontendBuild(): string
     {
-        $manager = $this->detector->detectNodePackageManager() ?? 'npm';
+        $manager = $this->resolvedPackageManager();
 
         return "{$manager} run build";
+    }
+
+    /**
+     * @param  array<int, string>  $command
+     */
+    public function getPlanForNpx(array $command): string
+    {
+        return 'npx '.implode(' ', $command);
+    }
+
+    private function resolvedPackageManager(): string
+    {
+        return $this->detector->detectNodePackageManager() ?? 'npm';
     }
 }
