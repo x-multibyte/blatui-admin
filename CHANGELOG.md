@@ -2,6 +2,17 @@
 
 All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
+## v0.2.0 - 2026-10-17
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Other Changes
+
+* feat(installer): implement actions execution toolkit by @x-multibyte in https://github.com/x-multibyte/blatui-admin/pull/8
+
+**Full Changelog**: https://github.com/x-multibyte/blatui-admin/compare/v0.1.0...v0.2.0
+
 ## v0.1.0 - 2026-10-17
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
