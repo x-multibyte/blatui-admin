@@ -69,10 +69,10 @@ final class StubManager
             'button',
             'card',
             'input',
-            'dropdown',
+            'dropdown-menu',
             'table',
             'badge',
-            'modal',
+            'dialog',
         ];
     }
 

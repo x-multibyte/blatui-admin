@@ -10,6 +10,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('blatui_admin_placeholder')) {
+            return;
+        }
+
         Schema::create('blatui_admin_placeholder', function (Blueprint $table) {
             $table->id();
             $table->string('name');
