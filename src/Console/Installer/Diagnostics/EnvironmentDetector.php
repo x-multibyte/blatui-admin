@@ -180,7 +180,7 @@ final class EnvironmentDetector
             return CheckResult::warn(
                 'BlatUI Peer Packages',
                 'Missing peer packages: '.implode(', ', $missing),
-                'Run "composer require '.implode(' ', $missing).'"',
+                'Run "composer require '.implode(' ', $missing).' -W"',
             );
         }
 

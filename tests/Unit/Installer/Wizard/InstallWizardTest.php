@@ -66,6 +66,43 @@ it('aborts installation with failure exit code when critical diagnostics fail', 
     expect($exitCode)->toBe(Command::FAILURE);
 });
 
+it('aborts installation and returns failure when composer require fails', function () {
+    Process::fake(function ($process) {
+        $cmd = is_array($process->command) ? implode(' ', $process->command) : (string) $process->command;
+
+        if (str_contains($cmd, 'node')) {
+            return Process::result("v20.10.0\n");
+        }
+
+        if (str_contains($cmd, 'require')) {
+            return Process::result(errorOutput: 'Failed to resolve dependencies', exitCode: 1);
+        }
+
+        return Process::result('Composer version 2.7.0');
+    });
+
+    $artisanCalls = [];
+    $artisanRunner = new ArtisanRunner(function (string $command, array $args) use (&$artisanCalls): int {
+        $artisanCalls[] = [$command, $args];
+
+        return 0;
+    });
+
+    $wizard = new InstallWizard(
+        $this->detector,
+        $this->processRunner,
+        $this->viteManager,
+        $artisanRunner,
+        $this->stubManager,
+    );
+
+    $context = new InstallContext(dryRun: false, force: true, interactive: false);
+    $exitCode = $wizard->run($context);
+
+    expect($exitCode)->toBe(Command::FAILURE)
+        ->and($artisanCalls)->toBeEmpty();
+});
+
 it('executes full installation pipeline non-interactively when requirements pass', function () {
     Process::fake([
         '*node*' => Process::result("v20.10.0\n", 0),

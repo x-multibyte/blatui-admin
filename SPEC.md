@@ -52,7 +52,7 @@ Because the package is installed into a host application, parts or all of the re
 ### 2.4 Component File Distribution (`blatui:add`)
 
 - BlatUI adopts a code-ownership model, distributing components into `resources/views/components/ui/` via `php artisan blatui:add <components>`.
-- The installer predefines the core component set required by the administrative interface (e.g., `button`, `card`, `input`, `dropdown`, `table`).
+- The installer predefines the core component set required by the administrative interface (e.g., `button`, `card`, `input`, `dropdown-menu`, `table`, `dialog`).
 - If target components already exist in the host project, the installer skips them or requests user confirmation before overwriting, preventing accidental loss of custom code.
 
 ### 2.5 PHP Peer Dependency Decoupling & Adaptive Resolution

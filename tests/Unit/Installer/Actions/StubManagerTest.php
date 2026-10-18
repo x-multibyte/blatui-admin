@@ -49,14 +49,17 @@ it('provides list of default admin components', function () {
     $manager = new StubManager($this->tempDir);
     $defaults = $manager->defaultAdminComponents();
 
-    expect($defaults)->toBeArray()
-        ->and($defaults)->toContain('button')
-        ->and($defaults)->toContain('card')
-        ->and($defaults)->toContain('input')
-        ->and($defaults)->toContain('table')
-        ->and($defaults)->toContain('dropdown-menu')
-        ->and($defaults)->toContain('dialog')
-        ->and($defaults)->toContain('badge');
+    expect($defaults)->toBe([
+        'button',
+        'card',
+        'input',
+        'dropdown-menu',
+        'table',
+        'badge',
+        'dialog',
+    ])
+        ->and($defaults)->not->toContain('dropdown')
+        ->and($defaults)->not->toContain('modal');
 });
 
 it('ensures components directory is created recursively', function () {
