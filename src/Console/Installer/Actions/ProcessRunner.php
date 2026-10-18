@@ -39,8 +39,9 @@ final class ProcessRunner
         array $packages,
         bool $dev = false,
         ?string $composerBinary = null,
+        bool $withAllDependencies = false,
     ): ProcessResult {
-        $command = $this->buildComposerRequireCommand($packages, $dev, $composerBinary);
+        $command = $this->buildComposerRequireCommand($packages, $dev, $composerBinary, $withAllDependencies);
 
         return $this->run(
             $command,
@@ -110,12 +111,17 @@ final class ProcessRunner
         array $packages,
         bool $dev = false,
         ?string $composerBinary = null,
+        bool $withAllDependencies = false,
     ): array {
         $binary = $composerBinary ?? 'composer';
         $args = [$binary, 'require', ...$packages];
 
         if ($dev) {
             $args[] = '--dev';
+        }
+
+        if ($withAllDependencies) {
+            $args[] = '-W';
         }
 
         $args[] = '--no-interaction';
@@ -138,8 +144,9 @@ final class ProcessRunner
         array $packages,
         bool $dev = false,
         ?string $composerBinary = null,
+        bool $withAllDependencies = false,
     ): string {
-        return implode(' ', $this->buildComposerRequireCommand($packages, $dev, $composerBinary));
+        return implode(' ', $this->buildComposerRequireCommand($packages, $dev, $composerBinary, $withAllDependencies));
     }
 
     public function getPlanForFrontendBuild(): string

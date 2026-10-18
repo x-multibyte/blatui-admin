@@ -10,9 +10,9 @@
   - [x] 2.2 Add `"suggest"` block for peer packages in `composer.json`
   - [x] 2.3 Run `composer update --no-interaction` to verify local lockfile and dependencies
 
-- [ ] **Task 3: Support `--with-all-dependencies` (-W) in `ProcessRunner`**
-  - [ ] 3.1 Update `ProcessRunner` with `$withAllDependencies` parameter
-  - [ ] 3.2 Add unit tests for `-W` flag in `tests/Unit/Installer/Actions/ProcessRunnerTest.php`
+- [x] **Task 3: Support `--with-all-dependencies` (-W) in `ProcessRunner`**
+  - [x] 3.1 Update `ProcessRunner` with `$withAllDependencies` parameter
+  - [x] 3.2 Add unit tests for `-W` flag in `tests/Unit/Installer/Actions/ProcessRunnerTest.php`
 
 - [ ] **Task 4: Integrate `-W` in `InstallWizard` Composer Step**
   - [ ] 4.1 Update `InstallWizard::stepInstallComposerDependencies` to pass `withAllDependencies: true`
