@@ -18,7 +18,7 @@ Fully adopt the **Code Ownership Model**, integrating directly with the upstream
 
 1. **Direct Component Ownership**:
    - Do not encapsulate fundamental UI elements inside opaque vendor view namespaces.
-   - During installation, `ArtisanRunner::addBlatUiComponents()` triggers `blatui:add` to generate the required UI component set (`button`, `card`, `input`, `dropdown`, `table`, etc.) directly into `resources/views/components/ui/`.
+   - During installation, `ArtisanRunner::addBlatUiComponents()` triggers `blatui:add` to generate the required UI component set (`button`, `card`, `input`, `dropdown-menu`, `table`, `dialog`, etc.) directly into `resources/views/components/ui/`.
 2. **Conflict Prevention via `StubManager`**:
    - `StubManager::hasExistingComponents()` inspects the target directory prior to component generation:
      - If existing components are detected, the installer prompts for confirmation rather than blindly overwriting them.

@@ -117,20 +117,25 @@ class InstallWizard
      */
     public function requiredComposerPackages(): array
     {
-        $packages = [
-            'anousss007/blatui',
-            'gehrisandro/tailwind-merge-laravel',
-            'mallardduck/blade-lucide-icons',
+        $specs = [
+            'anousss007/blatui' => 'anousss007/blatui:^1.36',
+            'gehrisandro/tailwind-merge-laravel' => 'gehrisandro/tailwind-merge-laravel:^1.4',
+            'mallardduck/blade-lucide-icons' => 'mallardduck/blade-lucide-icons:^2.0',
         ];
 
         if (! $this->detector->hasLivewire()) {
-            $packages[] = 'livewire/livewire';
+            $specs['livewire/livewire'] = 'livewire/livewire:^3.0||^4.0';
         }
 
-        return array_values(array_filter(
-            $packages,
-            fn (string $p): bool => ! $this->detector->hasComposerPackage($p),
-        ));
+        $packages = [];
+
+        foreach ($specs as $package => $spec) {
+            if (! $this->detector->hasComposerPackage($package)) {
+                $packages[] = $spec;
+            }
+        }
+
+        return $packages;
     }
 
     /**

@@ -223,7 +223,8 @@ it('checks blatui core and peer package detection', function () {
 
     expect($detector->checkBlatUI()->status)->toBe(CheckStatus::WARN)
         ->and($detector->checkPeerPackages()->status)->toBe(CheckStatus::WARN)
-        ->and($detector->checkPeerPackages()->message)->toContain('tailwind-merge-laravel');
+        ->and($detector->checkPeerPackages()->message)->toContain('tailwind-merge-laravel')
+        ->and($detector->checkPeerPackages()->suggestedFix)->toContain('-W');
 
     file_put_contents($this->tempDir.'/composer.json', json_encode([
         'require' => [
