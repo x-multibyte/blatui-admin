@@ -1,5 +1,6 @@
 <div align="center">
     <h1>BlatUI Admin</h1>
+    <p>An elegant, adaptive administration panel and lifecycle engine for Laravel, built on BlatUI.</p>
 </div>
 
 <p align="center">
@@ -10,11 +11,23 @@
     <a href="https://packagist.org/packages/x-multibyte/blatui-admin"><img src="https://img.shields.io/packagist/dt/x-multibyte/blatui-admin.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
-An administration panel built using BlatUI.
+## Requirements
+
+- **PHP**: `^8.3`
+- **Laravel Framework**: `^12.0 || ^13.0`
+- **Node.js**: `>=18.0.0`
+- **Frontend Stack**: Tailwind CSS v4+ (with Vite), Alpine.js / Livewire v3+
+
+## Highlights
+
+- **Adaptive Installation**: Automatically detects host packages, lockfiles (`bun`, `pnpm`, `yarn`, `npm`), and runtime environments.
+- **Zero Duplicate-Alpine**: Seamlessly integrates with existing Livewire, Flux, or standalone Alpine.js setups without colliding runtimes.
+- **W3C & Tailwind v4 Ready**: Additive CSS wiring that respects existing stylesheets and strict Lightning CSS `@import` ordering.
+- **Code Ownership Model**: Distributes customizable Blade UI components directly into your application's `resources/views/components/ui/` directory.
 
 ## Installation
 
-You can install the package via Composer:
+Install the package via Composer:
 
 ```bash
 composer require x-multibyte/blatui-admin
@@ -26,70 +39,84 @@ Run the interactive installation wizard:
 php artisan blatui:admin --install
 ```
 
-> **Note**: `php artisan admin:install` is available as a backwards-compatible alias.
+> **Note**: `php artisan admin:install` is supported as a backwards-compatible alias.
 
-You can preview the environment diagnostics and installation plan without making changes:
+### Previewing with Dry Run
+
+To inspect environment diagnostics and review the planned installation actions without modifying any files:
 
 ```bash
 php artisan blatui:admin --install --dry-run
 ```
 
-### Manual Publishing
+### Installation Options
 
-Alternatively, you may publish all of the package's resources at once:
+| Option | Description |
+| :--- | :--- |
+| `--install` | Triggers the automated installation wizard. |
+| `--dry-run` | Inspects environment diagnostics and displays the execution plan without modifying files. |
+| `--force` | Overwrites existing UI components and bypasses interactive confirmation prompts. |
+| `--fresh` | Runs database migrations using `migrate:fresh` instead of standard `migrate`. |
+| `--install-apex-charts` | Installs the optional ApexCharts client library (~150KB) and publishes chart resources. |
+
+## Quick Start
+
+Once the installation wizard finishes, build your frontend assets:
+
+```bash
+npm run build
+# or: pnpm build / yarn build / bun run build
+```
+
+Your administrative panel and base UI components are ready to use. Component templates are published directly into `resources/views/components/ui/`, giving you complete ownership to customize markup, styles, and behavior.
+
+## Manual Publishing
+
+If you prefer manual asset publishing over the interactive wizard, you may publish all package assets at once:
 
 ```bash
 php artisan vendor:publish --tag="blatui-admin"
 ```
 
-Or, you may publish each resource individually:
+Or publish individual assets as needed:
 
-### Publishing the Configuration File
+### Configuration
 
 ```bash
 php artisan vendor:publish --tag="blatui-admin-config"
 ```
 
-### Publishing and Running the Migrations
+### Migrations
 
 ```bash
 php artisan vendor:publish --tag="blatui-admin-migrations"
 php artisan migrate
 ```
 
-### Publishing the Views
+### Views & Translations
 
 ```bash
 php artisan vendor:publish --tag="blatui-admin-views"
-```
-
-### Publishing the Translations
-
-```bash
 php artisan vendor:publish --tag="blatui-admin-lang"
 ```
 
-### Publishing the Public Assets
+### Public Assets
 
 ```bash
 php artisan vendor:publish --tag="blatui-admin-assets"
 ```
 
-## Usage
-
-<!-- Add a basic usage example here. -->
-
 ## Changelog
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+Please see [CHANGELOG.md](CHANGELOG.md) for more information on recent releases.
 
 ## Contributing
 
-Thank you for considering contributing to BlatUI Admin! Please review our [contributing guide](.github/CONTRIBUTING.md) to get started.
+Please review [CONTRIBUTING.md](.github/CONTRIBUTING.md) for contribution guidelines.
 
-## Security Vulnerabilities
+## Security
 
-Please review [our security policy](.github/SECURITY.md) on how to report security vulnerabilities.
+Please review [SECURITY.md](.github/SECURITY.md) for our vulnerability reporting policy.
 
 ## Credits
 
@@ -98,4 +125,4 @@ Please review [our security policy](.github/SECURITY.md) on how to report securi
 
 ## License
 
-BlatUI Admin is open-sourced software licensed under the [MIT license](LICENSE.md).
+BlatUI Admin is open-sourced software licensed under the [MIT License](LICENSE.md).

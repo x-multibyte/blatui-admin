@@ -2,68 +2,75 @@
 
 ## 1. Objective
 
-`x-multibyte/blatui-admin` 是一个基于 **BlatUI (`anousss007/blatui`)** 的 Laravel 扩展包。
-本项目的核心职责是**作为 BlatUI 及其 Admin 架构在 Laravel 宿主项目中的“生命周期与依赖管理引擎”**。
+`x-multibyte/blatui-admin` is a Laravel package built on **BlatUI (`anousss007/blatui`)**.
+The primary responsibility of this package is to serve as the **lifecycle and dependency management engine** for BlatUI and its administrative architecture within Laravel host applications.
 
-它负责协调并解决 BlatUI 所需的复杂跨技术栈依赖链：
+It orchestrates and resolves the cross-stack dependency chain required by BlatUI:
 
-- **PHP / Laravel 依赖探测与安装**：Livewire、Blade Lucide 图标库、Tailwind-Merge 等 Peer 包的按需检测与引入。
-- **Node.js / 前端工具链自适应**：Node 18+ 环境探测、包管理器自动识别（npm / pnpm / yarn / bun / npx）、Alpine.js 插件与 ApexCharts 等前端包安装。
-- **已有项目自适应插桩 (Existing Project Integration)**：非破坏性地在宿主 `resources/css/app.css` 与 `resources/js/app.js` 中接入 BlatUI 样式与运行时，**坚决避开 Duplicate-Alpine 陷阱与主题冲突**。
-- **文件与组件管理**：通过 `blatui:add` 按需拉取 Admin 依赖的 UI 基础组件到 `resources/views/components/ui/`，发布配置与数据库迁移。
+- **PHP / Laravel Dependency Detection & Installation**: On-demand detection and integration of peer packages including Livewire, Blade Lucide Icons, and Tailwind-Merge.
+- **Node.js / Frontend Toolchain Adaptation**: Node 18+ runtime verification, automatic package manager detection (`npm`, `pnpm`, `yarn`, `bun`, `npx`), and installation of Alpine.js plugins and optional charting packages (ApexCharts).
+- **Existing Project Integration**: Additive, non-destructive wiring of BlatUI styles and runtimes into the host application's `resources/css/app.css` and `resources/js/app.js`, **strictly eliminating duplicate-Alpine collisions and theme conflicts**.
+- **File & Component Provisioning**: On-demand provisioning of core administrative Blade components into `resources/views/components/ui/` via `blatui:add`, alongside configuration and database migrations.
 
-目标用户是在任何全新或**已有（Existing）**现代 Laravel 项目中无缝引入 BlatUI 管理后台的开发者。
+Target users are developers integrating BlatUI Admin into either greenfield or **existing** modern Laravel applications.
 
 ---
 
-## 2. 核心原则：已有项目自适应与非破坏性策略 (Adaptive & Non-Destructive)
+## 2. Core Principles: Adaptive & Non-Destructive Integration
 
-由于扩展包是安装在用户的宿主项目中，宿主可能已经安装了部分或全部相关依赖。安装器必须遵循以下自适应矩阵：
+Because the package is installed into a host application, parts or all of the required dependencies may already exist. The installer strictly adheres to the following adaptation matrix:
 
-### 2.1 CSS / Tailwind 适配规则
-- **Tailwind v4+**：不得覆盖用户的 `app.css`，采用**追加导入**模式：在用户现有 CSS 之后追加 `@import "./blatui.css";`。
-- **Tailwind v3**：自检标记为 `WARN`，并在自检报告中提示升级建议（`npx @tailwindcss/upgrade`），禁止强行破坏用户构建。
+### 2.1 CSS / Tailwind Adaptation Rules
 
-### 2.2 JS / Alpine / Livewire 运行时适配规则 (杜绝 Duplicate-Alpine)
-- **全新项目（无 Alpine，无 Livewire）**：
-  - 引入 `npm install -D alpinejs` 以及必须插件（`@alpinejs/anchor`, `@alpinejs/collapse`, `@alpinejs/focus`）。
-  - `app.js` 注入：`import "./blatui.js";`。
-- **已有 Livewire 或 Flux 的项目**：
-  - **严禁执行 `npm install alpinejs`**（Livewire 已自带 Alpine，重复引入会导致致命的 duplicate-Alpine 冲突）。
-  - 仅安装 Alpine 插件，不安装 `alpinejs` 核心包。
-  - `app.js` 插桩模式必须切换为基于事件监听注入：
+- **Tailwind v4+**: Never overwrite the host application's `app.css`. Use **additive insertion**: inject `@import "./blatui.css";` after existing imports and before user-defined CSS rules.
+- **Tailwind v3**: Flag a `WARN` in the pre-flight diagnostic report with official migration instructions (`npx @tailwindcss/upgrade`). Do not force mutations on incompatible stylesheets.
+
+### 2.2 JS / Alpine / Livewire Runtime Adaptation Rules (Zero Duplicate-Alpine)
+
+- **Greenfield Projects (No Alpine, No Livewire)**:
+  - Install core runtime and required plugins: `npm install -D alpinejs @alpinejs/anchor @alpinejs/collapse @alpinejs/focus`.
+  - Inject bootstrap import into `app.js`: `import "./blatui.js";`.
+- **Existing Livewire or Flux Projects**:
+  - **Strictly prohibit installing the `alpinejs` npm package** (Livewire internally bundles Alpine; re-installing causes fatal duplicate-Alpine collisions).
+  - Install required plugins only, omitting the `alpinejs` core package.
+  - Inject the integration listener into `app.js` targeting the `alpine:init` lifecycle event:
     ```javascript
     import { registerBlatUI } from './blatui-core.js'
+
     document.addEventListener('alpine:init', () => {
-        registerBlatUI(window.Alpine) // 若检测到 Flux，传入 { theme: false }
+        registerBlatUI(window.Alpine) // Pass { theme: false } if Flux is detected
     })
     ```
-- **已有独立 Alpine（无 Livewire）的项目**：
-  - 不得引入 `blatui.js`（会重复启动 Alpine），必须引入 `blatui-core.js` 并将插件注册挂载到用户现有的 Alpine 实例上。
+- **Existing Standalone Alpine (Without Livewire)**:
+  - Do not import `blatui.js` (which invokes `Alpine.start()`). Import `blatui-core.js` and register plugins onto the existing `window.Alpine` instance.
 
-### 2.3 按需图表依赖 (ApexCharts Opt-in)
-- `apexcharts` 库体积较大（~150KB），**不得作为全局强制依赖**。
-- 仅在用户勾选了仪表盘图表组件或通过交互选项启用时，才执行 `npm install -D apexcharts` 并调用 `php artisan vendor:publish --tag=blatui-charts`。
+### 2.3 Opt-in Charting Dependencies (ApexCharts)
 
-### 2.4 组件文件分发 (`blatui:add`)
-- BlatUI 采用代码拥有模式，通过 `php artisan blatui:add <components>` 分发到 `resources/views/components/ui/`。
-- 安装器需预定义 Admin 面板所需的核心组件集（例如 `button`, `card`, `input`, `dropdown`, `table` 等），在安装阶段按需拉取。
-- 若目标目录已存在用户自定义组件，默认跳过或在交互提示下确认，防止无脑覆写。
+- `apexcharts` is a heavy client-side dependency (~150KB minified). **It must never be enforced as a mandatory global dependency**.
+- Only when opted in via interactive prompt or the `--install-apex-charts` CLI flag will the installer execute `npm install -D apexcharts` and publish `blatui-charts` resources.
+
+### 2.4 Component File Distribution (`blatui:add`)
+
+- BlatUI adopts a code-ownership model, distributing components into `resources/views/components/ui/` via `php artisan blatui:add <components>`.
+- The installer predefines the core component set required by the administrative interface (e.g., `button`, `card`, `input`, `dropdown`, `table`).
+- If target components already exist in the host project, the installer skips them or requests user confirmation before overwriting, preventing accidental loss of custom code.
 
 ---
 
-## 3. Capability Map (能力地图与构建顺序)
+## 3. Capability Map & Build Order
 
-整个依赖管理生命周期由四个解耦的高内聚模块构成：
+The dependency management lifecycle is partitioned into four decoupled tiers:
 
-| Module ID     | 职责 (Responsibility) | 依赖模块 (Depends on)        | 核心行为                                                                                                                    |
-|---------------|---------------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `diagnostics` | 运行前环境与依赖自检          | —                        | 探测宿主环境已装依赖（PHP/Node/PM/Livewire/Alpine/Flux/Tailwind/PeerPackages），生成包含状态标记与修复提示的 `DiagnosticReport` 表格。                     |
-| `actions`     | 执行与文件操作工具箱          | —                        | 封装 `Process` (npm/pnpm/yarn/bun/npx/composer)、自适应 `ViteWiring` (区别全新/Livewire/已存在)、`StubManager`、`ArtisanRunner`。               |
-| `wizard`      | Prompts 分步引导向导      | `diagnostics`, `actions` | 基于 `laravel/prompts` 呈现自检表格、询问安装偏好（可选图表/组件拉取）、按自适应规则调度 Actions 并以 `spin()` 呈现进度。                                         |
-| `cli`         | 控制台命令接入点            | `wizard`                 | 注册 `php artisan blatui:admin --install`，提供 `admin:install` 别名向后兼容。                                                      |
+| Module ID | Responsibility | Depends On | Core Behavior |
+| :--- | :--- | :--- | :--- |
+| `diagnostics` | Pre-flight environment & dependency sniffing | — | Inspects host environment (PHP, Node, package managers, Livewire, Alpine, Flux, Tailwind, peer packages) and generates a structured `DiagnosticReport`. |
+| `actions` | Headless execution toolkit | — | Encapsulates `ProcessRunner` (npm/pnpm/yarn/bun/npx/composer), adaptive `ViteWiringManager`, `StubManager`, and `ArtisanRunner`. |
+| `wizard` | Prompts-based interactive orchestrator | `diagnostics`, `actions` | Renders diagnostic tables via `laravel/prompts`, collects installation preferences, and coordinates actions under `spin()` indicators. |
+| `cli` | Console command entrypoints | `wizard` | Registers canonical command `php artisan blatui:admin --install` and provides `admin:install` compatibility proxy. |
 
 **Build Order:** `diagnostics` → `actions` → `wizard` → `cli`
+
+> Detailed architectural decisions and constraints are documented in [Architecture Decision Records (ADRs)](docs/decisions/README.md) (ADR-001 through ADR-007).
 
 ---
 
@@ -83,7 +90,7 @@
 ## 5. Commands
 
 ```bash
-# 开发与测试环境
+# Development & Testing
 Build Assets:      composer build        # vendor/bin/testbench workbench:build --ansi
 Serve Workbench:   composer serve        # vendor/bin/testbench serve --ansi
 Run Tests:         composer test:unit    # vendor/bin/pest --parallel
@@ -93,7 +100,7 @@ Code Style Fix:    composer lint         # vendor/bin/pint --parallel
 Static Analysis:   composer analyse      # vendor/bin/phpstan analyse
 Full CI Pipeline:  composer test         # analyse + lint:check + test:types + test:unit
 
-# 扩展包对外提供的控制台命令
+# Package Console Commands
 Primary Install:   php artisan blatui:admin --install
 Dry Run Plan:      php artisan blatui:admin --install --dry-run
 Force Reinstall:   php artisan blatui:admin --install --force
@@ -107,85 +114,85 @@ Legacy Alias:      php artisan admin:install [--dry-run] [--force] [--fresh]
 
 ```
 src/
-├── Admin.php                              # Admin 核心管理类
-├── AdminServiceProvider.php               # 服务提供者 (配置合并、命令与组件绑定)
+├── Admin.php                              # Core Admin manager singleton
+├── AdminServiceProvider.php               # Service provider (bindings, commands, publishes, routes)
 ├── Facades/
-│   └── Admin.php                          # 门面类
+│   └── Admin.php                          # Admin Facade
 ├── Console/
 │   ├── Commands/
-│   │   ├── AdminCommand.php               # 占位/辅助命令
-│   │   ├── AdminInstallCommand.php        # 兼容旧命令签名的别名薄层
-│   │   └── BlatuiAdminCommand.php         # 主命令: blatui:admin {--install}
+│   │   ├── AdminCommand.php               # Informational / placeholder command
+│   │   ├── AdminInstallCommand.php        # Backwards-compatible proxy command
+│   │   └── BlatuiAdminCommand.php         # Canonical entrypoint: blatui:admin {--install}
 │   └── Installer/
-│       ├── Diagnostics/                   # 预检体系 (感知宿主既有环境)
-│       │   ├── CheckStatus.php            # PASS | WARN | FAIL 状态枚举
-│       │   ├── CheckResult.php            # 单项检测数据对象 (name, status, message, fix)
-│       │   ├── DiagnosticReport.php       # 检测报告模型 (聚合结果并生成表格行)
-│       │   └── EnvironmentDetector.php    # 宿主深度探测 (PHP/Node/PM/Livewire/Flux/Tailwind/已装依赖)
-│       ├── Actions/                       # 执行工具箱 (无状态独立操作)
-│       │   ├── ProcessRunner.php          # 封装 npm/pnpm/yarn/bun/npx/composer 调用
-│       │   ├── ViteWiringManager.php      # 前端入口智能插桩 (区分全新/已装Alpine/Livewire/Flux)
-│       │   ├── StubManager.php            # 模板生成与文件发布替换
-│       │   └── ArtisanRunner.php          # 内部 Artisan 子命令安全触发 (vendor:publish/migrate/blatui:add)
-│       └── Wizard/                        # 分步引导与调度
-│           ├── InstallContext.php         # 运行选项 DTO (dryRun, force, fresh, interactive, etc.)
-│           ├── StepResult.php             # 步骤执行结果封装
-│           └── InstallWizard.php          # 基于 laravel/prompts 的分步引导流程
+│       ├── Diagnostics/                   # Read-only environmental checks
+│       │   ├── CheckStatus.php            # PASS | WARN | FAIL status enum
+│       │   ├── CheckResult.php            # Immutable check result DTO
+│       │   ├── DiagnosticReport.php       # Diagnostic report aggregate
+│       │   └── EnvironmentDetector.php    # Host environment sniffer
+│       ├── Actions/                       # Headless execution primitives
+│       │   ├── ProcessRunner.php          # npm/pnpm/yarn/bun/npx/composer process wrapper
+│       │   ├── ViteWiringManager.php      # Adaptive, non-destructive app.css and app.js wiring
+│       │   ├── StubManager.php            # Component existence verification and directory setup
+│       │   └── ArtisanRunner.php          # Safe Artisan dispatcher (publish, migrate, blatui:add)
+│       └── Wizard/                        # Prompts-based orchestrator
+│           ├── InstallContext.php         # Immutable runtime options DTO
+│           ├── StepResult.php             # Step execution outcome DTO
+│           └── InstallWizard.php          # Interactive workflow coordinator
 tests/
-├── ArchTest.php                           # 架构与安全测试 (strict_types, 禁用 dd/env)
-├── TestCase.php                           # Testbench 测试基类
+├── ArchTest.php                           # Architecture & security invariants (strict_types, no env/dd)
+├── TestCase.php                           # Testbench base test case
 ├── Unit/
 │   └── Installer/
-│       ├── Diagnostics/                   # 预检测试 (覆盖各种宿主已有依赖场景)
-│       ├── Actions/                       # 执行工具箱测试
-│       └── Wizard/                        # 向导交互与上下文测试
+│       ├── Diagnostics/                   # Environment detection unit tests
+│       ├── Actions/                       # Actions execution unit tests
+│       └── Wizard/                        # Wizard orchestration unit tests
 └── Feature/
-    └── Commands/                          # 控制台命令功能测试
+    └── Commands/                          # Artisan console command feature tests
 ```
 
 ---
 
 ## 7. Code Style & Standards
 
-1. **Strict Types**: 每个 PHP 文件头必须为 `declare(strict_types=1);`。
-2. **Type Safety**: 所有类属性、方法参数、返回类型均需显式声明，保持 100% Type Coverage。
-3. **Additive Operations**: 对用户现有文件的修改必须是增量式（Additive），不得无提示覆盖用户的既有代码。
-4. **Pure Prompts UI**: 控制台交互与输出统一通过 `laravel/prompts`，杜绝与 `Command::$components` 混用。
+1. **Strict Types**: Every PHP file MUST declare `declare(strict_types=1);`.
+2. **Type Safety**: All class properties, method parameters, and return types must be explicitly typed, maintaining 100% type coverage.
+3. **Additive Operations**: File mutations must be additive. Never overwrite existing user code without confirmation.
+4. **Pure Prompts UI**: Console interactions and output must exclusively use `laravel/prompts`, eliminating mixed usage with `Command::$components`.
 
 ---
 
 ## 8. Boundaries
 
-### Always Do (必须遵循)
+### Always Do
 
-- 在宿主已存在 Livewire 时，**绝对禁止**安装 npm 包 `alpinejs`。
-- 修改 `app.css` / `app.js` 时必须先检查内容，确保已包含目标语句时不重复插入（保证幂等性）。
-- 在检测到阻断级错误（如 Node.js 缺失或版本 < 18）时，给出明确的 `suggestedFix` 并中止安装。
-- 支持 `--dry-run` 模式，完整输出预检报告与计划执行的操作。
+- In hosts with existing Livewire installations, **strictly avoid** installing the `alpinejs` npm package.
+- Inspect `app.css` and `app.js` prior to insertion to guarantee idempotent operations.
+- On blocking environmental failures (e.g. Node.js missing or version < 18), output an actionable `suggestedFix` and abort safely.
+- Support `--dry-run` across all commands, providing full diagnostic reporting and planned action summaries.
 
-### Ask First (需确认)
+### Ask First
 
-- 覆盖用户在 `resources/views/components/ui/` 中已存在的同名组件。
-- 更改向后兼容命令 `admin:install` 的外部参数签名。
-- 默认勾选安装重量级可选包（如 `apexcharts`）。
+- Overwriting existing user components in `resources/views/components/ui/`.
+- Modifying parameters of the backwards-compatible `admin:install` command.
+- Installing optional heavy dependencies (e.g. `apexcharts`).
 
-### Never Do (坚决禁止)
+### Never Do
 
-- 直接覆盖替换宿主的 `resources/css/app.css` 或 `resources/js/app.js`。
-- 在生产代码中残留 `dd()`, `ddd()`, `dump()`, `exit()`。
-- 在生产代码（`src/`）中使用 `env()`（ArchTest 严查）。
-- 忽视宿主现有 Livewire/Flux 环境而强推独立的 Alpine 运行时。
+- Directly overwrite or replace the host application's `resources/css/app.css` or `resources/js/app.js`.
+- Leave debugging statements (`dd()`, `ddd()`, `dump()`, `exit()`) in production code.
+- Call `env()` directly within `src/` (strictly enforced via `ArchTest`).
+- Force a standalone Alpine runtime when Livewire or Flux is already present.
 
 ---
 
-## 9. Success Criteria (验收标准)
+## 9. Success Criteria
 
-1. [ ] 执行 `php artisan blatui:admin --install --dry-run` 能准确根据宿主已有依赖输出自检表格与增量适配计划，退出码为 0。
-2. [ ] 执行 `php artisan admin:install --dry-run` 能够作为别名正常运行。
-3. [ ] 运行前自检能够准确识别并正确分类各种已有项目状态：
-    - 已有 Livewire -> 标记避免安装 npm `alpinejs`
-    - 已有 Tailwind v4 -> 标记 CSS 增量注入
-    - 已有 Tailwind v3 -> 给出升级建议警告
-    - 识别存在的 lockfile（bun/pnpm/yarn/npm）
-4. [ ] 废弃的旧死代码（`InstallStep.php`, `InteractsWithEnvironment.php`, 旧 11 个 steps 散件）彻底清空。
-5. [ ] `composer test` 四维质量门禁全部通过（Pint 格式化、PHPStan Level 7 零错误、Type Coverage 100%、Pest 单元测试全绿）。
+1. [x] Executing `php artisan blatui:admin --install --dry-run` accurately inspects host dependencies and outputs diagnostic tables and action plans with exit code 0.
+2. [x] Executing `php artisan admin:install --dry-run` operates identically as a backwards-compatible alias.
+3. [x] Pre-flight diagnostics correctly classify diverse host environments:
+    - Existing Livewire -> avoids installing npm `alpinejs`
+    - Existing Tailwind v4 -> executes additive CSS injection
+    - Existing Tailwind v3 -> outputs upgrade guidance warning
+    - Accurately detects present lockfiles (`bun`, `pnpm`, `yarn`, `npm`)
+4. [x] Legacy dead code (`InstallStep.php`, `InteractsWithEnvironment.php`, monolithic step classes) completely purged.
+5. [x] Passes all four quality gates via `composer test` (Pint styling, PHPStan Level 7 with zero errors, 100% Type Coverage, Pest unit tests green).

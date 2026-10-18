@@ -1,35 +1,35 @@
 # Task List: BlatUI Admin Lifecycle & Dependency Management Engine
 
-- [x] **Phase 1: Diagnostics (预检与体检报告体系)**
-  - [x] 1.1 创建 `CheckStatus` 枚举 (`PASS`, `WARN`, `FAIL` 及标签/图标)
-  - [x] 1.2 创建 `CheckResult` 不可变 DTO (`name`, `status`, `message`, `suggestedFix`)
-  - [x] 1.3 创建 `DiagnosticReport` 模型 (结果聚合、计数、表格行转换 `toTableRows()`)
-  - [x] 1.4 创建 `EnvironmentDetector` 服务 (Composer/Node/PM/Livewire/Flux/Tailwind/PeerPackages 探测)
-  - [x] 1.5 编写并通过 Phase 1 单元测试 (`CheckStatusTest`, `CheckResultTest`, `DiagnosticReportTest`, `EnvironmentDetectorTest`)
+- [x] **Phase 1: Diagnostics Layer**
+  - [x] 1.1 Create `CheckStatus` enum (`PASS`, `WARN`, `FAIL` with labels and icons)
+  - [x] 1.2 Create `CheckResult` immutable DTO (`name`, `status`, `message`, `suggestedFix`)
+  - [x] 1.3 Create `DiagnosticReport` aggregate model (result collection, counters, `toTableRows()`)
+  - [x] 1.4 Create `EnvironmentDetector` service (Composer, Node, lockfiles, Livewire, Flux, Tailwind)
+  - [x] 1.5 Write and pass Phase 1 unit tests (`CheckStatusTest`, `CheckResultTest`, `DiagnosticReportTest`, `EnvironmentDetectorTest`)
 
-- [x] **Phase 2: Actions (无状态执行工具箱)**
-  - [x] 2.1 创建 `ProcessRunner` (封装 npm/pnpm/yarn/bun/npx/composer 执行与超时隔离)
-  - [x] 2.2 创建 `ViteWiringManager` (实现 Tailwind v4 `@import` 追加与 3 种 JS 环境防 Duplicate-Alpine 插桩)
-  - [x] 2.3 创建 `ArtisanRunner` (安全执行内部 Artisan 命令如 publish/migrate/blatui:add)
-  - [x] 2.4 创建 `StubManager` (模板分发与已有组件防覆盖检查)
-  - [x] 2.5 编写并通过 Phase 2 单元测试 (`ProcessRunnerTest`, `ViteWiringManagerTest`, `ArtisanRunnerTest`, `StubManagerTest`)
+- [x] **Phase 2: Actions Toolkit**
+  - [x] 2.1 Create `ProcessRunner` (npm/pnpm/yarn/bun/npx/composer execution wrapper)
+  - [x] 2.2 Create `ViteWiringManager` (Tailwind v4 `@import` additive wiring and 3-way JS collision-free wiring)
+  - [x] 2.3 Create `ArtisanRunner` (safe execution of `vendor:publish`, `migrate`, `blatui:add`)
+  - [x] 2.4 Create `StubManager` (component directory setup and conflict detection)
+  - [x] 2.5 Write and pass Phase 2 unit tests (`ProcessRunnerTest`, `ViteWiringManagerTest`, `ArtisanRunnerTest`, `StubManagerTest`)
 
-- [x] **Phase 3: Wizard (交互向导与编排)**
-  - [x] 3.1 创建 `InstallContext` DTO (封装 dryRun, force, fresh, interactive, apexcharts, components 偏好)
-  - [x] 3.2 创建 `StepResult` DTO (封装步骤成功/失败/计划操作输出)
-  - [x] 3.3 创建 `InstallWizard` (纯 `laravel/prompts` 驱动：渲染表格、问询偏好、spin 执行 Actions、outro 总结)
-  - [x] 3.4 编写并通过 Phase 3 单元测试 (`InstallContextTest`, `StepResultTest`, `InstallWizardTest`)
+- [x] **Phase 3: Wizard Orchestrator**
+  - [x] 3.1 Create `InstallContext` DTO (dryRun, force, fresh, interactive, apexcharts, components)
+  - [x] 3.2 Create `StepResult` DTO (step success, title, message, planned actions)
+  - [x] 3.3 Create `InstallWizard` (`laravel/prompts` UI, tables, prompts, spinners, outro)
+  - [x] 3.4 Write and pass Phase 3 unit tests (`InstallContextTest`, `StepResultTest`, `InstallWizardTest`)
 
-- [x] **Phase 4: CLI Commands (控制台接入点)**
-  - [x] 4.1 创建 `BlatuiAdminCommand` 主命令 (`php artisan blatui:admin {--install}`)
-  - [x] 4.2 重构 `AdminInstallCommand` 为代理别名薄层 (`php artisan admin:install`)
-  - [x] 4.3 在 `AdminServiceProvider` 中注册新命令与服务绑定
-  - [x] 4.4 编写并通过 Feature 测试 (`BlatuiAdminCommandTest`, `AdminInstallCommandTest`)
+- [x] **Phase 4: CLI Commands**
+  - [x] 4.1 Create `BlatuiAdminCommand` canonical command (`php artisan blatui:admin {--install}`)
+  - [x] 4.2 Refactor `AdminInstallCommand` as backwards-compatible delegation proxy (`php artisan admin:install`)
+  - [x] 4.3 Register commands and bind services in `AdminServiceProvider`
+  - [x] 4.4 Write and pass Feature tests (`BlatuiAdminCommandTest`, `AdminInstallCommandTest`)
 
-- [x] **Phase 5: Cleanup & Verification (清理与全量门禁)**
-  - [x] 5.1 移除废弃旧文件 (`InstallStep.php`, `InteractsWithEnvironment.php`, 旧 `EnvironmentDetectionTest.php`)
-  - [x] 5.2 运行 Pint 格式化与检查 (`composer lint`)
-  - [x] 5.3 运行 PHPStan 静态分析 (`composer analyse`)
-  - [x] 5.4 验证 100% Type Coverage (`composer test:types`)
-  - [x] 5.5 运行全量 Pest 测试套件 (`composer test:unit`)
-  - [x] 5.6 运行完整 CI 门禁 (`composer test`)
+- [x] **Phase 5: Cleanup & Verification**
+  - [x] 5.1 Remove legacy files (`InstallStep.php`, `InteractsWithEnvironment.php`, `EnvironmentDetectionTest.php`)
+  - [x] 5.2 Run Pint code style check and fix (`composer lint`)
+  - [x] 5.3 Run PHPStan static analysis (`composer analyse`)
+  - [x] 5.4 Verify 100% Type Coverage (`composer test:types`)
+  - [x] 5.5 Run full Pest test suite (`composer test:unit`)
+  - [x] 5.6 Run complete CI pipeline (`composer test`)
