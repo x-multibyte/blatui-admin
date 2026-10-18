@@ -27,10 +27,17 @@ final readonly class InstallContext
         $dryRun = (bool) ($options['dry-run'] ?? false);
         $force = (bool) ($options['force'] ?? false);
         $fresh = (bool) ($options['fresh'] ?? false);
+        // Note: 'no-interaction' is provided automatically by Symfony Console via its global option definition.
         $interactive = ! ((bool) ($options['no-interaction'] ?? false));
         $composerPath = isset($options['composer-path']) && is_string($options['composer-path']) && $options['composer-path'] !== ''
             ? $options['composer-path']
             : null;
+        $installApexCharts = (bool) ($options['install-apex-charts'] ?? false);
+
+        /** @var array<int, string> $components */
+        $components = isset($options['components']) && is_array($options['components'])
+            ? array_values(array_filter($options['components'], 'is_string'))
+            : [];
 
         return new self(
             dryRun: $dryRun,
@@ -38,6 +45,8 @@ final readonly class InstallContext
             fresh: $fresh,
             interactive: $interactive,
             composerPath: $composerPath,
+            installApexCharts: $installApexCharts,
+            selectedComponents: $components,
         );
     }
 

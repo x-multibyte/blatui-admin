@@ -20,16 +20,16 @@
   - [x] 3.3 创建 `InstallWizard` (纯 `laravel/prompts` 驱动：渲染表格、问询偏好、spin 执行 Actions、outro 总结)
   - [x] 3.4 编写并通过 Phase 3 单元测试 (`InstallContextTest`, `StepResultTest`, `InstallWizardTest`)
 
-- [ ] **Phase 4: CLI Commands (控制台接入点)**
-  - [ ] 4.1 创建 `BlatuiAdminCommand` 主命令 (`php artisan blatui:admin {--install}`)
-  - [ ] 4.2 重构 `AdminInstallCommand` 为代理别名薄层 (`php artisan admin:install`)
-  - [ ] 4.3 在 `AdminServiceProvider` 中注册新命令与服务绑定
-  - [ ] 4.4 编写并通过 Feature 测试 (`BlatuiAdminCommandTest`, `AdminInstallCommandTest`)
+- [x] **Phase 4: CLI Commands (控制台接入点)**
+  - [x] 4.1 创建 `BlatuiAdminCommand` 主命令 (`php artisan blatui:admin {--install}`)
+  - [x] 4.2 重构 `AdminInstallCommand` 为代理别名薄层 (`php artisan admin:install`)
+  - [x] 4.3 在 `AdminServiceProvider` 中注册新命令与服务绑定
+  - [x] 4.4 编写并通过 Feature 测试 (`BlatuiAdminCommandTest`, `AdminInstallCommandTest`)
 
-- [ ] **Phase 5: Cleanup & Verification (清理与全量门禁)**
-  - [ ] 5.1 移除废弃旧文件 (`InstallStep.php`, `InteractsWithEnvironment.php`, 旧 `EnvironmentDetectionTest.php`)
-  - [ ] 5.2 运行 Pint 格式化与检查 (`composer lint`)
-  - [ ] 5.3 运行 PHPStan 静态分析 (`composer analyse`)
-  - [ ] 5.4 验证 100% Type Coverage (`composer test:types`)
-  - [ ] 5.5 运行全量 Pest 测试套件 (`composer test:unit`)
-  - [ ] 5.6 运行完整 CI 门禁 (`composer test`)
+- [x] **Phase 5: Cleanup & Verification (清理与全量门禁)**
+  - [x] 5.1 移除废弃旧文件 (`InstallStep.php`, `InteractsWithEnvironment.php`, 旧 `EnvironmentDetectionTest.php`)
+  - [x] 5.2 运行 Pint 格式化与检查 (`composer lint`)
+  - [x] 5.3 运行 PHPStan 静态分析 (`composer analyse`)
+  - [x] 5.4 验证 100% Type Coverage (`composer test:types`)
+  - [x] 5.5 运行全量 Pest 测试套件 (`composer test:unit`)
+  - [x] 5.6 运行完整 CI 门禁 (`composer test`)

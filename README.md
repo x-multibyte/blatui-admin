@@ -20,7 +20,23 @@ You can install the package via Composer:
 composer require x-multibyte/blatui-admin
 ```
 
-You may publish all of the package's resources at once:
+Run the interactive installation wizard:
+
+```bash
+php artisan blatui:admin --install
+```
+
+> **Note**: `php artisan admin:install` is available as a backwards-compatible alias.
+
+You can preview the environment diagnostics and installation plan without making changes:
+
+```bash
+php artisan blatui:admin --install --dry-run
+```
+
+### Manual Publishing
+
+Alternatively, you may publish all of the package's resources at once:
 
 ```bash
 php artisan vendor:publish --tag="blatui-admin"
