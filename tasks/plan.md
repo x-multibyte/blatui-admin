@@ -1,157 +1,82 @@
-# Implementation Plan: BlatUI Admin Lifecycle & Dependency Management Engine
+# Implementation Plan: Decouple Composer Peer Dependencies to Resolve Laravel 13 Guzzle Conflict
 
-> **Goal**: Refactor the installer for `x-multibyte/blatui-admin` into a high-cohesion, testable, environment-adaptive four-tier engine (`Diagnostics`, `Actions`, `Wizard`, `CLI`), compliant with `SPEC.md`.
-
----
-
-## 1. Context
-
-The legacy `src/Console/Commands/AdminInstallCommand.php` suffered from monolithic script patterns:
-1. **Entangled Detection and Execution**: Environment detection logic was scattered across `InteractsWithEnvironment` trait and closures, preventing clean diagnostic reporting for `--dry-run` and interactive flows.
-2. **Lack of Action Abstractions**: Direct calls to `file_put_contents`, `Process::run`, and child commands were coupled with UI prompts, impeding unit testing.
-3. **Inconsistent Console UI**: Mixed usage of `Command::$components` and `laravel/prompts` violated the single-channel console UI standard.
-4. **Insufficient Host Protection**: Lacked robust protections against duplicate-Alpine collisions (Livewire/Flux), Tailwind v3 vs v4 handling, opt-in ApexCharts isolation, and component code-ownership workflows (`blatui:add`).
-
-This implementation plan structured the refactoring into five ordered phases:
-`diagnostics` → `actions` → `wizard` → `cli` → `cleanup & verification`.
+> **Goal**: Decouple `gehrisandro/tailwind-merge-laravel` and `mallardduck/blade-lucide-icons` from `x-multibyte/blatui-admin` root `require` to `require-dev` (treating them as true peer dependencies managed on-demand by the installer with `-W`), thereby eliminating Guzzle 7/8 conflict and enabling clean installation on Laravel 13.
 
 ---
 
-## 2. Architecture & Dependencies
+## 1. Context & Root Cause
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    CLI Commands Layer                       │
-│  - BlatuiAdminCommand (`php artisan blatui:admin --install`) │
-│  - AdminInstallCommand (`php artisan admin:install` proxy)  │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                       Wizard Layer                          │
-│  - InstallContext (Runtime options & user preferences DTO)  │
-│  - StepResult (Discrete step execution outcome DTO)         │
-│  - InstallWizard (laravel/prompts orchestrator)             │
-└──────────────┬──────────────────────────────┬───────────────┘
-               │                              │
-               ▼                              ▼
-┌──────────────────────────────┐ ┌────────────────────────────┐
-│      Diagnostics Layer       │ │       Actions Layer        │
-│  - CheckStatus (Enum)        │ │  - ProcessRunner (Process) │
-│  - CheckResult (DTO)         │ │  - ViteWiringManager (CSS) │
-│  - DiagnosticReport (Report) │ │  - StubManager (Stubs)     │
-│  - EnvironmentDetector       │ │  - ArtisanRunner (Artisan) │
-└──────────────────────────────┘ └────────────────────────────┘
-```
-
-**Unidirectional Dependency Flow**:
-- `Diagnostics` and `Actions` are mutually independent, headless primitives.
-- `Wizard` orchestrates `Diagnostics` (read-only inspection) and `Actions` (side-effect execution).
-- `CLI Commands` act as thin entrypoints delegating to `InstallWizard`.
+When installing `x-multibyte/blatui-admin` on a fresh Laravel 13 application, Composer currently falls back to `v0.0.1` instead of installing `v0.4.0`.
+- **Root Cause**: `blatui-admin` specifies `"gehrisandro/tailwind-merge-laravel": "^1.4"` in root `require`. That package strictly requires `"guzzlehttp/guzzle": "^7.5.1"`.
+- **Conflict**: Fresh Laravel 13 locks `"guzzlehttp/guzzle": "8.2.0"`. Composer partial update cannot downgrade locked dependencies without `--with-all-dependencies` (`-W`).
+- **Why v0.0.1 was picked**: `v0.0.1` did not require `tailwind-merge-laravel` and only required `illuminate/support`, making it the only installable version without altering locked dependencies.
+- **Architectural Solution**: `blatui-admin` itself has no direct PHP code dependency on `tailwind-merge-laravel` or `blade-lucide-icons` in `src/`. They are peer dependencies required by BlatUI Blade components distributed into the host project. Moving them to `require-dev` and adding `-W` to `ProcessRunner::requireComposerPackages` ensures host projects install `blatui-admin` seamlessly and install peer packages on demand.
 
 ---
 
-## 3. Phased Tasks
+## 2. Architecture & Design Decisions
 
-### Phase 1: Diagnostics Pre-flight & Reporting System
-**Responsibility**: Read-only environment sniffing and structured diagnostic reporting.
-
-1. **`CheckStatus.php`** (`src/Console/Installer/Diagnostics/CheckStatus.php`):
-   - PHP 8.3 pure enum: `PASS`, `WARN`, `FAIL`.
-   - Methods: `label(): string`, `icon(): string`.
-2. **`CheckResult.php`** (`src/Console/Installer/Diagnostics/CheckResult.php`):
-   - Immutable DTO: `name`, `status`, `message`, `suggestedFix`.
-3. **`DiagnosticReport.php`** (`src/Console/Installer/Diagnostics/DiagnosticReport.php`):
-   - Report container holding `array<int, CheckResult>`.
-   - Methods: `add()`, `hasCriticalFailures()`, `hasWarnings()`, `toTableRows()`.
-4. **`EnvironmentDetector.php`** (`src/Console/Installer/Diagnostics/EnvironmentDetector.php`):
-   - Detects Composer dependencies, Node dependencies, runtime binaries (PHP >= 8.3, Node >= 18), lockfiles, and frameworks.
-   - Aggregate method: `fullDiagnostics(): DiagnosticReport`.
-5. **Unit Tests & Verification**:
-   - `tests/Unit/Installer/Diagnostics/CheckStatusTest.php`
-   - `tests/Unit/Installer/Diagnostics/CheckResultTest.php`
-   - `tests/Unit/Installer/Diagnostics/DiagnosticReportTest.php`
-   - `tests/Unit/Installer/Diagnostics/EnvironmentDetectorTest.php`
-   - Completed in PR #7 (Release `v0.1.0`).
+Documented in **ADR-008: Composer Peer Dependencies Decoupling & Adaptive Installation**.
+1. **Root `composer.json`**:
+   - `gehrisandro/tailwind-merge-laravel` and `mallardduck/blade-lucide-icons` moved from `"require"` to `"require-dev"`.
+   - Added to `"suggest"` section for composer discovery.
+2. **`ProcessRunner`**:
+   - Add `bool $withAllDependencies = false` parameter to `buildComposerRequireCommand`, `requireComposerPackages`, and `getPlanForComposerRequire`.
+   - When `$withAllDependencies` is true, append `-W` flag to composer command.
+3. **`InstallWizard`**:
+   - In `stepInstallComposerDependencies`, pass `withAllDependencies: true` when requiring missing peer packages so that any necessary host package adjustments (like Guzzle downgrade to 7.x) are resolved automatically.
 
 ---
 
-### Phase 2: Actions Execution Toolkit
-**Responsibility**: Encapsulate file operations, external processes, and Artisan subcommands into testable units.
+## 3. Tasks Breakdown
 
-1. **`ProcessRunner.php`** (`src/Console/Installer/Actions/ProcessRunner.php`):
-   - Encapsulates Laravel `Process` Facade for npm, pnpm, yarn, bun, npx, and composer.
-2. **`ViteWiringManager.php`** (`src/Console/Installer/Actions/ViteWiringManager.php`):
-   - Additive CSS injection compliant with W3C / Lightning CSS `@import` ordering.
-   - Intelligent JS wiring avoiding duplicate Alpine runtimes across Greenfield, Livewire, and Flux setups.
-3. **`ArtisanRunner.php`** (`src/Console/Installer/Actions/ArtisanRunner.php`):
-   - Safe execution of `vendor:publish`, `migrate`, and `blatui:add`.
-4. **`StubManager.php`** (`src/Console/Installer/Actions/StubManager.php`):
-   - Component directory verification and conflict detection.
-5. **Unit Tests & Verification**:
-   - `tests/Unit/Installer/Actions/ProcessRunnerTest.php`
-   - `tests/Unit/Installer/Actions/ViteWiringManagerTest.php`
-   - `tests/Unit/Installer/Actions/ArtisanRunnerTest.php`
-   - `tests/Unit/Installer/Actions/StubManagerTest.php`
-   - Completed in PR #8 (Release `v0.2.0`).
+### Task 1: Architectural Documentation (ADR-008 & SPEC Update)
+- Create `docs/decisions/ADR-008-composer-peer-dependencies-decoupling.md`.
+- Update `docs/decisions/README.md` to index ADR-008.
+- Update `SPEC.md` to clarify peer package decoupling and `-W` installer behavior.
+- **Acceptance Criteria**:
+  - ADR-008 accurately describes Guzzle 7/8 collision context and peer dependency architecture.
+  - `SPEC.md` reflects that peer packages are detected and installed with `-W` by `InstallWizard`.
 
----
+### Task 2: Decouple Peer Dependencies in `composer.json`
+- Edit `composer.json`:
+  - Remove `gehrisandro/tailwind-merge-laravel` and `mallardduck/blade-lucide-icons` from `"require"`.
+  - Add `gehrisandro/tailwind-merge-laravel` and `mallardduck/blade-lucide-icons` to `"require-dev"`.
+  - Add `"suggest"` block for peer packages.
+- Run `composer update --no-interaction` to verify package consistency.
+- **Acceptance Criteria**:
+  - `composer.json` root `"require"` only contains `php`, `anousss007/blatui`, `composer-runtime-api`, `laravel/framework`.
+  - Workbench and dev tests still have access to peer packages via `"require-dev"`.
 
-### Phase 3: Wizard Orchestrator & Context
-**Responsibility**: Interactive flow orchestration and dry-run execution using `laravel/prompts`.
+### Task 3: Support `--with-all-dependencies` (-W) in `ProcessRunner`
+- Update `src/Console/Installer/Actions/ProcessRunner.php`:
+  - Add `bool $withAllDependencies = false` to `buildComposerRequireCommand`.
+  - Add `bool $withAllDependencies = false` to `requireComposerPackages`.
+  - Add `bool $withAllDependencies = false` to `getPlanForComposerRequire`.
+- Update `tests/Unit/Installer/Actions/ProcessRunnerTest.php`:
+  - Add test verifying `-W` is appended when `$withAllDependencies` is true.
+  - Verify existing tests pass.
+- **Acceptance Criteria**:
+  - Command array includes `-W` when requested.
+  - Plan string includes `-W` when requested.
 
-1. **`InstallContext.php`** (`src/Console/Installer/Wizard/InstallContext.php`):
-   - Immutable DTO for flags: `dryRun`, `force`, `fresh`, `interactive`, `composerPath`, `includeApexCharts`, `selectedComponents`.
-2. **`StepResult.php`** (`src/Console/Installer/Wizard/StepResult.php`):
-   - Encapsulates step outcomes and dry-run planned actions.
-3. **`InstallWizard.php`** (`src/Console/Installer/Wizard/InstallWizard.php`):
-   - Orchestrates diagnostics rendering, preference collection, and sequential action dispatch wrapped in `spin()`.
-4. **Unit Tests & Verification**:
-   - `tests/Unit/Installer/Wizard/InstallContextTest.php`
-   - `tests/Unit/Installer/Wizard/StepResultTest.php`
-   - `tests/Unit/Installer/Wizard/InstallWizardTest.php`
-   - Completed in PR #9 (Release `v0.3.0`).
+### Task 4: Integrate `-W` in `InstallWizard` Composer Step
+- Update `src/Console/Installer/Wizard/InstallWizard.php`:
+  - In `stepInstallComposerDependencies`, pass `withAllDependencies: true` to `$this->runner->getPlanForComposerRequire` and `$this->runner->requireComposerPackages`.
+- Update `tests/Unit/Installer/Wizard/InstallWizardTest.php`:
+  - Verify planned actions and execution calls include `-W`.
+- **Acceptance Criteria**:
+  - `blatui:admin --install --dry-run` plans `composer require ... -W`.
+  - Unit tests in `InstallWizardTest` pass cleanly.
 
----
-
-### Phase 4: CLI Commands & Compatibility
-**Responsibility**: Register canonical commands and backwards-compatible proxies.
-
-1. **`BlatuiAdminCommand.php`** (`src/Console/Commands/BlatuiAdminCommand.php`):
-   - Canonical signature: `blatui:admin {--install} {--dry-run} {--fresh} {--force} {--install-apex-charts}`.
-2. **`AdminInstallCommand.php`** (`src/Console/Commands/AdminInstallCommand.php`):
-   - Compatibility proxy forwarding options directly to `InstallWizard`.
-3. **`AdminServiceProvider.php`** (`src/AdminServiceProvider.php`):
-   - Registers commands and binds installer singletons in the service container.
-4. **Feature Tests & Verification**:
-   - `tests/Feature/Commands/BlatuiAdminCommandTest.php`
-   - `tests/Feature/Commands/AdminInstallCommandTest.php`
-   - Completed in PR #10 (Release `v0.4.0`).
+### Task 5: Full Quality Gates & Host Verification
+- Run `composer test` (Pint, PHPStan Level 7, Pest 100% Type Coverage, 100% passing tests).
+- Verify in host project that `blatui-admin` installs without version downgrade or Guzzle collision.
+- **Acceptance Criteria**:
+  - 100% test pass rate, 0 PHPStan errors, 100% type coverage.
 
 ---
 
-### Phase 5: Cleanup & Full Quality Gates
-**Responsibility**: Remove legacy monolithic code and verify complete test suite.
-
-1. **Legacy File Removal**:
-   - Purged `src/Support/InstallStep.php`.
-   - Purged `src/Console/Commands/Concerns/InteractsWithEnvironment.php`.
-   - Purged `tests/Feature/Install/EnvironmentDetectionTest.php`.
-2. **Four-Dimensional Quality Gates**:
-   - `composer lint:check` (Pint code style)
-   - `composer analyse` (PHPStan Level 7)
-   - `composer test:types` (100% Type Coverage)
-   - `composer test:unit` (Pest test suite)
-   - `composer test` (Full CI pipeline)
-   - Completed in PR #10 (Release `v0.4.0`).
-
----
-
-## 4. Deliverables & Verification Status
-
-- [x] `php artisan blatui:admin --install --dry-run` outputs formatted pre-flight report and action plan with exit code 0.
-- [x] `php artisan admin:install --dry-run` operates identically as a backwards-compatible alias.
-- [x] `EnvironmentDetector` correctly identifies Greenfield, Livewire, Flux, Tailwind v3/v4, and diverse lockfiles.
-- [x] `ViteWiringManager` performs idempotent, non-destructive CSS and JS insertions across all supported environments.
-- [x] Legacy dead code is completely purged.
-- [x] `composer test` passes all quality gates with zero errors and 100% type coverage.
+## 4. Verification Checkpoint
+- `composer test` passes all 4 quality gates.
+- Fresh Laravel 13 can require `x-multibyte/blatui-admin` resolving to the latest release instead of `v0.0.1`.

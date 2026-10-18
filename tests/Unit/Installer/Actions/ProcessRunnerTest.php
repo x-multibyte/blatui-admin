@@ -81,6 +81,27 @@ it('requires composer packages with memory limit and no-interaction', function (
     });
 });
 
+it('supports requiring composer packages with all dependencies flag', function () {
+    Process::fake([
+        '*composer*require*' => Process::result('installed', 0),
+    ]);
+
+    $runner = new ProcessRunner($this->detector, $this->tempDir);
+    $result = $runner->requireComposerPackages(
+        ['gehrisandro/tailwind-merge-laravel'],
+        dev: false,
+        withAllDependencies: true,
+    );
+
+    expect($result->successful())->toBeTrue()
+        ->and($runner->getPlanForComposerRequire(['gehrisandro/tailwind-merge-laravel'], withAllDependencies: true))
+        ->toBe('composer require gehrisandro/tailwind-merge-laravel -W --no-interaction');
+
+    Process::assertRan(function ($process) {
+        return $process->command === ['composer', 'require', 'gehrisandro/tailwind-merge-laravel', '-W', '--no-interaction'];
+    });
+});
+
 it('builds frontend assets using detected package manager', function () {
     touch($this->tempDir.'/yarn.lock');
     Process::fake([
