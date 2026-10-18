@@ -2,6 +2,17 @@
 
 All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
+## v0.5.0 - 2026-10-18
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Other Changes
+
+* feat(installer): decouple peer dependencies to support Laravel 13 by @x-multibyte in https://github.com/x-multibyte/blatui-admin/pull/13
+
+**Full Changelog**: https://github.com/x-multibyte/blatui-admin/compare/v0.4.1...v0.5.0
+
 ## v0.4.1 - 2026-10-18
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
