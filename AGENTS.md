@@ -27,6 +27,31 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 - `package-compatibility`: use when reviewing code, dependencies, or CI against the PHP and Laravel support matrix.
 - `package-generate-skill`: use when updating the bundled Boost skill from the package implementation, README, and examples.
 
+## Architecture & Decisions
+
+The package installer lifecycle is strictly split into 4 decoupled tiers:
+1. `Diagnostics` (`src/Console/Installer/Diagnostics/`): Read-only environmental checks producing immutable `DiagnosticReport`.
+2. `Actions` (`src/Console/Installer/Actions/`): Headless execution toolkit (`ProcessRunner`, `ViteWiringManager`, `StubManager`, `ArtisanRunner`).
+3. `Wizard` (`src/Console/Installer/Wizard/`): Prompts-based orchestrator handling interactive flow and dry-run execution.
+4. `CLI Commands` (`src/Console/Commands/`): Thin command entrypoint `BlatuiAdminCommand` (`blatui:admin {--install}`) and compatibility proxy `AdminInstallCommand` (`admin:install`).
+
+All major architectural decisions are documented in [`docs/decisions/`](docs/decisions/README.md):
+- [ADR-001: Four-Tier Lifecycle Architecture](docs/decisions/ADR-001-four-tier-installer-lifecycle-pipeline.md)
+- [ADR-002: Alpine.js Collision Avoidance Strategy](docs/decisions/ADR-002-alpine-runtime-collision-avoidance-strategy.md)
+- [ADR-003: Additive W3C/Lightning CSS-Compliant Wiring](docs/decisions/ADR-003-additive-w3c-compliant-css-wiring.md)
+- [ADR-004: Pure `laravel/prompts` Console UI](docs/decisions/ADR-004-single-channel-console-ui-with-laravel-prompts.md)
+- [ADR-005: Command Namespace Migration & Proxy](docs/decisions/ADR-005-command-namespace-migration-and-compatibility-proxy.md)
+- [ADR-006: Code Ownership Component Model (`blatui:add`)](docs/decisions/ADR-006-code-ownership-model-for-ui-components.md)
+- [ADR-007: Opt-in ApexCharts Isolation](docs/decisions/ADR-007-heavy-dependency-isolation-opt-in-apexcharts.md)
+
+## Critical Invariants & Rules
+
+- **Zero Duplicate-Alpine**: NEVER install `alpinejs` when Livewire or Flux is present in the host.
+- **Additive CSS/JS**: NEVER overwrite host `resources/css/app.css` or `resources/js/app.js`.
+- **Pure Prompts**: Use `laravel/prompts` exclusively for CLI UI. Never use `Command::$components`.
+- **Quality Gates**: All code MUST pass `composer test` (PHPStan Level 7, Pint, 100% Type Coverage, Pest).
+- **No Production Leaks**: `declare(strict_types=1);` on all files; no `env()`, `dd()`, `dump()`, or `exit()` in `src/`.
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
