@@ -1,9 +1,9 @@
 # Task List: Decouple Composer Peer Dependencies to Resolve Laravel 13 Guzzle Conflict
 
-- [ ] **Task 1: Architectural Documentation (ADR-008 & SPEC Update)**
-  - [ ] 1.1 Create `docs/decisions/ADR-008-composer-peer-dependencies-decoupling.md`
-  - [ ] 1.2 Update `docs/decisions/README.md` to index ADR-008
-  - [ ] 1.3 Update `SPEC.md` to clarify peer package decoupling and `-W` installer behavior
+- [x] **Task 1: Architectural Documentation (ADR-008 & SPEC Update)**
+  - [x] 1.1 Create `docs/decisions/ADR-008-composer-peer-dependencies-decoupling.md`
+  - [x] 1.2 Update `docs/decisions/README.md` to index ADR-008
+  - [x] 1.3 Update `SPEC.md` to clarify peer package decoupling and `-W` installer behavior
 
 - [ ] **Task 2: Decouple Peer Dependencies in `composer.json`**
   - [ ] 2.1 Move `tailwind-merge-laravel` & `blade-lucide-icons` from `"require"` to `"require-dev"`

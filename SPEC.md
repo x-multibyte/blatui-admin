@@ -55,6 +55,12 @@ Because the package is installed into a host application, parts or all of the re
 - The installer predefines the core component set required by the administrative interface (e.g., `button`, `card`, `input`, `dropdown`, `table`).
 - If target components already exist in the host project, the installer skips them or requests user confirmation before overwriting, preventing accidental loss of custom code.
 
+### 2.5 PHP Peer Dependency Decoupling & Adaptive Resolution
+
+- `gehrisandro/tailwind-merge-laravel` and `mallardduck/blade-lucide-icons` are **peer packages** required by BlatUI Blade components distributed into the host project.
+- To prevent SAT-solver transitive version lock collisions (such as Guzzle 7 vs Guzzle 8 in fresh Laravel 13 projects), they are decoupled from the package's root `require` and declared as `require-dev` / `suggest`.
+- During `blatui:admin --install`, `EnvironmentDetector` checks for their presence. Any missing peer packages are installed using `composer require ... -W` (`--with-all-dependencies`), allowing Composer to automatically negotiate transitive version alignments.
+
 ---
 
 ## 3. Capability Map & Build Order
@@ -70,7 +76,7 @@ The dependency management lifecycle is partitioned into four decoupled tiers:
 
 **Build Order:** `diagnostics` → `actions` → `wizard` → `cli`
 
-> Detailed architectural decisions and constraints are documented in [Architecture Decision Records (ADRs)](docs/decisions/README.md) (ADR-001 through ADR-007).
+> Detailed architectural decisions and constraints are documented in [Architecture Decision Records (ADRs)](docs/decisions/README.md) (ADR-001 through ADR-008).
 
 ---
 
