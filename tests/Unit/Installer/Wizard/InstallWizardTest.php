@@ -104,4 +104,9 @@ it('executes full installation pipeline non-interactively when requirements pass
         ->and($artisanCalls)->toContain(['vendor:publish', ['--tag' => 'blatui-foundations', '--force' => true]])
         ->and($artisanCalls)->toContain(['vendor:publish', ['--tag' => 'blatui-admin', '--force' => true]])
         ->and($artisanCalls)->toContain(['blatui:add', ['components' => ['button', 'card', 'table'], '--force' => true]]);
+
+    Process::assertRan(function ($process) {
+        return in_array('composer', $process->command, true)
+            && in_array('-W', $process->command, true);
+    });
 });

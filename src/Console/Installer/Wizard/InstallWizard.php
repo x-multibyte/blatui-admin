@@ -167,7 +167,11 @@ class InstallWizard
         $composerPkgs = $this->requiredComposerPackages();
 
         if ($composerPkgs !== []) {
-            note($this->processRunner->getPlanForComposerRequire($composerPkgs, composerBinary: $context->composerPath));
+            note($this->processRunner->getPlanForComposerRequire(
+                $composerPkgs,
+                composerBinary: $context->composerPath,
+                withAllDependencies: true,
+            ));
         }
 
         note($this->artisanRunner->getPlanForPublish('blatui-foundations', force: $context->force));
@@ -198,7 +202,11 @@ class InstallWizard
 
         if ($composerPkgs !== []) {
             $result = spin(
-                fn () => $this->processRunner->requireComposerPackages($composerPkgs, composerBinary: $context->composerPath),
+                fn () => $this->processRunner->requireComposerPackages(
+                    $composerPkgs,
+                    composerBinary: $context->composerPath,
+                    withAllDependencies: true,
+                ),
                 'Installing required Composer packages…',
             );
 

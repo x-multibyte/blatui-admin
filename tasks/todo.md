@@ -14,9 +14,9 @@
   - [x] 3.1 Update `ProcessRunner` with `$withAllDependencies` parameter
   - [x] 3.2 Add unit tests for `-W` flag in `tests/Unit/Installer/Actions/ProcessRunnerTest.php`
 
-- [ ] **Task 4: Integrate `-W` in `InstallWizard` Composer Step**
-  - [ ] 4.1 Update `InstallWizard::stepInstallComposerDependencies` to pass `withAllDependencies: true`
-  - [ ] 4.2 Update unit tests in `tests/Unit/Installer/Wizard/InstallWizardTest.php`
+- [x] **Task 4: Integrate `-W` in `InstallWizard` Composer Step**
+  - [x] 4.1 Update `InstallWizard::stepInstallComposerDependencies` to pass `withAllDependencies: true`
+  - [x] 4.2 Update unit tests in `tests/Unit/Installer/Wizard/InstallWizardTest.php`
 
 - [ ] **Task 5: Full Quality Gates & Host Verification**
   - [ ] 5.1 Run full CI pipeline (`composer test`: Pint, PHPStan, Type Coverage, Pest)
