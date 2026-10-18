@@ -5,10 +5,10 @@
   - [x] 1.2 Update `docs/decisions/README.md` to index ADR-008
   - [x] 1.3 Update `SPEC.md` to clarify peer package decoupling and `-W` installer behavior
 
-- [ ] **Task 2: Decouple Peer Dependencies in `composer.json`**
-  - [ ] 2.1 Move `tailwind-merge-laravel` & `blade-lucide-icons` from `"require"` to `"require-dev"`
-  - [ ] 2.2 Add `"suggest"` block for peer packages in `composer.json`
-  - [ ] 2.3 Run `composer update --no-interaction` to verify local lockfile and dependencies
+- [x] **Task 2: Decouple Peer Dependencies in `composer.json`**
+  - [x] 2.1 Move `tailwind-merge-laravel` & `blade-lucide-icons` from `"require"` to `"require-dev"`
+  - [x] 2.2 Add `"suggest"` block for peer packages in `composer.json`
+  - [x] 2.3 Run `composer update --no-interaction` to verify local lockfile and dependencies
 
 - [ ] **Task 3: Support `--with-all-dependencies` (-W) in `ProcessRunner`**
   - [ ] 3.1 Update `ProcessRunner` with `$withAllDependencies` parameter
