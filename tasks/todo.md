@@ -18,6 +18,6 @@
   - [x] 4.1 Update `InstallWizard::stepInstallComposerDependencies` to pass `withAllDependencies: true`
   - [x] 4.2 Update unit tests in `tests/Unit/Installer/Wizard/InstallWizardTest.php`
 
-- [ ] **Task 5: Full Quality Gates & Host Verification**
-  - [ ] 5.1 Run full CI pipeline (`composer test`: Pint, PHPStan, Type Coverage, Pest)
-  - [ ] 5.2 Verify compatibility and clean rollback state
+- [x] **Task 5: Full Quality Gates & Host Verification**
+  - [x] 5.1 Run full CI pipeline (`composer test`: Pint, PHPStan, Type Coverage, Pest)
+  - [x] 5.2 Verify compatibility and clean rollback state
