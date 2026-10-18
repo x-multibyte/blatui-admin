@@ -1,35 +1,23 @@
-# Task List: BlatUI Admin Lifecycle & Dependency Management Engine
+# Task List: Decouple Composer Peer Dependencies to Resolve Laravel 13 Guzzle Conflict
 
-- [x] **Phase 1: Diagnostics Layer**
-  - [x] 1.1 Create `CheckStatus` enum (`PASS`, `WARN`, `FAIL` with labels and icons)
-  - [x] 1.2 Create `CheckResult` immutable DTO (`name`, `status`, `message`, `suggestedFix`)
-  - [x] 1.3 Create `DiagnosticReport` aggregate model (result collection, counters, `toTableRows()`)
-  - [x] 1.4 Create `EnvironmentDetector` service (Composer, Node, lockfiles, Livewire, Flux, Tailwind)
-  - [x] 1.5 Write and pass Phase 1 unit tests (`CheckStatusTest`, `CheckResultTest`, `DiagnosticReportTest`, `EnvironmentDetectorTest`)
+- [ ] **Task 1: Architectural Documentation (ADR-008 & SPEC Update)**
+  - [ ] 1.1 Create `docs/decisions/ADR-008-composer-peer-dependencies-decoupling.md`
+  - [ ] 1.2 Update `docs/decisions/README.md` to index ADR-008
+  - [ ] 1.3 Update `SPEC.md` to clarify peer package decoupling and `-W` installer behavior
 
-- [x] **Phase 2: Actions Toolkit**
-  - [x] 2.1 Create `ProcessRunner` (npm/pnpm/yarn/bun/npx/composer execution wrapper)
-  - [x] 2.2 Create `ViteWiringManager` (Tailwind v4 `@import` additive wiring and 3-way JS collision-free wiring)
-  - [x] 2.3 Create `ArtisanRunner` (safe execution of `vendor:publish`, `migrate`, `blatui:add`)
-  - [x] 2.4 Create `StubManager` (component directory setup and conflict detection)
-  - [x] 2.5 Write and pass Phase 2 unit tests (`ProcessRunnerTest`, `ViteWiringManagerTest`, `ArtisanRunnerTest`, `StubManagerTest`)
+- [ ] **Task 2: Decouple Peer Dependencies in `composer.json`**
+  - [ ] 2.1 Move `tailwind-merge-laravel` & `blade-lucide-icons` from `"require"` to `"require-dev"`
+  - [ ] 2.2 Add `"suggest"` block for peer packages in `composer.json`
+  - [ ] 2.3 Run `composer update --no-interaction` to verify local lockfile and dependencies
 
-- [x] **Phase 3: Wizard Orchestrator**
-  - [x] 3.1 Create `InstallContext` DTO (dryRun, force, fresh, interactive, apexcharts, components)
-  - [x] 3.2 Create `StepResult` DTO (step success, title, message, planned actions)
-  - [x] 3.3 Create `InstallWizard` (`laravel/prompts` UI, tables, prompts, spinners, outro)
-  - [x] 3.4 Write and pass Phase 3 unit tests (`InstallContextTest`, `StepResultTest`, `InstallWizardTest`)
+- [ ] **Task 3: Support `--with-all-dependencies` (-W) in `ProcessRunner`**
+  - [ ] 3.1 Update `ProcessRunner` with `$withAllDependencies` parameter
+  - [ ] 3.2 Add unit tests for `-W` flag in `tests/Unit/Installer/Actions/ProcessRunnerTest.php`
 
-- [x] **Phase 4: CLI Commands**
-  - [x] 4.1 Create `BlatuiAdminCommand` canonical command (`php artisan blatui:admin {--install}`)
-  - [x] 4.2 Refactor `AdminInstallCommand` as backwards-compatible delegation proxy (`php artisan admin:install`)
-  - [x] 4.3 Register commands and bind services in `AdminServiceProvider`
-  - [x] 4.4 Write and pass Feature tests (`BlatuiAdminCommandTest`, `AdminInstallCommandTest`)
+- [ ] **Task 4: Integrate `-W` in `InstallWizard` Composer Step**
+  - [ ] 4.1 Update `InstallWizard::stepInstallComposerDependencies` to pass `withAllDependencies: true`
+  - [ ] 4.2 Update unit tests in `tests/Unit/Installer/Wizard/InstallWizardTest.php`
 
-- [x] **Phase 5: Cleanup & Verification**
-  - [x] 5.1 Remove legacy files (`InstallStep.php`, `InteractsWithEnvironment.php`, `EnvironmentDetectionTest.php`)
-  - [x] 5.2 Run Pint code style check and fix (`composer lint`)
-  - [x] 5.3 Run PHPStan static analysis (`composer analyse`)
-  - [x] 5.4 Verify 100% Type Coverage (`composer test:types`)
-  - [x] 5.5 Run full Pest test suite (`composer test:unit`)
-  - [x] 5.6 Run complete CI pipeline (`composer test`)
+- [ ] **Task 5: Full Quality Gates & Host Verification**
+  - [ ] 5.1 Run full CI pipeline (`composer test`: Pint, PHPStan, Type Coverage, Pest)
+  - [ ] 5.2 Verify compatibility and clean rollback state
