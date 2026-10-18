@@ -27,6 +27,7 @@ final readonly class InstallContext
         $dryRun = (bool) ($options['dry-run'] ?? false);
         $force = (bool) ($options['force'] ?? false);
         $fresh = (bool) ($options['fresh'] ?? false);
+        // Note: 'no-interaction' is provided automatically by Symfony Console via its global option definition.
         $interactive = ! ((bool) ($options['no-interaction'] ?? false));
         $composerPath = isset($options['composer-path']) && is_string($options['composer-path']) && $options['composer-path'] !== ''
             ? $options['composer-path']

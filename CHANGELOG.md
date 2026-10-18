@@ -2,6 +2,15 @@
 
 All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
+## Unreleased
+
+### Added
+- `blatui:admin`: Added primary command (`php artisan blatui:admin {--install}`) with support for `--dry-run`, `--fresh`, `--force`, `--composer-path=`, `--install-apex-charts`, and `--components=*`.
+
+### Changed
+- `admin:install`: Refactored from monolithic command into a lightweight backwards-compatible proxy delegating to `InstallWizard`.
+- Migrations: The automated installer pipeline executes migrations with `--force` to support headless and non-interactive environments without hanging on production confirmation prompts (destructive table drops remain strictly guarded by `--fresh`).
+
 ## v0.3.0 - 2026-10-17
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

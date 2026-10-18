@@ -20,7 +20,7 @@ use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\warning;
 
-final class InstallWizard
+class InstallWizard
 {
     public function __construct(
         public readonly EnvironmentDetector $detector,
