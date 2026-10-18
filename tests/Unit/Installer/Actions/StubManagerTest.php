@@ -53,7 +53,10 @@ it('provides list of default admin components', function () {
         ->and($defaults)->toContain('button')
         ->and($defaults)->toContain('card')
         ->and($defaults)->toContain('input')
-        ->and($defaults)->toContain('table');
+        ->and($defaults)->toContain('table')
+        ->and($defaults)->toContain('dropdown-menu')
+        ->and($defaults)->toContain('dialog')
+        ->and($defaults)->toContain('badge');
 });
 
 it('ensures components directory is created recursively', function () {
