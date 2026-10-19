@@ -124,6 +124,10 @@ src/
 ├── AdminServiceProvider.php               # Service provider (bindings, commands, publishes, routes)
 ├── Facades/
 │   └── Admin.php                          # Admin Facade
+├── Contracts/                             # Interface and contract definitions for decoupled architecture
+├── Events/                                # Lifecycle and domain events
+├── Models/                                # Internal entity and Eloquent models
+├── Support/                               # Utility classes and helper functions (Collection, Str, Arr style)
 ├── Console/
 │   ├── Commands/
 │   │   ├── AdminCommand.php               # Informational / placeholder command
@@ -144,6 +148,12 @@ src/
 │           ├── InstallContext.php         # Immutable runtime options DTO
 │           ├── StepResult.php             # Step execution outcome DTO
 │           └── InstallWizard.php          # Interactive workflow coordinator
+resources/
+├── assets/                                # Frontend asset sources (CSS, JS, icons)
+└── views/
+    └── components/                        # Blade view components
+lang/
+└── en/                                    # Package translations
 tests/
 ├── ArchTest.php                           # Architecture & security invariants (strict_types, no env/dd)
 ├── TestCase.php                           # Testbench base test case
