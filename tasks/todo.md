@@ -1,23 +1,10 @@
-# Task List: Decouple Composer Peer Dependencies to Resolve Laravel 13 Guzzle Conflict
+# Task List: Architecture Optimization - Directory Structure & Placeholder Cleanup
 
-- [x] **Task 1: Architectural Documentation (ADR-008 & SPEC Update)**
-  - [x] 1.1 Create `docs/decisions/ADR-008-composer-peer-dependencies-decoupling.md`
-  - [x] 1.2 Update `docs/decisions/README.md` to index ADR-008
-  - [x] 1.3 Update `SPEC.md` to clarify peer package decoupling and `-W` installer behavior
+- [ ] **Task 1: Directory Structure Expansion & Placeholder Cleanup**
+  - [ ] 1.1 Create skeleton directories with `.gitkeep` (`Contracts`, `Events`, `Models`, `Support`, `resources/assets`, `resources/views/components`, `lang/en`)
+  - [ ] 1.2 Remove obsolete files `lang/en/messages.php` and `resources/views/placeholder.blade.php`
+  - [ ] 1.3 Update `SPEC.md` Section 6 to document expanded architecture directories
 
-- [x] **Task 2: Decouple Peer Dependencies in `composer.json`**
-  - [x] 2.1 Move `tailwind-merge-laravel` & `blade-lucide-icons` from `"require"` to `"require-dev"`
-  - [x] 2.2 Add `"suggest"` block for peer packages in `composer.json`
-  - [x] 2.3 Run `composer update --no-interaction` to verify local lockfile and dependencies
-
-- [x] **Task 3: Support `--with-all-dependencies` (-W) in `ProcessRunner`**
-  - [x] 3.1 Update `ProcessRunner` with `$withAllDependencies` parameter
-  - [x] 3.2 Add unit tests for `-W` flag in `tests/Unit/Installer/Actions/ProcessRunnerTest.php`
-
-- [x] **Task 4: Integrate `-W` in `InstallWizard` Composer Step**
-  - [x] 4.1 Update `InstallWizard::stepInstallComposerDependencies` to pass `withAllDependencies: true`
-  - [x] 4.2 Update unit tests in `tests/Unit/Installer/Wizard/InstallWizardTest.php`
-
-- [x] **Task 5: Full Quality Gates & Host Verification**
-  - [x] 5.1 Run full CI pipeline (`composer test`: Pint, PHPStan, Type Coverage, Pest)
-  - [x] 5.2 Verify compatibility and clean rollback state
+- [ ] **Task 2: Test Suite Refactoring & Full Quality Gates**
+  - [ ] 2.1 Refactor `tests/Feature/ExampleTest.php` to assert view and translation namespace registration contracts
+  - [ ] 2.2 Run full quality gate suite (`composer test`: PHPStan Level 7, Pint, Pest 100% Type Coverage, Pest tests)
