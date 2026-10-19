@@ -43,6 +43,8 @@ All major architectural decisions are documented in [`docs/decisions/`](docs/dec
 - [ADR-005: Command Namespace Migration & Proxy](docs/decisions/ADR-005-command-namespace-migration-and-compatibility-proxy.md)
 - [ADR-006: Code Ownership Component Model (`blatui:add`)](docs/decisions/ADR-006-code-ownership-model-for-ui-components.md)
 - [ADR-007: Opt-in ApexCharts Isolation](docs/decisions/ADR-007-heavy-dependency-isolation-opt-in-apexcharts.md)
+- [ADR-008: Composer Peer Dependencies Decoupling](docs/decisions/ADR-008-composer-peer-dependencies-decoupling.md)
+- [ADR-009: Configuration Design Principles & Namespacing](docs/decisions/ADR-009-configuration-design-principles-and-namespacing.md)
 
 ## Critical Invariants & Rules
 

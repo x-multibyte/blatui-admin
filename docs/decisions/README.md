@@ -14,6 +14,7 @@ This directory documents the key architectural and engineering decisions made in
 | [ADR-006](ADR-006-code-ownership-model-for-ui-components.md) | Code Ownership Model for UI Components (`blatui:add`) | Accepted | 2026-10-18 | Component Distribution & Customization |
 | [ADR-007](ADR-007-heavy-dependency-isolation-opt-in-apexcharts.md) | Heavy Dependency Isolation (Opt-in ApexCharts) | Accepted | 2026-10-18 | Bundle Footprint & Optional Dependencies |
 | [ADR-008](ADR-008-composer-peer-dependencies-decoupling.md) | Composer Peer Dependencies Decoupling & Adaptive Installation | Accepted | 2026-10-18 | Package Dependencies & Laravel 13 Support |
+| [ADR-009](ADR-009-configuration-design-principles-and-namespacing.md) | Configuration Design Principles & Domain Namespacing Standard | Accepted | 2026-10-19 | Configuration & Package Architecture |
 
 ## ADR Lifecycle
 
