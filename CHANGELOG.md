@@ -2,6 +2,17 @@
 
 All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
+## v0.5.3 - 2026-10-20
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Maintenance
+
+* ci(github): add automatic PR labeler workflow based on conventional commits by @x-multibyte in https://github.com/x-multibyte/blatui-admin/pull/16
+
+**Full Changelog**: https://github.com/x-multibyte/blatui-admin/compare/v0.5.2...v0.5.3
+
 ## v0.5.2 - 2026-10-18
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
