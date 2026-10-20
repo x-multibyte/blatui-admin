@@ -2,6 +2,21 @@
 
 All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
+## v0.5.5 - 2026-10-20
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Dependencies
+
+* chore(deps): bump actions/checkout from 4 to 7 by @dependabot[bot] in https://github.com/x-multibyte/blatui-admin/pull/12
+
+### New Contributors
+
+* @dependabot[bot] made their first contribution in https://github.com/x-multibyte/blatui-admin/pull/12
+
+**Full Changelog**: https://github.com/x-multibyte/blatui-admin/compare/v0.5.4...v0.5.5
+
 ## v0.5.4 - 2026-10-20
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
