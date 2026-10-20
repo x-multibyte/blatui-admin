@@ -1,0 +1,60 @@
+name: PR Labeler
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    name: Auto Label PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply labels based on PR title and branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          LABELS=()
+
+          # Breaking changes
+          if echo "$TITLE" | grep -qiE '^.*!:|^.*BREAKING CHANGE' || echo "$BRANCH" | grep -qiE '^breaking/'; then
+            LABELS+=("breaking")
+          fi
+
+          # Features / Enhancements
+          if echo "$TITLE" | grep -qiE '^feat(\(.*\))?:' || echo "$BRANCH" | grep -qiE '^(feat|feature)/'; then
+            LABELS+=("enhancement")
+          fi
+
+          # Bug fixes
+          if echo "$TITLE" | grep -qiE '^fix(\(.*\))?:' || echo "$BRANCH" | grep -qiE '^(fix|bugfix|bug)/'; then
+            LABELS+=("bug")
+          fi
+
+          # Documentation
+          if echo "$TITLE" | grep -qiE '^docs(\(.*\))?:' || echo "$BRANCH" | grep -qiE '^docs/'; then
+            LABELS+=("documentation")
+          fi
+
+          # Dependencies
+          if echo "$TITLE" | grep -qiE '^(deps|chore\(deps\)):' || echo "$BRANCH" | grep -qiE '^deps/'; then
+            LABELS+=("dependencies")
+          fi
+
+          # Maintenance / Refactoring / Tooling
+          if echo "$TITLE" | grep -qiE '^(chore|refactor|perf|test|ci|style|build)(\(.*\))?:' || echo "$BRANCH" | grep -qiE '^(chore|refactor|ci)/'; then
+            LABELS+=("maintenance")
+          fi
+
+          if [ ${#LABELS[@]} -gt 0 ]; then
+            gh pr edit "$PR_NUMBER" --add-label "$(IFS=,; echo "${LABELS[*]}")"
+          fi
