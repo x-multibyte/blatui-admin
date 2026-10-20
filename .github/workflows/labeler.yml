@@ -19,6 +19,7 @@ jobs:
       - name: Apply labels based on PR title and branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           TITLE: ${{ github.event.pull_request.title }}
           BRANCH: ${{ github.event.pull_request.head.ref }}
