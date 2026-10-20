@@ -2,6 +2,17 @@
 
 All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
+## v0.5.4 - 2026-10-20
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Maintenance
+
+* ci(github): add Dependabot auto-merge workflow by @x-multibyte in https://github.com/x-multibyte/blatui-admin/pull/17
+
+**Full Changelog**: https://github.com/x-multibyte/blatui-admin/compare/v0.5.3...v0.5.4
+
 ## v0.5.3 - 2026-10-20
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
