@@ -2,6 +2,21 @@
 
 All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
+## v0.6.0 - 2026-10-22
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Enhancements
+
+* feat(boost): integrate laravel boost AI guidelines, skills and archive distribution by @x-multibyte in https://github.com/x-multibyte/blatui-admin/commit/7f60858aea534093208e00d1d9296caaf561d564
+  - **Distribution Packaging**: Remove `/resources/boost export-ignore` from `.gitattributes` to ensure Composer dist packages bundle Boost AI context assets.
+  - **AI Context Integration**: Provide dual-tier guidance with core guidelines (`resources/boost/guidelines/core.blade.php`) and admin domain skill (`resources/boost/skills/blatui-admin-development/SKILL.md`).
+  - **Installer Detection**: Automatically detect `laravel/boost` in host applications during `blatui:admin` installer runs and prompt developers to sync via `php artisan boost:update --discover`.
+  - **Architecture Decision**: Documented in [ADR-010: Laravel Boost AI Context Integration & Distribution Strategy](docs/decisions/ADR-010-laravel-boost-ai-context-integration-and-distribution.md).
+
+**Full Changelog**: https://github.com/x-multibyte/blatui-admin/compare/v0.5.5...v0.6.0
+
 ## v0.5.5 - 2026-10-20
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
