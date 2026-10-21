@@ -10,6 +10,7 @@ use BlatUI\Admin\Console\Installer\Actions\StubManager;
 use BlatUI\Admin\Console\Installer\Actions\ViteWiringManager;
 use BlatUI\Admin\Console\Installer\Diagnostics\DiagnosticReport;
 use BlatUI\Admin\Console\Installer\Diagnostics\EnvironmentDetector;
+use Composer\InstalledVersions;
 use Illuminate\Console\Command;
 
 use function Laravel\Prompts\confirm;
@@ -302,6 +303,10 @@ class InstallWizard
             warning('Failed to build frontend assets.');
 
             return Command::FAILURE;
+        }
+
+        if (InstalledVersions::isInstalled('laravel/boost')) {
+            note('Tip: Run "php artisan boost:update --discover" to load BlatUI Admin guidelines into your AI agent.');
         }
 
         outro('BlatUI Admin installed successfully!');

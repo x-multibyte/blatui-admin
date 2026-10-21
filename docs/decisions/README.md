@@ -15,6 +15,7 @@ This directory documents the key architectural and engineering decisions made in
 | [ADR-007](ADR-007-heavy-dependency-isolation-opt-in-apexcharts.md) | Heavy Dependency Isolation (Opt-in ApexCharts) | Accepted | 2026-10-18 | Bundle Footprint & Optional Dependencies |
 | [ADR-008](ADR-008-composer-peer-dependencies-decoupling.md) | Composer Peer Dependencies Decoupling & Adaptive Installation | Accepted | 2026-10-18 | Package Dependencies & Laravel 13 Support |
 | [ADR-009](ADR-009-configuration-design-principles-and-namespacing.md) | Configuration Design Principles & Domain Namespacing Standard | Accepted | 2026-10-19 | Configuration & Package Architecture |
+| [ADR-010](ADR-010-laravel-boost-ai-context-integration-and-distribution.md) | Laravel Boost AI Context Integration & Distribution Strategy | Accepted | 2026-10-22 | AI Context & Package Distribution |
 
 ## ADR Lifecycle
 

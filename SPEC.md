@@ -61,6 +61,13 @@ Because the package is installed into a host application, parts or all of the re
 - To prevent SAT-solver transitive version lock collisions (such as Guzzle 7 vs Guzzle 8 in fresh Laravel 13 projects), they are decoupled from the package's root `require` and declared as `require-dev` / `suggest`.
 - During `blatui:admin --install`, `EnvironmentDetector` checks for their presence. Any missing peer packages are installed using `composer require ... -W` (`--with-all-dependencies`), allowing Composer to automatically negotiate transitive version alignments.
 
+### 2.6 AI Context & Laravel Boost Integration
+
+- **Dual-Layer Context Delivery**: Ship both core guidelines (`resources/boost/guidelines/core.blade.php`) and specialized agent skills (`resources/boost/skills/blatui-admin-development/SKILL.md`) to train AI coding assistants (Claude Code, Cursor, Copilot) on BlatUI Admin conventions and architectural invariants.
+- **Distribution Integrity**: `resources/boost/` must **never** be excluded in `.gitattributes` (`export-ignore`), ensuring downstream `dist` installations receive AI capabilities out of the box.
+- **Direct Dependency Rule & Coexistence**: `laravel/boost` restricts third-party package discovery to direct host dependencies (`$package->isDirect()`). To expose both the admin management skill (`blatui-admin-development`) and the component library skill (`blatui-development`), host applications should declare `anousss007/blatui` as a direct dependency (`composer require anousss007/blatui`).
+- **Post-Install Onboarding**: Upon completing the installer pipeline, `InstallWizard` detects if `laravel/boost` is present and prompts the user to execute `php artisan boost:update --discover`.
+
 ---
 
 ## 3. Capability Map & Build Order
@@ -76,7 +83,7 @@ The dependency management lifecycle is partitioned into four decoupled tiers:
 
 **Build Order:** `diagnostics` → `actions` → `wizard` → `cli`
 
-> Detailed architectural decisions and constraints are documented in [Architecture Decision Records (ADRs)](docs/decisions/README.md) (ADR-001 through ADR-008).
+> Detailed architectural decisions and constraints are documented in [Architecture Decision Records (ADRs)](docs/decisions/README.md) (ADR-001 through ADR-010).
 
 ---
 
@@ -150,6 +157,12 @@ src/
 │           └── InstallWizard.php          # Interactive workflow coordinator
 resources/
 ├── assets/                                # Frontend asset sources (CSS, JS, icons)
+├── boost/                                 # Laravel Boost AI context & agent skills
+│   ├── guidelines/
+│   │   └── core.blade.php                 # Core architectural rules & CLI guide
+│   └── skills/
+│       └── blatui-admin-development/
+│           └── SKILL.md                   # On-demand agent skill for admin panel
 └── views/
     └── components/                        # Blade view components
 lang/
@@ -185,6 +198,7 @@ tests/
 - Inspect `app.css` and `app.js` prior to insertion to guarantee idempotent operations.
 - On blocking environmental failures (e.g. Node.js missing or version < 18), output an actionable `suggestedFix` and abort safely.
 - Support `--dry-run` across all commands, providing full diagnostic reporting and planned action summaries.
+- Maintain `resources/boost/` assets (`core.blade.php`, `SKILL.md`) aligned with architectural invariants and CLI capabilities.
 
 ### Ask First
 
@@ -198,6 +212,7 @@ tests/
 - Leave debugging statements (`dd()`, `ddd()`, `dump()`, `exit()`) in production code.
 - Call `env()` directly within `src/` (strictly enforced via `ArchTest`).
 - Force a standalone Alpine runtime when Livewire or Flux is already present.
+- Mark `/resources/boost` as `export-ignore` in `.gitattributes`.
 
 ---
 
@@ -212,3 +227,4 @@ tests/
     - Accurately detects present lockfiles (`bun`, `pnpm`, `yarn`, `npm`)
 4. [x] Legacy dead code (`InstallStep.php`, `InteractsWithEnvironment.php`, monolithic step classes) completely purged.
 5. [x] Passes all four quality gates via `composer test` (Pint styling, PHPStan Level 7 with zero errors, 100% Type Coverage, Pest unit tests green).
+6. [x] Package releases retain `resources/boost/` without omission, and `php artisan boost:update --discover` correctly registers both `blatui-admin-development` and `blatui-admin` guidelines.
