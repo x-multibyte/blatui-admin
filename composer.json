@@ -90,6 +90,9 @@
         ],
         "clear": [
             "@php vendor/bin/testbench package:purge-skeleton --ansi"
+        ],
+        "docs:render": [
+            "@php scripts/compile-docs-examples.php"
         ]
     },
     "extra": {

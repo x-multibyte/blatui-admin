@@ -18,3 +18,8 @@ composer.lock
 /skills-lock.json
 /.trae
 /.opencode
+/pages/docs/node_modules/
+/pages/docs/.vitepress/dist/
+/pages/docs/.vitepress/cache/
+/pages/docs/.vitepress/previews.json
+/pages/docs/public/previews/

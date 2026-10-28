@@ -1,0 +1,89 @@
+name: Deploy Documentation to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'pages/docs/**'
+      - 'resources/views/**'
+      - 'scripts/compile-docs-examples.php'
+      - '.github/workflows/deploy-pages.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'pages/docs/**'
+      - 'resources/views/**'
+      - 'scripts/compile-docs-examples.php'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build VitePress & Blade Previews
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo, sqlite, pdo_sqlite, bcmath, intl
+          tools: composer:v2
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: |
+          composer update --prefer-dist --no-interaction --no-progress --no-scripts
+          composer run prepare
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: pages/docs/package-lock.json
+
+      - name: Install VitePress dependencies
+        run: npm --prefix pages/docs ci
+
+      - name: Compile Blade examples, run docs tests & build VitePress site
+        run: |
+          composer docs:render
+          vendor/bin/pest tests/Feature/DocsExamplesRenderTest.php
+          npm --prefix pages/docs run build
+
+      - name: Configure GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages/docs/.vitepress/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -11,6 +11,10 @@
     <a href="https://packagist.org/packages/x-multibyte/blatui-admin"><img src="https://img.shields.io/packagist/dt/x-multibyte/blatui-admin.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
+## Documentation
+
+Full documentation, architecture guides, and interactive Blade component previews are available at **[x-multibyte.github.io/blatui-admin](https://x-multibyte.github.io/blatui-admin/)**.
+
 ## Requirements
 
 - **PHP**: `^8.3`

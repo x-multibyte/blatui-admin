@@ -1,0 +1,200 @@
+name: Diff-Driven Documentation Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'config/**'
+      - 'resources/views/**'
+      - 'routes/**'
+  workflow_dispatch:
+    inputs:
+      base_ref:
+        description: 'Base git ref or SHA to diff against (defaults to last synced SHA or HEAD~1)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+concurrency:
+  group: docs-sync-main
+  cancel-in-progress: false
+
+jobs:
+  sync-docs:
+    name: Analyze Code Diff & Propose Docs PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Check AI API Key availability
+        id: credentials
+        env:
+          HAS_GEMINI: ${{ secrets.GEMINI_API_KEY != '' }}
+          HAS_ANTHROPIC: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        run: |
+          if [ "$HAS_GEMINI" = "true" ]; then
+            echo "provider=gemini" >> "$GITHUB_OUTPUT"
+          elif [ "$HAS_ANTHROPIC" = "true" ]; then
+            echo "provider=claude" >> "$GITHUB_OUTPUT"
+          else
+            echo "provider=none" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping AI documentation sync because neither GEMINI_API_KEY nor ANTHROPIC_API_KEY is configured in repository secrets."
+          fi
+
+      - name: Compute code diff since last sync
+        if: steps.credentials.outputs.provider != 'none'
+        id: diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_BASE: ${{ github.event.inputs.base_ref || '' }}
+          EVENT_BEFORE: ${{ github.event.before || '' }}
+        run: |
+          # If an open rolling docs/auto-sync PR already exists, carry forward its unmerged
+          # pages/docs/ changes and .last-synced-sha so rapid merges to main accumulate cleanly.
+          OPEN_PR=$(gh pr list --head "docs/auto-sync" --base main --state open --json number --jq '.[0].number // empty' || true)
+          if [ -n "$OPEN_PR" ] && git rev-parse --verify origin/docs/auto-sync >/dev/null 2>&1; then
+            git checkout origin/docs/auto-sync -- pages/docs/
+          fi
+
+          BASE_SHA=""
+          if [ -n "$INPUT_BASE" ] && git cat-file -e "${INPUT_BASE}^{commit}" 2>/dev/null; then
+            BASE_SHA="$INPUT_BASE"
+          elif [ -f pages/docs/.last-synced-sha ]; then
+            CANDIDATE=$(tr -d '[:space:]' < pages/docs/.last-synced-sha)
+            if [ -n "$CANDIDATE" ] && git cat-file -e "${CANDIDATE}^{commit}" 2>/dev/null; then
+              BASE_SHA="$CANDIDATE"
+            fi
+          fi
+
+          if [ -z "$BASE_SHA" ]; then
+            if [ -n "$EVENT_BEFORE" ] && [ "$EVENT_BEFORE" != "0000000000000000000000000000000000000000" ] && git cat-file -e "${EVENT_BEFORE}^{commit}" 2>/dev/null; then
+              BASE_SHA="$EVENT_BEFORE"
+            else
+              BASE_SHA="HEAD~1"
+            fi
+          fi
+
+          HEAD_SHA=$(git rev-parse HEAD)
+          git diff "$BASE_SHA" "$HEAD_SHA" -- src/ config/ resources/views/ routes/ > /tmp/code-changes.diff
+
+          if [ ! -s /tmp/code-changes.diff ]; then
+            echo "has_diff=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_diff=true" >> "$GITHUB_OUTPUT"
+            echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+            echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup PHP
+        if: steps.credentials.outputs.provider != 'none' && steps.diff.outputs.has_diff == 'true'
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo, sqlite, pdo_sqlite, bcmath, intl
+          tools: composer:v2
+          coverage: none
+
+      - name: Install Composer dependencies
+        if: steps.credentials.outputs.provider != 'none' && steps.diff.outputs.has_diff == 'true'
+        run: |
+          composer update --prefer-dist --no-interaction --no-progress --no-scripts
+          composer run prepare
+
+      - name: Setup Node.js
+        if: steps.credentials.outputs.provider != 'none' && steps.diff.outputs.has_diff == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: pages/docs/package-lock.json
+
+      - name: Install VitePress dependencies
+        if: steps.credentials.outputs.provider != 'none' && steps.diff.outputs.has_diff == 'true'
+        run: npm --prefix pages/docs ci
+
+      - name: Run Gemini CLI Documentation Update
+        if: steps.credentials.outputs.provider == 'gemini' && steps.diff.outputs.has_diff == 'true'
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
+            Read `pages/docs/WRITING_GUIDE.md` and `/tmp/code-changes.diff`.
+            Update ONLY the documentation files under `pages/docs/` (such as `pages/docs/guide/*.md`, `pages/docs/examples/*.blade.php`, or `pages/docs/.vitepress/config.mts`) if and only if the code diff introduces or modifies user-facing behavior, CLI options, configuration keys, or UI components.
+            Follow every rule in `pages/docs/WRITING_GUIDE.md`: never invent unimplemented features, and run `composer docs:render && npm --prefix pages/docs run build` to verify your changes.
+
+      - name: Run Claude Code Action Documentation Update
+        if: steps.credentials.outputs.provider == 'claude' && steps.diff.outputs.has_diff == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: '--allowedTools "Read,Glob,Grep,Edit,Write,Bash(composer docs:render),Bash(npm --prefix pages/docs run build)"'
+          prompt: |
+            Read `pages/docs/WRITING_GUIDE.md` and `/tmp/code-changes.diff`.
+            Update ONLY the documentation files under `pages/docs/` (such as `pages/docs/guide/*.md`, `pages/docs/examples/*.blade.php`, or `pages/docs/.vitepress/config.mts`) if and only if the code diff introduces or modifies user-facing behavior, CLI options, configuration keys, or UI components.
+            Follow every rule in `pages/docs/WRITING_GUIDE.md`: never invent unimplemented features, and run `composer docs:render && npm --prefix pages/docs run build` to verify your changes.
+
+      - name: Enforce path boundaries and verify documentation build
+        if: steps.credentials.outputs.provider != 'none' && steps.diff.outputs.has_diff == 'true'
+        id: verify
+        run: |
+          # Revert any accidental modifications or untracked files outside pages/docs/
+          git checkout -- . ':!pages/docs'
+          git clean -fd -- . ':!pages/docs' ':!vendor'
+
+          if [ -z "$(git status --porcelain pages/docs)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Mandatory verification: compile Blade examples, run Pest docs test, and build VitePress
+          composer docs:render
+          vendor/bin/pest tests/Feature/DocsExamplesRenderTest.php
+          npm --prefix pages/docs run build
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update rolling docs/auto-sync Pull Request
+        if: steps.verify.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_SHA: ${{ steps.diff.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.diff.outputs.head_sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          echo "$HEAD_SHA" > pages/docs/.last-synced-sha
+
+          BRANCH="docs/auto-sync"
+          git checkout -B "$BRANCH"
+          git add pages/docs/
+          git commit -m "docs: sync documentation with ${HEAD_SHA:0:7}"
+          git push --force origin "$BRANCH"
+
+          EXISTING_PR=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
+          PR_TITLE="docs: sync documentation with main (${HEAD_SHA:0:7})"
+          PR_BODY="Automated diff-driven documentation update for changes between \`${BASE_SHA:0:7}\` and \`${HEAD_SHA:0:7}\`.
+
+          - Verified \`composer docs:render\` (Orchestra Testbench Blade compiler)
+          - Verified \`tests/Feature/DocsExamplesRenderTest.php\`
+          - Verified \`npm --prefix pages/docs run build\` (VitePress static build)"
+
+          if [ -n "$EXISTING_PR" ]; then
+            gh pr edit "$EXISTING_PR" --title "$PR_TITLE" --body "$PR_BODY"
+          else
+            gh label create "skip-release" --color "0E8A16" --description "Skip automated release workflow" --force || true
+            gh pr create --base main --head "$BRANCH" --title "$PR_TITLE" --body "$PR_BODY" --label "skip-release"
+          fi

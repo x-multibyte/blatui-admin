@@ -5,7 +5,13 @@ on:
     branches:
       - main
       - '*.x'
+    paths-ignore:
+      - 'docs/**'
+      - 'pages/**'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'pages/**'
 
 permissions:
   contents: read
