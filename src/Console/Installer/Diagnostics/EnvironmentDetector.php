@@ -189,15 +189,15 @@ final class EnvironmentDetector
 
     public function checkBlatUI(): CheckResult
     {
-        if (! $this->hasComposerPackage('anousss007/blatui')) {
+        if (! $this->hasDirectComposerPackage('anousss007/blatui')) {
             return CheckResult::warn(
                 'BlatUI Core Package',
-                'anousss007/blatui is not detected in Composer.',
+                'anousss007/blatui is not directly required in host composer.json.',
                 'Run "composer require anousss007/blatui"',
             );
         }
 
-        return CheckResult::pass('BlatUI Core Package', 'Installed');
+        return CheckResult::pass('BlatUI Core Package', 'Installed directly in host');
     }
 
     public function fullDiagnostics(): DiagnosticReport
@@ -216,6 +216,20 @@ final class EnvironmentDetector
         $report->add($this->checkPeerPackages());
 
         return $report;
+    }
+
+    public function hasDirectComposerPackage(string $package): bool
+    {
+        $jsonPath = $this->basePath('composer.json');
+
+        if (! is_readable($jsonPath)) {
+            return false;
+        }
+
+        /** @var array{require?: array<string, string>, require-dev?: array<string, string>} $json */
+        $json = json_decode((string) file_get_contents($jsonPath), true) ?: [];
+
+        return isset($json['require'][$package]) || isset($json['require-dev'][$package]);
     }
 
     public function hasComposerPackage(string $package): bool

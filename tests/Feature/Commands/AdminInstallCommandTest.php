@@ -56,3 +56,12 @@ it('forwards all options to install wizard from admin:install alias', function (
         ->and($capturedContext->installApexCharts)->toBeTrue()
         ->and($capturedContext->selectedComponents)->toBe(['button', 'table']);
 });
+
+it('executes dry-run via admin:install alias without errors', function () {
+    $exitCode = Artisan::call('admin:install', [
+        '--dry-run' => true,
+        '--no-interaction' => true,
+    ]);
+
+    expect($exitCode)->toBe(0);
+});

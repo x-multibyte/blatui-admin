@@ -46,6 +46,7 @@ All major architectural decisions are documented in [`docs/decisions/`](docs/dec
 - [ADR-008: Composer Peer Dependencies Decoupling](docs/decisions/ADR-008-composer-peer-dependencies-decoupling.md)
 - [ADR-009: Configuration Design Principles & Namespacing](docs/decisions/ADR-009-configuration-design-principles-and-namespacing.md)
 - [ADR-010: Laravel Boost AI Context Integration & Distribution Strategy](docs/decisions/ADR-010-laravel-boost-ai-context-integration-and-distribution.md)
+- [ADR-011: Direct BlatUI Host Dependency Installation](docs/decisions/ADR-011-direct-blatui-dependency-in-host-application.md)
 
 ## Critical Invariants & Rules
 

@@ -144,6 +144,33 @@ it('executes full installation pipeline non-interactively when requirements pass
 
     Process::assertRan(function ($process) {
         return in_array('composer', $process->command, true)
-            && in_array('-W', $process->command, true);
+            && in_array('-W', $process->command, true)
+            && in_array('anousss007/blatui:^1.36', $process->command, true);
     });
+});
+
+it('includes blatui core package when not directly declared in host composer.json', function () {
+    $wizard = new InstallWizard(
+        $this->detector,
+        $this->processRunner,
+        $this->viteManager,
+        $this->artisanRunner,
+        $this->stubManager,
+    );
+
+    // Only present transitively in lock file
+    file_put_contents($this->tempDir.'/composer.lock', json_encode([
+        'packages' => [
+            ['name' => 'anousss007/blatui', 'version' => '1.36.0'],
+        ],
+    ]));
+
+    expect($wizard->requiredComposerPackages())->toContain('anousss007/blatui:^1.36');
+
+    // Once declared in composer.json directly, it is no longer required
+    file_put_contents($this->tempDir.'/composer.json', json_encode([
+        'require' => ['anousss007/blatui' => '^1.36'],
+    ]));
+
+    expect($wizard->requiredComposerPackages())->not->toContain('anousss007/blatui:^1.36');
 });

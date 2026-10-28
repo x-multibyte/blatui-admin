@@ -65,7 +65,7 @@ Because the package is installed into a host application, parts or all of the re
 
 - **Dual-Layer Context Delivery**: Ship both core guidelines (`resources/boost/guidelines/core.blade.php`) and specialized agent skills (`resources/boost/skills/blatui-admin-development/SKILL.md`) to train AI coding assistants (Claude Code, Cursor, Copilot) on BlatUI Admin conventions and architectural invariants.
 - **Distribution Integrity**: `resources/boost/` must **never** be excluded in `.gitattributes` (`export-ignore`), ensuring downstream `dist` installations receive AI capabilities out of the box.
-- **Direct Dependency Rule & Coexistence**: `laravel/boost` restricts third-party package discovery to direct host dependencies (`$package->isDirect()`). To expose both the admin management skill (`blatui-admin-development`) and the component library skill (`blatui-development`), host applications should declare `anousss007/blatui` as a direct dependency (`composer require anousss007/blatui`).
+- **Direct Dependency Rule & Coexistence**: `laravel/boost` restricts third-party package discovery to direct host dependencies (`$package->isDirect()`). During `admin:install` (or `blatui:admin --install`), the installer automatically requires `anousss007/blatui` directly into the host application's `composer.json` (`composer require anousss007/blatui:^1.36 -W`) if not already present, ensuring both the admin management skill (`blatui-admin-development`) and the component library skill (`blatui-development`) are discovered out of the box.
 - **Post-Install Onboarding**: Upon completing the installer pipeline, `InstallWizard` detects if `laravel/boost` is present and prompts the user to execute `php artisan boost:update --discover`.
 
 ---

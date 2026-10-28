@@ -238,6 +238,31 @@ it('checks blatui core and peer package detection', function () {
         ->and($detector->checkPeerPackages()->status)->toBe(CheckStatus::PASS);
 });
 
+it('distinguishes between direct and transitive composer dependencies', function () {
+    $detector = new EnvironmentDetector($this->tempDir);
+
+    expect($detector->hasDirectComposerPackage('anousss007/blatui'))->toBeFalse();
+
+    // Transitive presence in lock file only
+    file_put_contents($this->tempDir.'/composer.lock', json_encode([
+        'packages' => [
+            ['name' => 'anousss007/blatui', 'version' => '1.36.0'],
+        ],
+    ]));
+
+    expect($detector->hasComposerPackage('anousss007/blatui'))->toBeTrue()
+        ->and($detector->hasDirectComposerPackage('anousss007/blatui'))->toBeFalse()
+        ->and($detector->checkBlatUI()->status)->toBe(CheckStatus::WARN);
+
+    // Now declare directly in host composer.json
+    file_put_contents($this->tempDir.'/composer.json', json_encode([
+        'require' => ['anousss007/blatui' => '^1.36'],
+    ]));
+
+    expect($detector->hasDirectComposerPackage('anousss007/blatui'))->toBeTrue()
+        ->and($detector->checkBlatUI()->status)->toBe(CheckStatus::PASS);
+});
+
 it('detects node dependencies from package.json', function () {
     file_put_contents($this->tempDir.'/package.json', json_encode([
         'dependencies' => ['apexcharts' => '^3.45.0'],

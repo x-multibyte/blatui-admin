@@ -131,7 +131,11 @@ class InstallWizard
         $packages = [];
 
         foreach ($specs as $package => $spec) {
-            if (! $this->detector->hasComposerPackage($package)) {
+            $isInstalled = ($package === 'anousss007/blatui')
+                ? $this->detector->hasDirectComposerPackage($package)
+                : $this->detector->hasComposerPackage($package);
+
+            if (! $isInstalled) {
                 $packages[] = $spec;
             }
         }

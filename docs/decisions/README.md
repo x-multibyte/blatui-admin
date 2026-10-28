@@ -16,6 +16,7 @@ This directory documents the key architectural and engineering decisions made in
 | [ADR-008](ADR-008-composer-peer-dependencies-decoupling.md) | Composer Peer Dependencies Decoupling & Adaptive Installation | Accepted | 2026-10-18 | Package Dependencies & Laravel 13 Support |
 | [ADR-009](ADR-009-configuration-design-principles-and-namespacing.md) | Configuration Design Principles & Domain Namespacing Standard | Accepted | 2026-10-19 | Configuration & Package Architecture |
 | [ADR-010](ADR-010-laravel-boost-ai-context-integration-and-distribution.md) | Laravel Boost AI Context Integration & Distribution Strategy | Accepted | 2026-10-22 | AI Context & Package Distribution |
+| [ADR-011](ADR-011-direct-blatui-dependency-in-host-application.md) | Direct BlatUI Host Dependency Installation on `admin:install` | Accepted | 2026-10-29 | Package Dependencies & Installer Mandate |
 
 ## ADR Lifecycle
 
