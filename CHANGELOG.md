@@ -2,6 +2,22 @@
 
 All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
+## v0.6.1 - 2026-10-29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Documentation & Tooling
+
+* feat(docs): add GitHub Pages VitePress site, Blade preview compiler, and diff-driven AI sync workflow by @x-multibyte in https://github.com/x-multibyte/blatui-admin/commit/9a32a94
+  - **Interactive Documentation Site (`pages/docs/`)**: Add VitePress documentation site with an Orchestra Testbench Blade compiler (`scripts/compile-docs-examples.php`) and `<BladePreview>` component for live Preview/Code tabs and theme synchronization.
+  - **Examples as Tests**: Add `tests/Feature/DocsExamplesRenderTest.php` to verify all documentation Blade examples compile cleanly during `composer test`.
+  - **Automated Deployment & Diff-Driven Sync**: Add `.github/workflows/deploy-pages.yml` and `.github/workflows/docs-sync.yml` for automated GitHub Pages deployment and diff-grounded documentation PRs.
+  - **Archive Isolation**: Add `/docs export-ignore` and `/pages export-ignore` to `.gitattributes` to keep Composer distribution archives lean.
+* chore(docs): add unified Composer and npm documentation scripts by @x-multibyte in https://github.com/x-multibyte/blatui-admin/commit/21ce279
+
+**Full Changelog**: https://github.com/x-multibyte/blatui-admin/compare/v0.6.0...v0.6.1
+
 ## v0.6.0 - 2026-10-22
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
