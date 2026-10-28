@@ -16,18 +16,18 @@ const vendorAutoloadPath = resolve(repoRoot, 'vendor/autoload.php');
 mkdirSync(previewsDir, { recursive: true });
 mkdirSync(cacheDir, { recursive: true });
 
-if (!existsSync(manifestPath)) {
-  if (existsSync(compileScriptPath) && existsSync(vendorAutoloadPath)) {
-    try {
-      execFileSync('php', [compileScriptPath], { cwd: repoRoot, stdio: 'inherit' });
-    } catch {
-      if (!existsSync(manifestPath)) {
-        writeFileSync(manifestPath, '{}\n', 'utf8');
-      }
+if (existsSync(compileScriptPath) && existsSync(vendorAutoloadPath)) {
+  try {
+    execFileSync('php', [compileScriptPath], { cwd: repoRoot, stdio: 'inherit' });
+  } catch (err) {
+    if (!existsSync(manifestPath)) {
+      writeFileSync(manifestPath, '{}\n', 'utf8');
+    } else {
+      throw err;
     }
-  } else {
-    writeFileSync(manifestPath, '{}\n', 'utf8');
   }
+} else if (!existsSync(manifestPath)) {
+  writeFileSync(manifestPath, '{}\n', 'utf8');
 }
 
 const foundationsDir = resolve(repoRoot, 'vendor/anousss007/blatui/stubs/foundations');

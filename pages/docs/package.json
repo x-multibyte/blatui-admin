@@ -3,10 +3,17 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "render": "php ../../scripts/compile-docs-examples.php",
     "prebuild": "node scripts/build-preview-assets.mjs",
     "dev": "node scripts/build-preview-assets.mjs && vitepress dev",
+    "serve": "npm run dev",
     "build": "vitepress build",
-    "preview": "vitepress preview"
+    "preview": "vitepress preview",
+    "docs:render": "npm run render",
+    "docs:dev": "npm run dev",
+    "docs:serve": "npm run serve",
+    "docs:build": "npm run build",
+    "docs:preview": "npm run preview"
   },
   "devDependencies": {
     "@alpinejs/anchor": "^3.14.9",

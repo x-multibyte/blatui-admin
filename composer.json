@@ -93,6 +93,23 @@
         ],
         "docs:render": [
             "@php scripts/compile-docs-examples.php"
+        ],
+        "docs:dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "@docs:render",
+            "npm --prefix pages/docs run dev"
+        ],
+        "docs:serve": [
+            "@docs:dev"
+        ],
+        "docs:build": [
+            "@docs:render",
+            "npm --prefix pages/docs run build"
+        ],
+        "docs:preview": [
+            "Composer\\Config::disableProcessTimeout",
+            "@docs:build",
+            "npm --prefix pages/docs run preview"
         ]
     },
     "extra": {
