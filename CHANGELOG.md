@@ -2,6 +2,21 @@
 
 All notable changes to `x-multibyte/blatui-admin` will be documented in this file.
 
+## v0.6.2 - 2026-10-29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Enhancements
+
+* feat(installer): require anousss007/blatui directly in host project during installation by @x-multibyte in https://github.com/x-multibyte/blatui-admin/commit/6158454
+  - **Direct Host Dependency (`anousss007/blatui`)**: Ensure executing `php artisan admin:install` (or `blatui:admin --install`) automatically adds `anousss007/blatui:^1.36` to the host Laravel project's `composer.json` using `composer require ... -W`.
+  - **Direct Dependency Detection**: Introduce `EnvironmentDetector::hasDirectComposerPackage()` to inspect root `composer.json` without falling back to transitive `composer.lock` or runner runtime.
+  - **Laravel Boost AI Discovery**: Satisfy `$package->isDirect()` constraint in `laravel/boost`, enabling native auto-discovery of both `blatui-development` and `blatui-admin-development` agent skills.
+  - **Architecture Decision**: Documented in [ADR-011: Direct BlatUI Host Dependency Installation](docs/decisions/ADR-011-direct-blatui-dependency-in-host-application.md).
+
+**Full Changelog**: https://github.com/x-multibyte/blatui-admin/compare/v0.6.1...v0.6.2
+
 ## v0.6.1 - 2026-10-29
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
