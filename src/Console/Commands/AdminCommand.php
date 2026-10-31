@@ -4,26 +4,23 @@ declare(strict_types=1);
 
 namespace BlatUI\Admin\Console\Commands;
 
+use BlatUI\Admin\Console\Concerns\HasBanner;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+
 
 class AdminCommand extends Command
 {
-    /**
-     * The command signature.
-     */
-    protected $signature = 'blatui-admin:placeholder';
+    use HasBanner;
 
-    /**
-     * The command description.
-     */
-    protected $description = 'Placeholder Artisan command shipped by the package blatui-admin.';
+    protected $signature = 'admin';
 
-    /**
-     * Execute the console command.
-     */
+    protected $description = 'Admin panel with BlatUI.';
+
     public function handle(): int
     {
-        $this->line('Admin placeholder command executed.');
+        $this->banner();
 
         return self::SUCCESS;
     }
